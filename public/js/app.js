@@ -1,0 +1,1 @@
+console.log('OmbreLoup Companion chargé');
