@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 
-const dashboardRouter = require('./routes/dashboard');
+const carnetRouter = require('./routes/carnet');
 
 const app = express();
 const PORT = process.env.PORT || 3030;
@@ -13,8 +13,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/', dashboardRouter);
+app.use('/', carnetRouter);
 
 app.listen(PORT, () => {
-  console.log(`OmbreLoup Companion démarre sur http://localhost:${PORT}`);
+  console.log(`
+=========================================
+             AZER COMPANION
+              par DH Studio
+=========================================
+
+Serveur démarré :
+http://localhost:${PORT}
+
+Que l'aventure continue.
+  `);
 });
