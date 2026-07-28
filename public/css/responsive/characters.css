@@ -1,0 +1,85 @@
+/* ======================================================
+   Responsive
+====================================================== */
+
+@media (max-width: 1150px) {
+  .battle-status {
+    display: none;
+  }
+
+  .characters-list {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .characters-window {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+  }
+
+  .characters-header {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .characters-title-block p {
+    display: none;
+  }
+
+  .characters-header-actions {
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .characters-search {
+    width: min(360px, 48vw);
+  }
+
+  .characters-toolbar {
+    padding: 10px 16px;
+  }
+
+  .characters-help {
+    display: none;
+  }
+
+  .characters-list {
+    padding: 18px 16px 26px;
+  }
+}
+
+@media (max-width: 620px) {
+  .characters-title-icon {
+    display: none;
+  }
+
+  .characters-title-block h2 {
+    font-size: 1.25rem;
+  }
+
+  .characters-search {
+    display: none;
+  }
+
+  .characters-filter {
+    min-width: 92px;
+  }
+
+  .characters-list {
+    grid-template-columns: 1fr;
+  }
+
+  .character-card {
+    width: min(320px, 100%);
+    margin-inline: auto;
+  }
+
+  .characters-footer span {
+    display: none;
+  }
+
+  .characters-footer {
+    justify-content: flex-end;
+  }
+}

@@ -225,8 +225,12 @@
         <div class="player-actions">
           <button
             class="hero-icon hero-compass"
+            id="heroCompassButton"
             type="button"
-            aria-label="Ouvrir la carte"
+            aria-label="Ouvrir la rose des vents"
+            aria-haspopup="dialog"
+            aria-controls="compassMenu"
+            aria-expanded="false"
           >
             <img src="/assets/azer-compass.png" alt="" aria-hidden="true" />
           </button>
@@ -616,5 +620,5 @@
     </footer>
   </section>
 </div>
-
-<%- include('partials/footer') %>
+<%- include('components/compass/compass_menu') %> <%- include('partials/footer')
+%>
