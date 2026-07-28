@@ -51,11 +51,47 @@
 }
 
 .azer-shell.sidebar-is-collapsed .side-menu {
-  transform: translateX(calc(-1 * var(--sidebar-width) - 18px));
+  transform: translateX(calc(-1 * var(--sidebar-width)));
   pointer-events: none;
 }
 
 .azer-shell.sidebar-is-collapsed .main-area {
   width: 100%;
   margin-left: 0;
+}
+
+
+.azer-shell.sidebar-is-closing .side-menu {
+  animation: sidebar-panel-close 0.58s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.azer-shell.sidebar-is-opening .main-area,
+.azer-shell.sidebar-is-closing .main-area {
+  transition-duration: 0.68s;
+}
+
+@keyframes sidebar-panel-open {
+  0% {
+    opacity: 0.2;
+    filter: brightness(0.72) saturate(0.72);
+  }
+  48% {
+    opacity: 1;
+    filter: brightness(1.08) saturate(1.08);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes sidebar-panel-close {
+  0% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+  }
+  100% {
+    opacity: 0.18;
+    filter: brightness(0.68) saturate(0.68);
+  }
 }

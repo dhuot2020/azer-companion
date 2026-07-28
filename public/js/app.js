@@ -1,19 +1,18 @@
 "use strict";
 
 /*==========================================================
-  SIDEBAR RETRACTABLE V0.5.1
+  SIDEBAR RETRACTABLE V0.5.2 - POIGNEE CENTRALE
 ==========================================================*/
 
 document.addEventListener("DOMContentLoaded", () => {
   const shell = document.querySelector(".azer-shell");
   const sidebar = document.getElementById("sideMenu");
-  const collapseButton = document.getElementById("sidebarCollapseButton");
-  const launcher = document.getElementById("sidebarLauncher");
+  const handle = document.getElementById("sidebarHandle");
   const mobileButton = document.getElementById("mobileMenuButton");
   const desktopMedia = window.matchMedia("(min-width: 981px)");
   const storageKey = "azerCompanion.sidebarCollapsed";
 
-  if (!shell || !sidebar || !collapseButton || !launcher) {
+  if (!shell || !sidebar || !handle) {
     return;
   }
 
@@ -36,17 +35,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderSidebar(isCollapsed, persist = true) {
     const desktopCollapsed = desktopMedia.matches && isCollapsed;
+    const icon = handle.querySelector(".sidebar-handle-icon");
 
     shell.classList.toggle("sidebar-is-collapsed", desktopCollapsed);
     sidebar.classList.toggle("is-collapsed", desktopCollapsed);
-    launcher.classList.toggle("is-visible", desktopCollapsed);
 
-    collapseButton.setAttribute("aria-expanded", String(!desktopCollapsed));
-    collapseButton.setAttribute(
+    handle.setAttribute("aria-expanded", String(!desktopCollapsed));
+    handle.setAttribute(
       "aria-label",
       desktopCollapsed ? "Ouvrir la navigation" : "Réduire la navigation",
     );
-    launcher.setAttribute("aria-expanded", String(!desktopCollapsed));
+
+    if (icon) {
+      icon.textContent = desktopCollapsed ? "›" : "‹";
+    }
 
     if (persist && desktopMedia.matches) {
       saveState(desktopCollapsed);
@@ -60,13 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  collapseButton.addEventListener("click", () => {
-    renderSidebar(true);
-  });
+  handle.addEventListener("click", () => {
+    if (!desktopMedia.matches) {
+      closeMobileSidebar();
+      return;
+    }
 
-  launcher.addEventListener("click", () => {
-    renderSidebar(false);
-    collapseButton.focus({ preventScroll: true });
+    const isCollapsed = shell.classList.contains("sidebar-is-collapsed");
+    renderSidebar(!isCollapsed);
   });
 
   sidebar.querySelectorAll(".nav-item").forEach((item) => {
@@ -87,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
       renderSidebar(getSavedState(), false);
     } else {
       renderSidebar(false, false);
-      launcher.classList.remove("is-visible");
     }
   });
 
