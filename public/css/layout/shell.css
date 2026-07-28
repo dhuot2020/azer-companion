@@ -26,3 +26,36 @@
     linear-gradient(180deg, rgba(4, 19, 31, 0.99), rgba(2, 14, 24, 1));
   border-right: 1px solid var(--line);
 }
+
+
+/* =========================================================
+   SIDEBAR RETRACTABLE V0.5.1
+========================================================= */
+
+.azer-shell,
+.side-menu,
+.main-area {
+  transition:
+    width 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-left 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.side-menu {
+  will-change: transform;
+}
+
+.main-area {
+  min-width: 0;
+  will-change: width, margin-left;
+}
+
+.azer-shell.sidebar-is-collapsed .side-menu {
+  transform: translateX(calc(-1 * var(--sidebar-width) - 18px));
+  pointer-events: none;
+}
+
+.azer-shell.sidebar-is-collapsed .main-area {
+  width: 100%;
+  margin-left: 0;
+}

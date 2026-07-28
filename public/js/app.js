@@ -1,5 +1,99 @@
 "use strict";
 
+/*==========================================================
+  SIDEBAR RETRACTABLE V0.5.1
+==========================================================*/
+
+document.addEventListener("DOMContentLoaded", () => {
+  const shell = document.querySelector(".azer-shell");
+  const sidebar = document.getElementById("sideMenu");
+  const collapseButton = document.getElementById("sidebarCollapseButton");
+  const launcher = document.getElementById("sidebarLauncher");
+  const mobileButton = document.getElementById("mobileMenuButton");
+  const desktopMedia = window.matchMedia("(min-width: 981px)");
+  const storageKey = "azerCompanion.sidebarCollapsed";
+
+  if (!shell || !sidebar || !collapseButton || !launcher) {
+    return;
+  }
+
+  function getSavedState() {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch (error) {
+      console.warn("Impossible de lire l’état de la sidebar.", error);
+      return false;
+    }
+  }
+
+  function saveState(isCollapsed) {
+    try {
+      localStorage.setItem(storageKey, String(isCollapsed));
+    } catch (error) {
+      console.warn("Impossible de sauvegarder l’état de la sidebar.", error);
+    }
+  }
+
+  function renderSidebar(isCollapsed, persist = true) {
+    const desktopCollapsed = desktopMedia.matches && isCollapsed;
+
+    shell.classList.toggle("sidebar-is-collapsed", desktopCollapsed);
+    sidebar.classList.toggle("is-collapsed", desktopCollapsed);
+    launcher.classList.toggle("is-visible", desktopCollapsed);
+
+    collapseButton.setAttribute("aria-expanded", String(!desktopCollapsed));
+    collapseButton.setAttribute(
+      "aria-label",
+      desktopCollapsed ? "Ouvrir la navigation" : "Réduire la navigation",
+    );
+    launcher.setAttribute("aria-expanded", String(!desktopCollapsed));
+
+    if (persist && desktopMedia.matches) {
+      saveState(desktopCollapsed);
+    }
+  }
+
+  function closeMobileSidebar() {
+    if (!desktopMedia.matches) {
+      sidebar.classList.remove("is-open");
+      mobileButton?.setAttribute("aria-expanded", "false");
+    }
+  }
+
+  collapseButton.addEventListener("click", () => {
+    renderSidebar(true);
+  });
+
+  launcher.addEventListener("click", () => {
+    renderSidebar(false);
+    collapseButton.focus({ preventScroll: true });
+  });
+
+  sidebar.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      if (desktopMedia.matches) {
+        renderSidebar(true);
+        return;
+      }
+
+      closeMobileSidebar();
+    });
+  });
+
+  desktopMedia.addEventListener("change", (event) => {
+    sidebar.classList.remove("is-open");
+
+    if (event.matches) {
+      renderSidebar(getSavedState(), false);
+    } else {
+      renderSidebar(false, false);
+      launcher.classList.remove("is-visible");
+    }
+  });
+
+  renderSidebar(getSavedState(), false);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("mobileMenuButton");
   const menu = document.getElementById("sideMenu");
@@ -8,8 +102,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  button.setAttribute("aria-expanded", "false");
+
   button.addEventListener("click", () => {
-    menu.classList.toggle("is-open");
+    const isOpen = menu.classList.toggle("is-open");
+    button.setAttribute("aria-expanded", String(isOpen));
   });
 });
 /*==========================================================
