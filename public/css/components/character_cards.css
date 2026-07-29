@@ -1,93 +1,119 @@
 /* ======================================================
-   Carte verticale
+   AZER COMPANION - CARTES DES HEROS
+   Version nettoyee
+====================================================== */
+
+/* ======================================================
+   CARTE ET ANIMATION D'ENTREE
 ====================================================== */
 
 .character-card {
   position: relative;
   width: 100%;
   min-width: 0;
-  aspect-ratio: 0.68;
-  perspective: 1500px;
+  aspect-ratio: 0.56;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: character-card-enter 420ms ease forwards;
+  animation-delay: calc(var(--card-index, 0) * 55ms);
 }
 
 .character-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  transform-style: preserve-3d;
   transition:
-    transform 0.72s cubic-bezier(0.2, 0.76, 0.24, 1),
+    transform 0.3s ease,
     filter 0.3s ease;
 }
 
-.character-card.flipped .character-card-inner {
-  transform: rotateY(180deg);
+.character-card:hover .character-card-inner {
+  transform: translateY(-5px);
+  filter: brightness(1.05);
 }
+
+/* ======================================================
+   FACES ET CADRE
+====================================================== */
 
 .character-card-face {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border: 2px solid color-mix(in srgb, var(--class-color) 62%, #72551d);
-  border-radius: 14px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  background: #07101a;
+  border: 1px solid color-mix(in srgb, var(--class-color) 58%, #8f7138);
+  border-radius: 9px;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(255, 255, 255, 0.035),
+      transparent 34%
+    ),
+    linear-gradient(180deg, #111922 0%, #080d13 52%, #03070b 100%);
   box-shadow:
-    0 20px 38px rgba(0, 0, 0, 0.58),
-    inset 0 0 0 3px rgba(5, 9, 14, 0.85),
-    inset 0 0 0 5px rgba(214, 163, 57, 0.16);
+    0 18px 38px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(0, 0, 0, 0.92),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 0 0 3px rgba(3, 7, 11, 0.92),
+    inset 0 0 0 4px color-mix(in srgb, var(--class-color) 12%, transparent);
 }
 
 .character-card-face::before,
 .character-card-face::after {
   content: "";
   position: absolute;
-  z-index: 8;
-  width: 46px;
-  height: 46px;
+  z-index: 11;
+  display: block;
   pointer-events: none;
 }
 
 .character-card-face::before {
-  top: 8px;
-  left: 8px;
-  border-top: 2px solid rgba(244, 197, 98, 0.72);
-  border-left: 2px solid rgba(244, 197, 98, 0.72);
-  border-radius: 8px 0 0;
+  inset: 5px;
+  border: 1px solid color-mix(in srgb, var(--class-color) 18%, transparent);
+  border-radius: 5px;
+  opacity: 0.72;
 }
 
 .character-card-face::after {
-  right: 8px;
-  bottom: 8px;
-  border-right: 2px solid rgba(244, 197, 98, 0.72);
-  border-bottom: 2px solid rgba(244, 197, 98, 0.72);
-  border-radius: 0 0 8px;
-}
-
-.character-card:hover .character-card-inner {
-  filter: brightness(1.08);
+  top: 1px;
+  right: 11px;
+  left: 11px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--class-color) 28%, white),
+    transparent
+  );
+  opacity: 0.5;
 }
 
 .character-card:hover .character-card-face {
+  border-color: color-mix(in srgb, var(--class-color) 72%, #b58a3e);
   box-shadow:
-    0 26px 52px rgba(0, 0, 0, 0.64),
-    0 0 28px color-mix(in srgb, var(--class-color) 32%, transparent),
-    inset 0 0 0 3px rgba(5, 9, 14, 0.85),
-    inset 0 0 0 5px rgba(214, 163, 57, 0.2);
+    0 24px 46px rgba(0, 0, 0, 0.64),
+    0 0 0 1px rgba(0, 0, 0, 0.94),
+    0 0 16px color-mix(in srgb, var(--class-color) 16%, transparent),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    inset 0 0 0 3px rgba(3, 7, 11, 0.94),
+    inset 0 0 0 4px color-mix(in srgb, var(--class-color) 16%, transparent);
 }
 
 .character-card.active-character .character-card-front {
-  border-color: #ffc94f;
+  border-color: color-mix(in srgb, var(--class-color) 68%, #d6bd83);
   box-shadow:
-    0 0 0 2px rgba(255, 190, 38, 0.48),
-    0 0 34px rgba(255, 177, 20, 0.62),
-    0 26px 52px rgba(0, 0, 0, 0.64),
-    inset 0 0 32px rgba(255, 180, 28, 0.12);
+    0 0 0 1px color-mix(in srgb, var(--class-color) 18%, transparent),
+    0 0 15px color-mix(in srgb, var(--class-color) 14%, transparent),
+    0 24px 46px rgba(0, 0, 0, 0.64),
+    inset 0 0 18px color-mix(in srgb, var(--class-color) 5%, transparent);
+}
+
+.character-frame {
+  display: none;
 }
 
 /* ======================================================
-   Recto
+   RECTO
 ====================================================== */
 
 .character-card-front {
@@ -96,320 +122,501 @@
 
 .character-card-background {
   position: absolute;
-  inset: 0;
+  z-index: 2;
+  top: 50px;
+  left: 50%;
+  width: clamp(116px, 56%, 142px);
+  max-width: 142px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--class-color) 58%, #b98b38);
+  border-radius: 50%;
   background-image: var(--character-image);
   background-position: center top;
   background-size: cover;
-  transform: scale(1.02);
-  transition: transform 0.5s ease;
+  box-shadow:
+    0 0 0 5px rgba(3, 7, 11, 0.92),
+    0 0 0 6px rgba(220, 168, 67, 0.26),
+    0 0 24px color-mix(in srgb, var(--class-color) 20%, transparent);
+  transform: translateX(-50%);
+  transition:
+    transform 0.45s ease,
+    box-shadow 0.3s ease;
 }
 
 .character-card:hover .character-card-background {
-  transform: scale(1.075);
+  transform: translateX(-50%) scale(1.025);
+  box-shadow:
+    0 0 0 5px rgba(3, 7, 11, 0.92),
+    0 0 0 6px rgba(220, 168, 67, 0.34),
+    0 0 28px color-mix(in srgb, var(--class-color) 28%, transparent);
 }
 
 .character-card-shade {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.04) 20%,
-      rgba(0, 0, 0, 0.12) 42%,
-      rgba(2, 5, 9, 0.88) 72%,
-      rgba(2, 5, 9, 0.99) 100%
+    radial-gradient(
+      circle at 50% 27%,
+      color-mix(in srgb, var(--class-color) 10%, transparent),
+      transparent 31%
     ),
     linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.18),
-      transparent 32%,
-      transparent 68%,
-      rgba(0, 0, 0, 0.18)
+      180deg,
+      rgba(255, 255, 255, 0.018),
+      transparent 42%,
+      rgba(0, 0, 0, 0.48)
     );
 }
 
-.character-faction-emblem {
+.character-card-front-content {
   position: absolute;
-  z-index: 4;
-  top: 18px;
-  left: 18px;
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 62px;
-  color: #f5bd3c;
-  background: linear-gradient(
-    145deg,
-    rgba(8, 67, 131, 0.96),
-    rgba(3, 31, 68, 0.98)
-  );
-  border: 2px solid #c89428;
-  border-radius: 8px 8px 14px 14px;
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.5),
-    inset 0 0 13px rgba(34, 142, 255, 0.3);
-  font-size: 1.65rem;
+  z-index: 7;
+  inset: 0;
+  padding: 0 18px 62px;
+  text-align: center;
 }
+
+.character-card-front h3 {
+  position: absolute;
+  top: 206px;
+  right: 18px;
+  left: 18px;
+  width: auto;
+  margin: 0 auto;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--class-color) 76%, white);
+  font-family: "Cinzel Decorative", Cinzel, Georgia, serif;
+  font-size: clamp(1.02rem, 1.08vw, 1.28rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.025em;
+  text-overflow: ellipsis;
+  text-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.95),
+    0 0 12px color-mix(in srgb, var(--class-color) 20%, transparent);
+  white-space: nowrap;
+}
+
+.character-card-meta {
+  position: absolute;
+  right: 18px;
+  bottom: 62px;
+  left: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.character-race-line {
+  margin-top: 0;
+  color: #dec28d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.94rem;
+  line-height: 1.15;
+}
+
+.character-race-line em {
+  margin-left: 3px;
+  color: #ebcf99;
+  font-style: normal;
+}
+
+.character-class-name {
+  margin-top: 6px;
+  color: var(--class-color);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.character-info-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 180px);
+  gap: 6px;
+  margin: 12px 0 9px;
+  color: color-mix(in srgb, var(--class-color) 42%, #c5943b);
+}
+
+.character-info-divider i {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--class-color) 32%, #a8782f)
+  );
+}
+
+.character-info-divider i:last-child {
+  transform: scaleX(-1);
+}
+
+.character-info-divider b {
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1;
+  text-shadow: 0 0 7px color-mix(in srgb, var(--class-color) 45%, transparent);
+}
+
+.character-level-line {
+  color: #e3c28b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.98rem;
+  line-height: 1.15;
+}
+
+.character-realm {
+  max-width: 100%;
+  margin-top: 5px;
+  overflow: hidden;
+  color: #d7b97f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.character-faction-name,
+.character-level-medallion,
+.character-faction-emblem,
+.character-class-medallion {
+  display: none !important;
+}
+
+/* ======================================================
+   ETAT SELECTIONNE ET MODE APERCU
+====================================================== */
 
 .character-active-label {
   position: absolute;
-  z-index: 5;
-  top: 14px;
-  left: 50%;
+  z-index: 25;
+  top: 17px;
+  right: 15px;
   display: none;
   align-items: center;
-  gap: 7px;
-  padding: 7px 17px;
-  border: 1px solid #ffd165;
-  border-radius: 5px;
-  color: #251601;
-  background: linear-gradient(180deg, #ffd767, #bd7d0e);
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.48),
-    0 0 18px rgba(255, 181, 26, 0.5);
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  transform: translateX(-50%);
+  justify-content: center;
+  gap: 5px;
+  color: rgba(239, 222, 184, 0.82);
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.92);
+}
+
+.character-active-label span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d5ae58;
+  box-shadow: 0 0 5px rgba(213, 174, 88, 0.45);
 }
 
 .character-card.active-character .character-active-label {
   display: flex;
 }
 
-.character-level-medallion {
+/* ======================================================
+   ICONES DE COIN
+====================================================== */
+
+.character-corner-icon {
   position: absolute;
-  z-index: 5;
-  top: 16px;
-  right: 16px;
+  z-index: 24;
   display: grid;
   place-items: center;
-  width: 62px;
-  height: 62px;
-  border: 2px solid #e2b14d;
-  border-radius: 50%;
-  color: #f7d47c;
-  background: radial-gradient(
-    circle,
-    rgba(35, 29, 15, 0.97),
-    rgba(4, 7, 10, 0.99)
-  );
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.6),
-    inset 0 0 14px rgba(226, 177, 77, 0.14);
-}
-
-.character-level-medallion strong {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.65rem;
-  line-height: 1;
-}
-
-.character-level-medallion span {
-  margin-top: -6px;
-  font-size: 0.48rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.character-card-front-content {
-  position: absolute;
-  z-index: 4;
-  right: 18px;
-  bottom: 22px;
-  left: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.character-class-medallion {
-  display: grid;
-  place-items: center;
-  width: 53px;
-  height: 53px;
-  margin-bottom: 8px;
-  border: 2px solid #c49537;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
   color: var(--class-color);
-  background: radial-gradient(
-    circle,
-    rgba(18, 23, 29, 0.98),
-    rgba(2, 5, 8, 0.99)
+  pointer-events: none;
+  transition:
+    color 0.2s ease,
+    filter 0.2s ease,
+    transform 0.2s ease;
+}
+
+.character-corner-icon::before,
+.character-corner-icon::after {
+  display: none;
+}
+
+.character-corner-icon-top {
+  top: 9px;
+  left: 9px;
+}
+
+.character-corner-icon-bottom {
+  right: 9px;
+  bottom: 9px;
+}
+
+.character-class-icon-svg {
+  width: 34px;
+  height: 34px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(
+    0 0 4px color-mix(in srgb, var(--class-color) 50%, transparent)
   );
-  box-shadow:
-    0 0 16px rgba(0, 0, 0, 0.6),
-    0 0 12px color-mix(in srgb, var(--class-color) 22%, transparent);
-  font-size: 1.45rem;
 }
 
-.character-card-front h3 {
-  margin: 0;
-  color: #ffffff;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.6rem, 2.2vw, 2.15rem);
-  line-height: 1;
-  text-shadow:
-    0 3px 5px rgba(0, 0, 0, 0.9),
-    0 0 12px rgba(0, 0, 0, 0.8);
+.character-corner-faction.is-alliance {
+  color: #4b9ff0;
 }
 
-.character-class-name {
-  margin-top: 6px;
-  color: var(--class-color);
-  font-size: 1.12rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-shadow: 0 2px 4px #000000;
+.character-corner-faction.is-horde {
+  color: #d34b3d;
 }
 
-.character-realm {
-  margin-top: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.character-faction-icon-image {
+  display: block;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: none;
 }
 
-.character-faction-name {
-  margin-top: 4px;
-  color: #39a9ff;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.character-card:hover .character-corner-icon {
+  filter: brightness(1.18);
+  transform: scale(1.06);
 }
 
-.character-flip-button {
-  position: absolute;
-  z-index: 10;
-  right: 13px;
-  bottom: 13px;
-  display: grid;
-  place-items: center;
-  width: 39px;
-  height: 39px;
-  border: 1px solid rgba(235, 181, 70, 0.7);
-  border-radius: 50%;
-  color: #f1c15e;
-  background: rgba(3, 8, 14, 0.88);
-  font-size: 1.15rem;
-  cursor: pointer;
+.character-card:hover .character-corner-faction.is-alliance {
+  color: #70b7ff;
+}
+
+.character-card:hover .character-corner-faction.is-horde {
+  color: #f06a58;
 }
 
 /* ======================================================
-   Verso
+   COMETES DU CADRE
 ====================================================== */
 
-.character-card-back {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 28px 24px 24px;
-  transform: rotateY(180deg);
+.character-border-comet {
+  position: absolute;
+  z-index: 23;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 8px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: 100% 50%;
   background:
     radial-gradient(
-      circle at 50% 15%,
-      color-mix(in srgb, var(--class-color) 16%, transparent),
-      transparent 36%
+      circle at 96% 50%,
+      #ffffff 0 7%,
+      color-mix(in srgb, var(--class-color) 42%, white) 16%,
+      color-mix(in srgb, var(--class-color) 92%, white) 28%,
+      transparent 43%
     ),
-    linear-gradient(150deg, #101923, #050a10 72%);
-}
-
-.character-card-back-emblem {
-  display: grid;
-  place-items: center;
-  width: 68px;
-  height: 76px;
-  margin-bottom: 13px;
-  border: 2px solid #bd8b2c;
-  border-radius: 9px 9px 17px 17px;
-  color: #e7b348;
-  background: linear-gradient(
-    145deg,
-    rgba(8, 70, 137, 0.82),
-    rgba(3, 23, 47, 0.98)
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--class-color) 8%, transparent) 14%,
+      color-mix(in srgb, var(--class-color) 22%, transparent) 34%,
+      color-mix(in srgb, var(--class-color) 58%, transparent) 64%,
+      color-mix(in srgb, var(--class-color) 90%, white) 88%,
+      #ffffff 100%
+    );
+  clip-path: polygon(
+    0 47%,
+    16% 39%,
+    38% 30%,
+    64% 19%,
+    84% 8%,
+    100% 0,
+    100% 100%,
+    84% 92%,
+    64% 81%,
+    38% 70%,
+    16% 61%,
+    0 53%
   );
-  font-size: 2rem;
+  filter: blur(0.35px) drop-shadow(0 0 3px var(--class-color))
+    drop-shadow(0 0 8px color-mix(in srgb, var(--class-color) 62%, transparent));
+  offset-path: inset(1px round 8px);
+  offset-rotate: auto;
+  offset-anchor: 100% 50%;
+  will-change: offset-distance;
 }
 
-.character-card-back h3 {
-  margin: 0;
-  color: #f3c973;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.75rem;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.character-back-class {
-  margin-top: 5px;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.character-details {
-  width: 100%;
-  margin-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.character-details div {
-  display: grid;
-  grid-template-columns: 42% 58%;
-  gap: 10px;
-  padding: 12px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.character-details span {
-  color: #c6973d;
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.character-details strong {
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 0.86rem;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.select-character-button {
-  width: 100%;
-  min-height: 43px;
-  margin-top: auto;
-  border: 1px solid rgba(230, 173, 57, 0.7);
-  border-radius: 6px;
-  color: #f3ca75;
-  background: linear-gradient(
-    180deg,
-    rgba(131, 83, 9, 0.56),
-    rgba(54, 31, 3, 0.68)
+.character-border-comet::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #ffffff 0 18%,
+    color-mix(in srgb, var(--class-color) 38%, white) 38%,
+    color-mix(in srgb, var(--class-color) 88%, white) 62%,
+    transparent 76%
   );
-  font: inherit;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  text-transform: uppercase;
+  box-shadow:
+    0 0 3px #ffffff,
+    0 0 7px var(--class-color),
+    0 0 13px color-mix(in srgb, var(--class-color) 70%, transparent);
+  transform: translateY(-50%);
 }
 
-.select-character-button:hover {
-  color: #ffffff;
-  border-color: #ffd26c;
-  background: linear-gradient(
-    180deg,
-    rgba(190, 125, 17, 0.72),
-    rgba(91, 52, 4, 0.8)
-  );
+.character-border-comet-one {
+  offset-distance: 0%;
 }
 
-.character-flip-button-back {
-  right: 12px;
-  bottom: 78px;
+.character-border-comet-two {
+  offset-distance: 50%;
+}
+
+.character-card:hover .character-border-comet-one,
+.character-card:focus-within .character-border-comet-one {
+  opacity: 0.98;
+  animation: character-comet-orbit-one 8s linear infinite;
+}
+
+.character-card:hover .character-border-comet-two,
+.character-card:focus-within .character-border-comet-two {
+  opacity: 0.98;
+  animation: character-comet-orbit-two 8s linear infinite;
+}
+
+/* ======================================================
+   ANIMATIONS
+====================================================== */
+
+@keyframes character-card-enter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes character-comet-orbit-one {
+  from {
+    offset-distance: 0%;
+  }
+
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes character-comet-orbit-two {
+  from {
+    offset-distance: 50%;
+  }
+
+  to {
+    offset-distance: 150%;
+  }
+}
+
+/* ======================================================
+   RESPONSIVE
+====================================================== */
+
+@media (max-width: 1300px) {
+  .character-card {
+    aspect-ratio: 0.56;
+  }
+
+  .character-card-background {
+    top: 46px;
+    width: clamp(108px, 54%, 132px);
+  }
+
+  .character-card-front-content {
+    padding-right: 14px;
+    padding-bottom: 56px;
+    padding-left: 14px;
+  }
+
+  .character-card-front h3 {
+    top: 186px;
+    font-size: 1.04rem;
+  }
+
+  .character-card-meta {
+    right: 14px;
+    bottom: 56px;
+    left: 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .character-card-background {
+    top: 44px;
+    width: clamp(110px, 52%, 128px);
+  }
+
+  .character-card-front h3 {
+    top: 186px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .character-card {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .character-card:hover .character-card-inner {
+    transform: none;
+  }
+
+  .character-card:hover .character-border-comet,
+  .character-card:focus-within .character-border-comet {
+    animation: none;
+  }
+}
+
+/* ======================================================
+   GENRE - ICONE SVG V0.90
+====================================================== */
+
+.character-race-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.character-gender-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.character-gender-icon-male {
+  color: #57aaf5;
+}
+
+.character-gender-icon-female {
+  color: #ed83bd;
 }

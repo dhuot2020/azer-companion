@@ -1,0 +1,5 @@
+2026/07/29-14:14:58.981 425c Creating DB C:\_Dev\AzerCompanionV2\.tmp-edge-profile-test\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/07/29-14:14:58.995 425c Reusing MANIFEST C:\_Dev\AzerCompanionV2\.tmp-edge-profile-test\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/07/29-14:14:59.199 47bc Level-0 table #5: started
+2026/07/29-14:14:59.203 47bc Level-0 table #5: 683041 bytes OK
+2026/07/29-14:14:59.205 47bc Delete type=0 #3

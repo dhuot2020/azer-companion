@@ -32,7 +32,20 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/", carnetRouter);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, (error) => {
+  if (error) {
+    if (error.code === "EADDRINUSE") {
+      console.error(
+        `Le port ${PORT} est déjà utilisé. Arrête l’ancien serveur ou définis un autre port.`,
+      );
+    } else {
+      console.error("Impossible de démarrer le serveur :", error);
+    }
+
+    process.exitCode = 1;
+    return;
+  }
+
   console.log(`
 =========================================
              AZER COMPANION
@@ -44,4 +57,8 @@ http://localhost:${PORT}
 
 Que l'aventure continue.
   `);
+});
+
+server.on("close", () => {
+  console.log("Serveur Azer Companion arrêté.");
 });

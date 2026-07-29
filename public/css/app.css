@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Orbitron:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=Orbitron:wght@500;600&display=swap");
 
 @import url("./base/base.css");
 
@@ -13,10 +13,10 @@
 @import url("./overrides/v05.css");
 @import url("./responsive/hero.css");
 
-@import url("./components/characters_modal.css");
+@import url("./components/characters_view.css?v=20260729-4");
 @import url("./components/character_cards.css");
-@import url("./components/characters_footer.css");
 @import url("./responsive/characters.css");
 @import url("./components/battlenet.css");
+@import url("./components/buttons.css");
 
 @import url("./components/compass_menu.css");

@@ -10,30 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const handle = document.getElementById("sidebarHandle");
   const mobileButton = document.getElementById("mobileMenuButton");
   const desktopMedia = window.matchMedia("(min-width: 981px)");
-  const storageKey = "azerCompanion.sidebarCollapsed";
 
   if (!shell || !sidebar || !handle) {
     return;
   }
 
-  function getSavedState() {
-    try {
-      return localStorage.getItem(storageKey) === "true";
-    } catch (error) {
-      console.warn("Impossible de lire l’état de la sidebar.", error);
-      return false;
-    }
-  }
-
-  function saveState(isCollapsed) {
-    try {
-      localStorage.setItem(storageKey, String(isCollapsed));
-    } catch (error) {
-      console.warn("Impossible de sauvegarder l’état de la sidebar.", error);
-    }
-  }
-
-  function renderSidebar(isCollapsed, persist = true) {
+  function renderSidebar(isCollapsed) {
     const desktopCollapsed = desktopMedia.matches && isCollapsed;
     const icon = handle.querySelector(".sidebar-handle-icon");
 
@@ -48,10 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (icon) {
       icon.textContent = desktopCollapsed ? "›" : "‹";
-    }
-
-    if (persist && desktopMedia.matches) {
-      saveState(desktopCollapsed);
     }
   }
 
@@ -83,17 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  desktopMedia.addEventListener("change", (event) => {
+  desktopMedia.addEventListener("change", () => {
     sidebar.classList.remove("is-open");
-
-    if (event.matches) {
-      renderSidebar(getSavedState(), false);
-    } else {
-      renderSidebar(false, false);
-    }
+    renderSidebar(false);
   });
 
-  renderSidebar(getSavedState(), false);
+  renderSidebar(false);
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -158,11 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       target instanceof HTMLSelectElement ||
       target?.isContentEditable;
 
-    const characterModalOpen =
-      document.getElementById("characters-modal") &&
-      !document.getElementById("characters-modal").classList.contains("hidden");
-
-    if (isTyping || characterModalOpen) return;
+    if (isTyping) return;
 
     switch (e.key) {
       case "ArrowDown":
@@ -239,106 +208,274 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ======================================================
-// Fenêtre Mes personnages
+// Vue Mes personnages
 // ======================================================
 
 const characterButton = document.getElementById("character-switch-button");
-const charactersModal = document.getElementById("characters-modal");
-const closeCharactersButton = document.getElementById("closeCharacters");
 const charactersList = document.getElementById("characters-list");
 const charactersSearchInput = document.getElementById(
   "characters-search-input",
 );
 const charactersCount = document.getElementById("characters-count");
+const battleStatus = document.getElementById("battleStatus");
+const battleStatusText = document.getElementById("battleStatusText");
 
 let blizzardCharacters = [];
+let collectorCharacters = new Map();
 let currentFactionFilter = "all";
-let currentCharacterName =
-  document.getElementById("hero-name")?.textContent?.trim() || "Ombreloup";
+let profiledCharacter = null;
+let profileImageMode = "portrait";
+const selectedCharacterStorageKey = "azerCompanion.selectedCharacter";
+let currentCharacterKey = readSelectedCharacterKey();
+
+function getCharacterKey(character) {
+  const realm = String(character?.realm || "")
+    .trim()
+    .toLowerCase();
+  const name = String(character?.name || "")
+    .trim()
+    .toLowerCase();
+
+  return `${realm}::${name}`;
+}
+
+function readSelectedCharacterKey() {
+  try {
+    return localStorage.getItem(selectedCharacterStorageKey) || "";
+  } catch (error) {
+    console.warn("Impossible de lire le personnage sélectionné.", error);
+    return "";
+  }
+}
+
+function saveSelectedCharacterKey(characterKey) {
+  try {
+    localStorage.setItem(selectedCharacterStorageKey, characterKey);
+  } catch (error) {
+    console.warn("Impossible de mémoriser le personnage sélectionné.", error);
+  }
+}
+
+function isCurrentCharacter(character) {
+  return (
+    Boolean(currentCharacterKey) &&
+    getCharacterKey(character) === currentCharacterKey
+  );
+}
+
+function normalizeCollectorIdentity(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function getCollectorCharacterKey(character) {
+  return [
+    normalizeCollectorIdentity(character?.realm),
+    normalizeCollectorIdentity(character?.name),
+  ].join("::");
+}
+
+async function loadCollectorCharacters() {
+  try {
+    const response = await fetch("/api/collector");
+
+    if (!response.ok) {
+      throw new Error("Données du collecteur indisponibles.");
+    }
+
+    const data = await response.json();
+    collectorCharacters = new Map(
+      (data.characters || []).map((character) => [
+        getCollectorCharacterKey(character),
+        character,
+      ]),
+    );
+  } catch (error) {
+    collectorCharacters = new Map();
+    console.warn("Impossible de charger Azer Companion Collector.", error);
+  }
+}
+
+function formatCollectorDuration(durationSeconds) {
+  const totalSeconds = Math.max(0, Math.round(Number(durationSeconds) || 0));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+
+  if (hours) parts.push(`${hours} h`);
+  if (minutes) parts.push(`${minutes} min`);
+  if (!hours && seconds) parts.push(`${seconds} s`);
+
+  return parts.join(" ") || "moins d’une minute";
+}
+
+function formatCollectorClock(timestamp) {
+  if (!timestamp) return "";
+
+  return new Intl.DateTimeFormat("fr-CA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(timestamp * 1000));
+}
+
+function renderSidebarLastSession(character) {
+  const container = document.getElementById("sidebar-last-session");
+  const locationElement = document.getElementById(
+    "sidebar-last-session-location",
+  );
+  const timeElement = document.getElementById("sidebar-last-session-time");
+  const collectorCharacter = collectorCharacters.get(
+    getCollectorCharacterKey(character),
+  );
+  const session = collectorCharacter?.latestSession;
+
+  if (!container || !locationElement || !timeElement) return;
+
+  if (!session?.startedAt) {
+    container.hidden = true;
+    return;
+  }
+
+  const locationParts = [
+    collectorCharacter.location?.subZone,
+    collectorCharacter.location?.zone,
+  ].filter(
+    (part, index, parts) =>
+      part &&
+      parts.findIndex(
+        (candidate) =>
+          String(candidate).toLowerCase() === String(part).toLowerCase(),
+      ) === index,
+  );
+  const endedAt = session.endedAt || collectorCharacter.lastLogoutAt;
+  const dateTimestamp = endedAt || session.startedAt;
+  const dateLabel = new Intl.DateTimeFormat("fr-CA", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(dateTimestamp * 1000));
+  const timeRange = endedAt
+    ? `${formatCollectorClock(session.startedAt)}–${formatCollectorClock(endedAt)}`
+    : `depuis ${formatCollectorClock(session.startedAt)}`;
+  const details = [dateLabel, timeRange];
+
+  if (session.durationSeconds !== null && session.durationSeconds !== undefined) {
+    details.push(formatCollectorDuration(session.durationSeconds));
+  }
+
+  locationElement.textContent =
+    locationParts.join(" · ") || "Lieu non enregistré";
+  timeElement.textContent = details.join(" · ");
+  timeElement.dateTime = new Date(dateTimestamp * 1000).toISOString();
+  container.hidden = false;
+}
 
 // ======================================================
 // Informations de classe
 // ======================================================
 
 const classDetails = {
-  1: {
-    name: "Guerrier",
-    color: "#c69b6d",
-    icon: "⚔",
-  },
-
-  2: {
-    name: "Paladin",
-    color: "#f48cba",
-    icon: "✦",
-  },
-
-  3: {
-    name: "Chasseur",
-    color: "#aad372",
-    icon: "➶",
-  },
-
-  4: {
-    name: "Voleur",
-    color: "#fff468",
-    icon: "🗡",
-  },
-
-  5: {
-    name: "Prêtre",
-    color: "#ffffff",
-    icon: "✧",
-  },
-
-  6: {
-    name: "Chevalier de la mort",
-    color: "#c41e3a",
-    icon: "☠",
-  },
-
-  7: {
-    name: "Chaman",
-    color: "#0070dd",
-    icon: "ϟ",
-  },
-
-  8: {
-    name: "Mage",
-    color: "#3fc7eb",
-    icon: "✺",
-  },
-
-  9: {
-    name: "Démoniste",
-    color: "#8788ee",
-    icon: "♆",
-  },
-
-  10: {
-    name: "Moine",
-    color: "#00ff98",
-    icon: "☯",
-  },
-
-  11: {
-    name: "Druide",
-    color: "#ff7c0a",
-    icon: "❋",
-  },
-
-  12: {
-    name: "Chasseur de démons",
-    color: "#a330c9",
-    icon: "◈",
-  },
-
-  13: {
-    name: "Évocateur",
-    color: "#33937f",
-    icon: "✥",
-  },
+  1: { name: "Guerrier", color: "#c69b6d", icon: "warrior" },
+  2: { name: "Paladin", color: "#f48cba", icon: "paladin" },
+  3: { name: "Chasseur", color: "#aad372", icon: "hunter" },
+  4: { name: "Voleur", color: "#fff468", icon: "rogue" },
+  5: { name: "Prêtre", color: "#ffffff", icon: "priest" },
+  6: { name: "Chevalier de la mort", color: "#c41e3a", icon: "death-knight" },
+  7: { name: "Chaman", color: "#0070dd", icon: "shaman" },
+  8: { name: "Mage", color: "#3fc7eb", icon: "mage" },
+  9: { name: "Démoniste", color: "#8788ee", icon: "warlock" },
+  10: { name: "Moine", color: "#00ff98", icon: "monk" },
+  11: { name: "Druide", color: "#ff7c0a", icon: "druid" },
+  12: { name: "Chasseur de démons", color: "#a330c9", icon: "demon-hunter" },
+  13: { name: "Évocateur", color: "#33937f", icon: "evoker" },
 };
+
+// ======================================================
+// Icônes de classe SVG intégrées au cadre
+// ======================================================
+
+function getClassIconSvg(iconName) {
+  const icons = {
+    warrior: `
+      <path d="m6 5 8 8m4 4 8 8M26 5l-8 8m-4 4-8 8"/>
+      <path d="m4 3 7 2-5 5-2-7Zm24 0-7 2 5 5 2-7ZM5 24l3 3m19-3-3 3"/>
+    `,
+    paladin: `
+      <path d="M16 3v7m-3-4h6M9 13l7-4 7 4v7c0 4-3 7-7 9-4-2-7-5-7-9v-7Z"/>
+      <path d="M12 18h8m-4-4v9"/>
+    `,
+    hunter: `
+      <path d="M7 4c9 4 15 12 18 21M7 4c-4 8-2 17 6 23"/>
+      <path d="M5 27 27 5m-7 0h7v7M4 28l5-1-4-4"/>
+      <path d="M8 8c5 2 10 7 13 13"/>
+    `,
+    rogue: `
+      <path d="m9 4 5 5-3 3-5-5 3-3Zm14 0 3 3-5 5-3-3 5-5Z"/>
+      <path d="m13 10 3 3-8 15-4 1 1-4 8-15Zm6 0-3 3 8 15 4 1-1-4-8-15Z"/>
+    `,
+    priest: `
+      <circle cx="16" cy="8" r="4"/>
+      <path d="M16 12v17m-7-10c2-4 4-6 7-7 3 1 5 3 7 7M10 24h12M6 11l4 2m16-2-4 2"/>
+    `,
+    "death-knight": `
+      <path d="m16 3 4 5-2 4 5 4-4 4 2 7-5-3-5 3 2-7-4-4 5-4-2-4 4-5Z"/>
+      <circle cx="16" cy="16" r="3"/>
+      <path d="M16 13V8m0 11v5M13 16H8m11 0h5"/>
+    `,
+    shaman: `
+      <path d="m18 3-8 13h6l-2 13 9-15h-6l1-11Z"/>
+      <path d="M5 26h6m10 0h6M7 22l-2 4 2 3m18-7 2 4-2 3"/>
+    `,
+    mage: `
+      <path d="m16 2 3 8 8-3-4 7 7 4-8 1 2 9-8-6-8 6 2-9-8-1 7-4-4-7 8 3 3-8Z"/>
+      <circle cx="16" cy="16" r="4"/>
+    `,
+    warlock: `
+      <path d="M4 16c4-6 8-9 12-9s8 3 12 9c-4 6-8 9-12 9S8 22 4 16Z"/>
+      <circle cx="16" cy="16" r="5"/>
+      <path d="m16 11 2 4 4 1-3 3 1 4-4-2-4 2 1-4-3-3 4-1 2-4Z"/>
+    `,
+    monk: `
+      <circle cx="16" cy="16" r="12"/>
+      <path d="M16 4c5 4 5 9 0 12s-5 8 0 12"/>
+      <circle cx="12" cy="11" r="1.5"/><circle cx="20" cy="21" r="1.5"/>
+    `,
+    druid: `
+      <path d="M16 28V13m0 0c-5-1-8-4-9-9m9 9c5-1 8-4 9-9M7 4c-2 4 0 8 5 10m13-10c2 4 0 8-5 10"/>
+      <path d="M10 28c1-5 3-8 6-10 3 2 5 5 6 10"/>
+    `,
+    "demon-hunter": `
+      <path d="M4 8c7-4 11-2 12 5 1-7 5-9 12-5-5 3-8 7-8 12l6 7-10-5-10 5 6-7c0-5-3-9-8-12Z"/>
+      <path d="M10 14c4 3 8 3 12 0"/>
+    `,
+    evoker: `
+      <path d="M16 3c2 4 6 5 11 6-4 3-5 7-4 12-3 4-5 6-7 8-2-2-4-4-7-8 1-5 0-9-4-12 5-1 9-2 11-6Z"/>
+      <path d="M16 9v14m0-8-5-3m5 3 5-3m-5 7-4 3m4-3 4 3"/>
+    `,
+  };
+
+  const paths = icons[iconName] || icons.warrior;
+
+  return `
+    <svg class="character-class-icon-svg" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      ${paths}
+    </svg>
+  `;
+}
+
+function getFactionIconMarkup(factionName) {
+  const asset =
+    factionName === "HORDE"
+      ? "/assets/ui/factions/horde.png"
+      : "/assets/ui/factions/alliance.png";
+
+  return `
+    <img class="character-faction-icon-image" src="${asset}" alt="" aria-hidden="true" />
+  `;
+}
 
 // ======================================================
 // Informations de race
@@ -375,23 +512,342 @@ const raceNames = {
 };
 
 // ======================================================
-// Portraits locaux temporaires
+// Personnages de demonstration - Hall des heros
+// Ils sont ajoutes apres les vrais personnages Battle.net.
 // ======================================================
 
-function getCharacterImage(character) {
-  const characterImages = {
-    ombreloup: "/assets/avatar-ombreloup.png",
-    danielboone: "/assets/characters/danielboone.jpg",
-    poutchie: "/assets/characters/poutchie.jpg",
-    floralune: "/assets/characters/floralune.jpg",
-    tanakio: "/assets/characters/tanakio.jpg",
-  };
+const showcaseCharacters = [
+  {
+    name: "Aegis",
+    classId: 1,
+    raceId: 37,
+    faction: "ALLIANCE",
+    realm: "Forgefer",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Lumiel",
+    classId: 2,
+    raceId: 30,
+    faction: "ALLIANCE",
+    realm: "Exodar",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Sylvaris",
+    classId: 3,
+    raceId: 34,
+    faction: "ALLIANCE",
+    realm: "Forgefer",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Noctelys",
+    classId: 4,
+    raceId: 29,
+    faction: "ALLIANCE",
+    realm: "Telogrus",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Seraphine",
+    classId: 5,
+    raceId: 1,
+    faction: "ALLIANCE",
+    realm: "Hurlevent",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Givrecoeur",
+    classId: 6,
+    raceId: 22,
+    faction: "ALLIANCE",
+    realm: "Gilneas",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Oragebleu",
+    classId: 7,
+    raceId: 11,
+    faction: "ALLIANCE",
+    realm: "Exodar",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Arcanis",
+    classId: 8,
+    raceId: 32,
+    faction: "ALLIANCE",
+    realm: "Boralus",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Grimmoire",
+    classId: 9,
+    raceId: 7,
+    faction: "ALLIANCE",
+    realm: "Gnomeregan",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Brumepatte",
+    classId: 10,
+    raceId: 24,
+    faction: "ALLIANCE",
+    realm: "Île Vagabonde",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Verdelune",
+    classId: 11,
+    raceId: 4,
+    faction: "ALLIANCE",
+    realm: "Darnassus",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Ombrelame",
+    classId: 12,
+    raceId: 4,
+    faction: "ALLIANCE",
+    realm: "Darnassus",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Azurion",
+    classId: 13,
+    raceId: 52,
+    faction: "ALLIANCE",
+    realm: "Valdrakken",
+    level: 80,
+    genderName: "♂",
+  },
 
-  const characterKey = character.name.toLowerCase();
+  {
+    name: "Gromkar",
+    classId: 1,
+    raceId: 6,
+    faction: "HORDE",
+    realm: "Mulgore",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Solaria",
+    classId: 2,
+    raceId: 31,
+    faction: "HORDE",
+    realm: "Zuldazar",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Crocdombre",
+    classId: 3,
+    raceId: 35,
+    faction: "HORDE",
+    realm: "Voldun",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Rasepièce",
+    classId: 4,
+    raceId: 9,
+    faction: "HORDE",
+    realm: "Kezan",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Mornevoile",
+    classId: 5,
+    raceId: 5,
+    faction: "HORDE",
+    realm: "Fossoyeuse",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Crânefer",
+    classId: 6,
+    raceId: 36,
+    faction: "HORDE",
+    realm: "Draenor",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Tonnerre",
+    classId: 7,
+    raceId: 8,
+    faction: "HORDE",
+    realm: "Durotar",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Astrelune",
+    classId: 8,
+    raceId: 27,
+    faction: "HORDE",
+    realm: "Suramar",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Maleficus",
+    classId: 9,
+    raceId: 2,
+    faction: "HORDE",
+    realm: "Orgrimmar",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Brumezen",
+    classId: 10,
+    raceId: 26,
+    faction: "HORDE",
+    realm: "Île Vagabonde",
+    level: 80,
+    genderName: "♂",
+  },
+  {
+    name: "Roncehaute",
+    classId: 11,
+    raceId: 28,
+    faction: "HORDE",
+    realm: "Haut-Roc",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Fielsang",
+    classId: 12,
+    raceId: 10,
+    faction: "HORDE",
+    realm: "Lune-d’Argent",
+    level: 80,
+    genderName: "♀",
+  },
+  {
+    name: "Rubécaile",
+    classId: 13,
+    raceId: 70,
+    faction: "HORDE",
+    realm: "Valdrakken",
+    level: 80,
+    genderName: "♀",
+  },
+].map((character, index) => ({
+  ...character,
+  id: `showcase-${index + 1}`,
+  isShowcase: true,
+}));
+
+// ======================================================
+// Portraits des personnages
+// ======================================================
+
+function getMediaAsset(character, key) {
+  const assets = character.media?.assets || character.assets || [];
+  const asset = assets.find(
+    (item) => String(item?.key || "").toLowerCase() === key,
+  );
+  return asset?.value || null;
+}
+
+function getShowcasePortrait(character) {
+  const numericId = Number(String(character.id || "").replace(/\D/g, "")) || 1;
+  return `/assets/characters/showcase/avatars/showcase-${String(numericId).padStart(2, "0")}.webp`;
+}
+
+function getCharacterFallbackPortrait(character) {
+  const classId = Math.min(13, Math.max(1, Number(character.classId) || 1));
+  const factionOffset =
+    String(character.factionName || character.faction || "").toUpperCase() ===
+    "HORDE"
+      ? 13
+      : 0;
+  const portraitIndex = classId + factionOffset;
+
+  return `/assets/characters/showcase/avatars/showcase-${String(portraitIndex).padStart(2, "0")}.webp`;
+}
+
+function getCharacterImage(character) {
+  if (character.isShowcase) {
+    return getShowcasePortrait(character);
+  }
+
+  const battleNetImage =
+    character.portraitUrl ||
+    getMediaAsset(character, "inset") ||
+    character.media?.bust_url ||
+    character.avatarUrl ||
+    character.avatar ||
+    character.imageUrl ||
+    character.image ||
+    character.media?.avatar ||
+    getMediaAsset(character, "avatar") ||
+    getMediaAsset(character, "main-raw");
+
+  if (battleNetImage) {
+    return battleNetImage;
+  }
+
+  return getCharacterFallbackPortrait(character);
+}
+
+function getCharacterFullBodyImage(character) {
+  if (character.isShowcase) {
+    return null;
+  }
 
   return (
-    characterImages[characterKey] || "/assets/characters/default-character.jpg"
+    character.fullBodyUrl ||
+    getMediaAsset(character, "main") ||
+    getMediaAsset(character, "main-raw") ||
+    character.media?.render_url ||
+    null
   );
+}
+
+function getGenderIconSvg(gender) {
+  const normalizedGender = String(gender || "")
+    .trim()
+    .toLowerCase();
+  const isFemale = ["female", "féminin", "feminin", "♀"].includes(
+    normalizedGender,
+  );
+
+  if (isFemale) {
+    return `
+      <svg class="character-gender-icon character-gender-icon-female" viewBox="0 0 24 24" role="img" aria-label="Féminin">
+        <circle cx="12" cy="8" r="5"></circle>
+        <path d="M12 13v8M8.5 17h7"></path>
+      </svg>
+    `;
+  }
+
+  return `
+    <svg class="character-gender-icon character-gender-icon-male" viewBox="0 0 24 24" role="img" aria-label="Masculin">
+      <circle cx="9" cy="15" r="5"></circle>
+      <path d="M12.5 11.5 19 5M14 5h5v5"></path>
+    </svg>
+  `;
 }
 
 // ======================================================
@@ -412,6 +868,9 @@ function normalizeCharacter(character) {
     classIcon: classInfo.icon,
     raceName: raceNames[character.raceId] || `Race ${character.raceId}`,
     factionName: String(character.faction || "Alliance").toUpperCase(),
+    genderName:
+      character.genderName || character.gender?.name || character.gender || "",
+    isShowcase: Boolean(character.isShowcase),
     image: getCharacterImage(character),
   };
 }
@@ -425,9 +884,12 @@ function createCharacterCard(character) {
 
   card.className = "character-card";
   card.dataset.characterName = character.name;
+  card.dataset.characterKey = getCharacterKey(character);
   card.dataset.faction = character.factionName;
+  card.dataset.classId = String(character.classId);
+  card.classList.toggle("showcase-character", character.isShowcase);
 
-  if (character.name.toLowerCase() === currentCharacterName.toLowerCase()) {
+  if (isCurrentCharacter(character)) {
     card.classList.add("active-character");
   }
 
@@ -436,140 +898,67 @@ function createCharacterCard(character) {
 
   card.innerHTML = `
     <div class="character-card-inner">
-
       <section class="character-card-face character-card-front">
+        <svg class="character-frame" viewBox="0 0 100 160" preserveAspectRatio="none" aria-hidden="true">
+          <path class="character-frame-shadow" pathLength="100" d="M7 1 H93 L99 7 V153 L93 159 H7 L1 153 V7 Z" />
+          <path class="character-frame-line" pathLength="100" d="M7 1 H93 L99 7 V153 L93 159 H7 L1 153 V7 Z" />
+        </svg>
+
+        <span class="character-border-comet character-border-comet-one" aria-hidden="true"></span>
+        <span class="character-border-comet character-border-comet-two" aria-hidden="true"></span>
+
+        <span class="character-corner-icon character-corner-icon-top">
+          ${getClassIconSvg(character.classIcon)}
+        </span>
+
+        <span
+          class="character-corner-icon character-corner-icon-bottom character-corner-faction ${character.factionName === "HORDE" ? "is-horde" : "is-alliance"}"
+          aria-label="${character.factionName}"
+          title="${character.factionName}"
+        >
+          ${getFactionIconMarkup(character.factionName)}
+        </span>
 
         <div class="character-card-background"></div>
         <div class="character-card-shade"></div>
 
-        <div class="character-faction-emblem">
-          <span>♜</span>
-        </div>
-
         <div class="character-active-label">
-          <span>★</span>
-          Actif
-        </div>
-
-        <div class="character-level-medallion">
-          <strong>${character.level}</strong>
-          <span>Niveau</span>
+          <span aria-hidden="true"></span>
+          Sélectionné
         </div>
 
         <div class="character-card-front-content">
-          <span class="character-class-medallion">
-            ${character.classIcon}
-          </span>
-
           <h3>${character.name}</h3>
 
-          <strong class="character-class-name">
-            ${character.className}
-          </strong>
+          <div class="character-card-meta">
+            <span class="character-race-line">
+              <span>${character.raceName}</span>
+              ${character.genderName ? getGenderIconSvg(character.genderName) : ""}
+            </span>
 
-          <span class="character-realm">
-            ${character.realm}
-          </span>
+            <strong class="character-class-name">
+              ${character.className}
+            </strong>
 
-          <span class="character-faction-name">
-            ${character.factionName}
-          </span>
+            <span class="character-info-divider" aria-hidden="true">
+              <i></i><b>◇</b><i></i>
+            </span>
+
+            <span class="character-level-line">
+              Niveau ${character.level}
+            </span>
+
+            <span class="character-realm">
+              ${character.realm}
+            </span>
+          </div>
         </div>
-
-        <button
-          class="character-flip-button"
-          type="button"
-          aria-label="Voir les détails de ${character.name}"
-        >
-          ↔
-        </button>
-
       </section>
-
-      <section class="character-card-face character-card-back">
-
-        <div class="character-card-back-emblem">
-          ♜
-        </div>
-
-        <h3>${character.name}</h3>
-
-        <strong
-          class="character-back-class"
-          style="color: ${character.classColor}"
-        >
-          ${character.className}
-        </strong>
-
-        <div class="character-details">
-
-          <div>
-            <span>Race</span>
-            <strong>${character.raceName}</strong>
-          </div>
-
-          <div>
-            <span>Faction</span>
-            <strong>${character.factionName}</strong>
-          </div>
-
-          <div>
-            <span>Royaume</span>
-            <strong>${character.realm}</strong>
-          </div>
-
-          <div>
-            <span>Niveau</span>
-            <strong>${character.level}</strong>
-          </div>
-
-        </div>
-
-        <button
-          class="select-character-button"
-          type="button"
-        >
-          Choisir ce personnage
-        </button>
-
-        <button
-          class="character-flip-button character-flip-button-back"
-          type="button"
-          aria-label="Retourner la carte"
-        >
-          ↔
-        </button>
-
-      </section>
-
     </div>
   `;
 
-  const flipButtons = card.querySelectorAll(".character-flip-button");
-
-  flipButtons.forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      card.classList.toggle("flipped");
-    });
-  });
-
-  const selectButton = card.querySelector(".select-character-button");
-
-  selectButton.addEventListener("click", (event) => {
-    event.stopPropagation();
-    selectCharacter(character);
-  });
-
-  card.addEventListener("click", (event) => {
-    if (
-      event.target.closest(".select-character-button") ||
-      event.target.closest(".character-flip-button")
-    ) {
-      return;
-    }
-
-    card.classList.toggle("flipped");
+  card.addEventListener("click", () => {
+    openCharacterProfile(character);
   });
 
   return card;
@@ -580,25 +969,36 @@ function createCharacterCard(character) {
 // ======================================================
 
 function renderCharacters() {
+  if (!charactersList) {
+    return;
+  }
+
   const searchValue = String(charactersSearchInput?.value || "")
     .trim()
     .toLowerCase();
 
-  const filteredCharacters = blizzardCharacters.filter((character) => {
-    const matchesFaction =
-      currentFactionFilter === "all" ||
-      character.factionName === currentFactionFilter;
+  const filteredCharacters = blizzardCharacters
+    .filter((character) => {
+      const matchesFaction =
+        currentFactionFilter === "all" ||
+        character.factionName === currentFactionFilter;
 
-    const matchesSearch =
-      !searchValue ||
-      character.name.toLowerCase().includes(searchValue) ||
-      String(character.realm || "")
-        .toLowerCase()
-        .includes(searchValue) ||
-      character.className.toLowerCase().includes(searchValue);
+      const matchesSearch =
+        !searchValue ||
+        character.name.toLowerCase().includes(searchValue) ||
+        String(character.realm || "")
+          .toLowerCase()
+          .includes(searchValue) ||
+        character.className.toLowerCase().includes(searchValue);
 
-    return matchesFaction && matchesSearch;
-  });
+      return matchesFaction && matchesSearch;
+    })
+    .sort((firstCharacter, secondCharacter) => {
+      const firstIsActive = isCurrentCharacter(firstCharacter);
+      const secondIsActive = isCurrentCharacter(secondCharacter);
+
+      return Number(secondIsActive) - Number(firstIsActive);
+    });
 
   charactersList.innerHTML = "";
 
@@ -612,8 +1012,10 @@ function renderCharacters() {
     return;
   }
 
-  filteredCharacters.forEach((character) => {
-    charactersList.appendChild(createCharacterCard(character));
+  filteredCharacters.forEach((character, index) => {
+    const card = createCharacterCard(character);
+    card.style.setProperty("--card-index", String(index));
+    charactersList.appendChild(card);
   });
 }
 
@@ -621,24 +1023,33 @@ function renderCharacters() {
 // Sélection du personnage
 // ======================================================
 
-function selectCharacter(character) {
-  currentCharacterName = character.name;
-
-  document.querySelectorAll(".character-card").forEach((card) => {
-    card.classList.toggle(
-      "active-character",
-      card.dataset.characterName.toLowerCase() ===
-        currentCharacterName.toLowerCase(),
-    );
-  });
-
+function updateDashboardCharacter(character) {
   const heroName = document.getElementById("hero-name");
   const heroPlayerName = document.getElementById("hero-player-name");
   const heroClass = document.getElementById("hero-class");
   const heroRace = document.getElementById("hero-race");
   const heroFaction = document.getElementById("hero-faction");
+  const heroRealm = document.getElementById("hero-realm");
   const heroLevel = document.getElementById("hero-level");
   const heroAvatar = document.getElementById("hero-avatar");
+  const heroLevelMedallion = document.querySelector(
+    ".player-level-medallion",
+  );
+  const sidebarCharacterName = document.getElementById(
+    "sidebar-character-name",
+  );
+  const sidebarCharacterStatus = document.getElementById(
+    "sidebar-character-status",
+  );
+  const sidebarCharacterRealm = document.getElementById(
+    "sidebar-character-realm",
+  );
+  const sidebarCharacterLevel = document.getElementById(
+    "sidebar-character-level",
+  );
+  const sidebarCharacterDetails = document.getElementById(
+    "sidebar-character-details",
+  );
 
   if (heroName) {
     heroName.textContent = character.name;
@@ -661,16 +1072,90 @@ function selectCharacter(character) {
     heroFaction.textContent = character.factionName;
   }
 
+  if (heroRealm) {
+    heroRealm.textContent = character.realm;
+  }
+
   if (heroLevel) {
     heroLevel.textContent = character.level;
+  }
+
+  if (heroLevelMedallion) {
+    heroLevelMedallion.setAttribute(
+      "aria-label",
+      `Niveau ${character.level}`,
+    );
   }
 
   if (heroAvatar) {
     heroAvatar.src = character.image;
     heroAvatar.alt = `Portrait de ${character.name}`;
+    heroAvatar.hidden = false;
   }
 
-  charactersModal.classList.add("hidden");
+  if (sidebarCharacterName) sidebarCharacterName.textContent = character.name;
+  if (sidebarCharacterStatus) {
+    sidebarCharacterStatus.textContent = "Données Battle.net synchronisées";
+  }
+  if (sidebarCharacterRealm) {
+    sidebarCharacterRealm.textContent = character.realm;
+  }
+  if (sidebarCharacterLevel) {
+    sidebarCharacterLevel.textContent = `Niv. ${character.level}`;
+  }
+  if (sidebarCharacterDetails) {
+    sidebarCharacterDetails.textContent =
+      `${character.raceName} · ${character.className}`;
+  }
+
+  renderSidebarLastSession(character);
+}
+
+function renderCharacterUnavailable(message) {
+  const sidebarCharacterName = document.getElementById(
+    "sidebar-character-name",
+  );
+  const sidebarCharacterStatus = document.getElementById(
+    "sidebar-character-status",
+  );
+
+  if (sidebarCharacterName) {
+    sidebarCharacterName.textContent = "Aucun héros chargé";
+  }
+
+  if (sidebarCharacterStatus) {
+    sidebarCharacterStatus.textContent = message;
+  }
+
+  const sidebarLastSession = document.getElementById("sidebar-last-session");
+  if (sidebarLastSession) {
+    sidebarLastSession.hidden = true;
+  }
+}
+
+function selectCharacter(character) {
+  currentCharacterKey = getCharacterKey(character);
+  saveSelectedCharacterKey(currentCharacterKey);
+
+  document.querySelectorAll(".character-card").forEach((card) => {
+    card.classList.toggle(
+      "active-character",
+      card.dataset.characterKey === currentCharacterKey,
+    );
+  });
+
+  updateDashboardCharacter(character);
+
+  openDashboardView();
+}
+
+function renderBattleStatus(state, message) {
+  if (!battleStatus || !battleStatusText) return;
+
+  battleStatus.classList.toggle("is-connected", state === "connected");
+  battleStatus.classList.toggle("is-disconnected", state === "disconnected");
+  battleStatus.classList.toggle("is-loading", state === "loading");
+  battleStatusText.textContent = message;
 }
 
 // ======================================================
@@ -678,6 +1163,12 @@ function selectCharacter(character) {
 // ======================================================
 
 async function loadCharacters() {
+  if (!charactersList) {
+    return;
+  }
+
+  renderBattleStatus("loading", "Synchronisation...");
+
   charactersList.innerHTML = `
     <div class="characters-loading">
       Chargement des personnages...
@@ -685,9 +1176,12 @@ async function loadCharacters() {
   `;
 
   try {
+    await loadCollectorCharacters();
     const response = await fetch("/api/characters");
 
     if (response.status === 401) {
+      renderBattleStatus("disconnected", "Compte non connecté");
+      renderCharacterUnavailable("Compte Battle.net non connecté");
       charactersList.innerHTML = `
         <div class="characters-empty">
           <p>Ton compte Battle.net n’est pas connecté.</p>
@@ -706,6 +1200,7 @@ async function loadCharacters() {
     const data = await response.json();
 
     if (!data.connected) {
+      renderCharacterUnavailable("Compte Battle.net non connecté");
       charactersList.innerHTML = `
         <div class="characters-empty">
           <p>Ton compte Battle.net n’est pas connecté.</p>
@@ -717,16 +1212,38 @@ async function loadCharacters() {
       return;
     }
 
-    blizzardCharacters = (data.characters || []).map(normalizeCharacter);
+    const realCharacters = (data.characters || []).map(normalizeCharacter);
+    const demoCharacters = showcaseCharacters.map(normalizeCharacter);
+
+    blizzardCharacters = [...realCharacters, ...demoCharacters];
+
+    let selectedCharacter = blizzardCharacters.find(isCurrentCharacter);
+
+    if (!selectedCharacter && realCharacters.length) {
+      selectedCharacter = realCharacters[0];
+      currentCharacterKey = getCharacterKey(selectedCharacter);
+      saveSelectedCharacterKey(currentCharacterKey);
+    }
+
+    if (selectedCharacter) {
+      updateDashboardCharacter(selectedCharacter);
+    }
 
     if (charactersCount) {
       charactersCount.textContent = blizzardCharacters.length;
     }
 
+    renderBattleStatus(
+      "connected",
+      `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""} Battle.net + ${demoCharacters.length} aperçus`,
+    );
+
     renderCharacters();
   } catch (error) {
     console.error(error);
 
+    renderBattleStatus("disconnected", "Synchronisation impossible");
+    renderCharacterUnavailable("Synchronisation impossible");
     charactersList.innerHTML = `
       <div class="characters-empty">
         Impossible de charger les personnages Battle.net.
@@ -736,39 +1253,370 @@ async function loadCharacters() {
 }
 
 // ======================================================
-// Ouverture et fermeture
+// Navigation entre les vues
 // ======================================================
 
-function openCharactersModal() {
-  charactersModal.classList.remove("hidden");
+const views = {
+  dashboard: document.getElementById("dashboardView"),
+  characters: document.getElementById("charactersView"),
+  characterProfile: document.getElementById("characterProfileView"),
+};
+
+function showView(name) {
+  const targetView = views[name];
+
+  if (!targetView) {
+    console.warn(`Vue inconnue : ${name}`);
+    return;
+  }
+
+  Object.entries(views).forEach(([viewName, view]) => {
+    if (!view) {
+      return;
+    }
+
+    const isActive = viewName === name;
+
+    view.classList.toggle("app-view-active", isActive);
+    view.setAttribute("aria-hidden", String(!isActive));
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openCharactersView() {
+  showView("characters");
+
+  const shell = document.querySelector(".azer-shell");
+  const sidebar = document.getElementById("sideMenu");
+  const handle = document.getElementById("sidebarHandle");
+
+  if (shell && sidebar && window.matchMedia("(min-width: 981px)").matches) {
+    shell.classList.add("sidebar-is-collapsed");
+    sidebar.classList.add("is-collapsed");
+
+    handle?.setAttribute("aria-expanded", "false");
+    handle?.setAttribute("aria-label", "Ouvrir la navigation");
+
+    const icon = handle?.querySelector(".sidebar-handle-icon");
+
+    if (icon) {
+      icon.textContent = "›";
+    }
+  }
 
   if (!blizzardCharacters.length) {
     loadCharacters();
   } else {
     renderCharacters();
   }
+
+  window.setTimeout(() => {
+    charactersSearchInput?.focus();
+  }, 180);
 }
 
-function closeCharactersModal() {
-  charactersModal.classList.add("hidden");
+function formatCharacterProfessions(professions) {
+  if (!professions.length) {
+    return "Aucun métier n’a été renvoyé par Battle.net.";
+  }
 
-  document.querySelectorAll(".character-card.flipped").forEach((card) => {
-    card.classList.remove("flipped");
+  return professions
+    .map((profession) => {
+      const learnedTiers = profession.tiers.filter(
+        (tier) => tier.skillPoints > 0 || tier.maxSkillPoints > 0,
+      );
+      const tierText = learnedTiers.length
+        ? learnedTiers
+            .map(
+              (tier) =>
+                `${tier.name} : ${tier.skillPoints}/${tier.maxSkillPoints}`,
+            )
+            .join(" · ")
+        : "niveau non disponible";
+      const typeLabel =
+        profession.type === "secondary" ? "Secondaire — " : "";
+
+      return `${typeLabel}${profession.name} — ${tierText}`;
+    })
+    .join("\n");
+}
+
+async function loadCharacterProfessions(character) {
+  const professionsElement = document.getElementById(
+    "profileCharacterProfessions",
+  );
+
+  if (!professionsElement) {
+    return;
+  }
+
+  if (character.isShowcase) {
+    professionsElement.textContent =
+      "Aperçu de démonstration : aucune donnée Battle.net.";
+    return;
+  }
+
+  const requestedCharacterKey = getCharacterKey(character);
+  professionsElement.textContent = "Chargement des métiers...";
+
+  try {
+    const realm = encodeURIComponent(character.realm);
+    const name = encodeURIComponent(character.name);
+    const response = await fetch(
+      `/api/characters/${realm}/${name}/professions`,
+    );
+
+    if (!response.ok) {
+      throw new Error("Métiers indisponibles.");
+    }
+
+    const data = await response.json();
+
+    if (
+      !profiledCharacter ||
+      getCharacterKey(profiledCharacter) !== requestedCharacterKey
+    ) {
+      return;
+    }
+
+    professionsElement.textContent = formatCharacterProfessions(
+      data.professions || [],
+    );
+  } catch (error) {
+    console.error(error);
+
+    if (
+      profiledCharacter &&
+      getCharacterKey(profiledCharacter) === requestedCharacterKey
+    ) {
+      professionsElement.textContent =
+        "Les métiers sont indisponibles pour ce personnage.";
+    }
+  }
+}
+
+function renderCharacterProfileImage(character, requestedMode = "portrait") {
+  const profileImage = document.getElementById("profileCharacterImage");
+  const portraitContainer = document.querySelector(
+    ".character-profile-portrait",
+  );
+  const fullBodyImage = getCharacterFullBodyImage(character);
+  const portraitImage = character.image;
+  const canShowFullBody = Boolean(fullBodyImage);
+
+  profileImageMode =
+    requestedMode === "full-body" && canShowFullBody
+      ? "full-body"
+      : "portrait";
+  const usesFullBodyForPortrait =
+    profileImageMode === "portrait" && canShowFullBody;
+
+  if (profileImage) {
+    profileImage.src =
+      profileImageMode === "full-body" || usesFullBodyForPortrait
+        ? fullBodyImage
+        : portraitImage;
+    profileImage.alt =
+      profileImageMode === "full-body"
+        ? `Vue en pied de ${character.name}`
+        : `Portrait de ${character.name}`;
+  }
+
+  portraitContainer?.classList.toggle(
+    "is-full-body",
+    profileImageMode === "full-body",
+  );
+  portraitContainer?.classList.toggle(
+    "uses-high-resolution-portrait",
+    usesFullBodyForPortrait,
+  );
+
+  document.querySelectorAll("[data-profile-image-mode]").forEach((button) => {
+    const buttonMode = button.dataset.profileImageMode;
+    const isSelected = buttonMode === profileImageMode;
+
+    button.classList.toggle("is-active", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+
+    if (buttonMode === "full-body") {
+      button.disabled = !canShowFullBody;
+      button.title = canShowFullBody
+        ? "Afficher le personnage en entier"
+        : "Vue en pied indisponible chez Blizzard";
+    }
   });
 }
 
-characterButton?.addEventListener("click", openCharactersModal);
-closeCharactersButton?.addEventListener("click", closeCharactersModal);
+function openCharacterProfile(character) {
+  profiledCharacter = character;
 
-document.querySelectorAll("[data-close-characters]").forEach((element) => {
-  element.addEventListener("click", closeCharactersModal);
+  const profileName = document.getElementById("profileCharacterName");
+  const profileClass = document.getElementById("profileCharacterClass");
+  const profileRace = document.getElementById("profileCharacterRace");
+  const profileRealm = document.getElementById("profileCharacterRealm");
+  const profileFactionDetail = document.getElementById(
+    "profileCharacterFactionDetail",
+  );
+  const profileLevel = document.getElementById("profileCharacterLevel");
+  const profileClassIcon = document.getElementById(
+    "profileCharacterClassIcon",
+  );
+  const profileFactionIcon = document.getElementById(
+    "profileCharacterFactionIcon",
+  );
+  const selectProfileCharacter = document.getElementById(
+    "selectProfileCharacter",
+  );
+
+  if (profileName) profileName.textContent = character.name;
+
+  views.characterProfile?.style.setProperty(
+    "--profile-class-color",
+    character.classColor,
+  );
+  views.characterProfile?.style.setProperty(
+    "--class-color",
+    character.classColor,
+  );
+
+  renderCharacterProfileImage(character);
+
+  if (profileClass) {
+    profileClass.textContent = character.className;
+    profileClass.style.color = character.classColor;
+  }
+
+  if (profileRace) profileRace.textContent = character.raceName;
+  if (profileRealm) profileRealm.textContent = character.realm;
+  if (profileFactionDetail) {
+    profileFactionDetail.textContent = character.factionName;
+  }
+  if (profileLevel) profileLevel.textContent = character.level;
+
+  if (profileClassIcon) {
+    profileClassIcon.innerHTML = getClassIconSvg(character.classIcon);
+  }
+
+  if (profileFactionIcon) {
+    const isHorde = character.factionName === "HORDE";
+
+    profileFactionIcon.classList.toggle("is-horde", isHorde);
+    profileFactionIcon.classList.toggle("is-alliance", !isHorde);
+    profileFactionIcon.innerHTML = getFactionIconMarkup(
+      character.factionName,
+    );
+  }
+
+  if (selectProfileCharacter) {
+    const characterIsActive = isCurrentCharacter(character);
+
+    selectProfileCharacter.hidden = character.isShowcase;
+    selectProfileCharacter.disabled = characterIsActive;
+    selectProfileCharacter.textContent = characterIsActive
+      ? "Héros sélectionné"
+      : "Choisir ce héros";
+  }
+
+  showView("characterProfile");
+  loadCharacterProfessions(character);
+}
+
+function openDashboardView() {
+  showView("dashboard");
+  revealSidebar();
+}
+
+function revealSidebar() {
+  const shell = document.querySelector(".azer-shell");
+  const sidebar = document.getElementById("sideMenu");
+  const handle = document.getElementById("sidebarHandle");
+  const mobileButton = document.getElementById("mobileMenuButton");
+
+  shell?.classList.remove("sidebar-is-collapsed", "sidebar-is-closing");
+  sidebar?.classList.remove("is-collapsed");
+
+  if (window.matchMedia("(min-width: 981px)").matches) {
+    handle?.setAttribute("aria-expanded", "true");
+    handle?.setAttribute("aria-label", "Réduire la navigation");
+
+    const icon = handle?.querySelector(".sidebar-handle-icon");
+
+    if (icon) {
+      icon.textContent = "‹";
+    }
+  } else {
+    sidebar?.classList.add("is-open");
+    mobileButton?.setAttribute("aria-expanded", "true");
+  }
+}
+
+characterButton?.addEventListener("click", openCharactersView);
+
+document
+  .querySelector('[data-view-target="dashboard"]')
+  ?.addEventListener("click", (event) => {
+    event.preventDefault();
+    openDashboardView();
+  });
+
+document
+  .getElementById("backToDashboardTop")
+  ?.addEventListener("click", openDashboardView);
+
+document
+  .getElementById("charactersHomeCompass")
+  ?.addEventListener("click", openDashboardView);
+
+document
+  .getElementById("backToCharacters")
+  ?.addEventListener("click", () => {
+    showView("characters");
+    revealSidebar();
+  });
+
+document
+  .getElementById("selectProfileCharacter")
+  ?.addEventListener("click", () => {
+    if (profiledCharacter && !profiledCharacter.isShowcase) {
+      selectCharacter(profiledCharacter);
+    }
+  });
+
+document.querySelectorAll("[data-profile-image-mode]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (profiledCharacter) {
+      renderCharacterProfileImage(
+        profiledCharacter,
+        button.dataset.profileImageMode,
+      );
+    }
+  });
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !charactersModal.classList.contains("hidden")) {
-    closeCharactersModal();
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  const profileActive =
+    views.characterProfile?.classList.contains("app-view-active");
+  const charactersActive =
+    views.characters?.classList.contains("app-view-active");
+
+  if (profileActive) {
+    showView("characters");
+  } else if (charactersActive) {
+    openDashboardView();
   }
 });
+
+window.AzerCompanion = {
+  showView,
+  openDashboardView,
+  openCharactersView,
+  openCharacterProfile,
+};
 
 // ======================================================
 // Recherche et filtres
@@ -791,3 +1639,5 @@ document.querySelectorAll("[data-faction-filter]").forEach((button) => {
     renderCharacters();
   });
 });
+
+loadCharacters();

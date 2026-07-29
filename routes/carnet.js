@@ -1,8 +1,146 @@
 const crypto = require("crypto");
 
 const express = require("express");
+const { readCollectorSummary } = require("../services/azerCollector");
 
 const router = express.Router();
+
+const BLIZZARD_REGION = String(process.env.BLIZZARD_REGION || "us").toLowerCase();
+const BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
+const BLIZZARD_API_ORIGIN = `https://${BLIZZARD_REGION}.api.blizzard.com`;
+const BLIZZARD_PROFILE_QUERY =
+  `namespace=profile-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
+const CHARACTER_MEDIA_CONCURRENCY = 6;
+
+async function mapWithConcurrency(items, concurrency, callback) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await callback(items[currentIndex], currentIndex);
+    }
+  }
+
+  const workerCount = Math.min(concurrency, items.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  return results;
+}
+
+async function fetchCharacterAvatar(character, accessToken) {
+  const realmSlug = encodeURIComponent(
+    String(character.realm || "").trim().toLowerCase(),
+  );
+  const characterName = encodeURIComponent(
+    String(character.name || "").trim().toLowerCase(),
+  );
+  const mediaUrl =
+    `${BLIZZARD_API_ORIGIN}/profile/wow/character/` +
+    `${realmSlug}/${characterName}/character-media?${BLIZZARD_PROFILE_QUERY}`;
+
+  try {
+    const response = await fetch(mediaUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (response.status === 404) {
+      return {
+        ...character,
+        mediaStatus: "unavailable",
+      };
+    }
+
+    if (!response.ok) {
+      console.warn(
+        `Média Blizzard indisponible pour ${character.name} sur ${character.realm} (${response.status}).`,
+      );
+      return character;
+    }
+
+    const media = await response.json();
+    const getAsset = (key) =>
+      media.assets?.find(
+        (asset) => String(asset?.key || "").toLowerCase() === key,
+      )?.value;
+    const avatarUrl = getAsset("avatar") || media.avatar_url || null;
+    const fullBodyUrl =
+      getAsset("main") ||
+      getAsset("main-raw") ||
+      media.render_url ||
+      null;
+    const portraitUrl =
+      getAsset("inset") ||
+      media.bust_url ||
+      fullBodyUrl ||
+      avatarUrl;
+
+    return {
+      ...character,
+      avatarUrl,
+      portraitUrl,
+      fullBodyUrl,
+      media,
+    };
+  } catch (error) {
+    console.warn(
+      `Impossible de récupérer le média Blizzard de ${character.name} :`,
+      error,
+    );
+    return character;
+  }
+}
+
+function normalizeCharacterProfessions(data) {
+  const normalizeGroup = (professions, type) =>
+    (professions || []).map((entry) => ({
+      id: entry.profession?.id || null,
+      name: entry.profession?.name || "Métier",
+      type,
+      tiers: (entry.tiers || []).map((tier) => ({
+        id: tier.tier?.id || null,
+        name: tier.tier?.name || "Compétence",
+        skillPoints: Number(tier.skill_points || 0),
+        maxSkillPoints: Number(tier.max_skill_points || 0),
+      })),
+    }));
+
+  return [
+    ...normalizeGroup(data.primaries, "primary"),
+    ...normalizeGroup(data.secondaries, "secondary"),
+  ];
+}
+
+async function fetchCharacterProfessions(realm, name, accessToken) {
+  const realmSlug = encodeURIComponent(
+    String(realm || "").trim().toLowerCase(),
+  );
+  const characterName = encodeURIComponent(
+    String(name || "").trim().toLowerCase(),
+  );
+  const professionsUrl =
+    `${BLIZZARD_API_ORIGIN}/profile/wow/character/` +
+    `${realmSlug}/${characterName}/professions?${BLIZZARD_PROFILE_QUERY}`;
+
+  const response = await fetch(professionsUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = new Error(
+      `Métiers Blizzard indisponibles pour ${name} sur ${realm} (${response.status}).`,
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  return normalizeCharacterProfessions(await response.json());
+}
 
 router.get("/", (req, res) => {
   res.render("carnet", {
@@ -99,53 +237,100 @@ router.get("/api/characters", async (req, res) => {
     });
   }
 
-  const response = await fetch(
-    "https://us.api.blizzard.com/profile/user/wow?namespace=profile-us&locale=en_US",
-    {
-      headers: {
-        Authorization: `Bearer ${req.session.blizzard_access_token}`,
+  try {
+    const response = await fetch(
+      `${BLIZZARD_API_ORIGIN}/profile/user/wow?${BLIZZARD_PROFILE_QUERY}`,
+      {
+        headers: {
+          Authorization: `Bearer ${req.session.blizzard_access_token}`,
+        },
       },
-    },
-  );
+    );
 
-  const profile = await response.json();
-
-  const characters = [];
-
-  for (const account of profile.wow_accounts) {
-    for (const character of account.characters) {
-      characters.push({
-        id: character.id,
-
-        name: character.name,
-
-        level: character.level,
-
-        realm: character.realm.slug,
-
-        classId: character.playable_class.id,
-
-        raceId: character.playable_race.id,
-
-        faction: character.faction.type,
-
-        gender: character.gender.type,
+    if (!response.ok) {
+      return res.status(response.status).json({
+        connected: false,
+        error: "Impossible de récupérer le profil Battle.net.",
       });
     }
+
+    const profile = await response.json();
+    const characters = [];
+
+    for (const account of profile.wow_accounts || []) {
+      for (const character of account.characters || []) {
+        characters.push({
+          id: character.id,
+          name: character.name,
+          level: character.level,
+          realm: character.realm.slug,
+          classId: character.playable_class.id,
+          raceId: character.playable_race.id,
+          faction: character.faction.type,
+          gender: character.gender.type,
+        });
+      }
+    }
+
+    characters.sort((a, b) => b.level - a.level);
+
+    const charactersWithAvatars = await mapWithConcurrency(
+      characters,
+      CHARACTER_MEDIA_CONCURRENCY,
+      (character) =>
+        fetchCharacterAvatar(
+          character,
+          req.session.blizzard_access_token,
+        ),
+    );
+
+    res.json({
+      connected: true,
+      count: charactersWithAvatars.length,
+      characters: charactersWithAvatars,
+    });
+  } catch (error) {
+    console.error("Erreur de récupération des personnages Blizzard :", error);
+    res.status(502).json({
+      connected: false,
+      error: "Le service Battle.net est temporairement indisponible.",
+    });
   }
-
-  characters.sort((a, b) => b.level - a.level);
-
-  res.json({
-    connected: true,
-
-    battleTag: "Tanakio",
-
-    count: characters.length,
-
-    characters,
-  });
 });
+
+router.get(
+  "/api/characters/:realm/:name/professions",
+  async (req, res) => {
+    if (!req.session.blizzard_access_token) {
+      return res.status(401).json({
+        connected: false,
+      });
+    }
+
+    try {
+      const professions = await fetchCharacterProfessions(
+        req.params.realm,
+        req.params.name,
+        req.session.blizzard_access_token,
+      );
+
+      res.json({
+        connected: true,
+        professions,
+      });
+    } catch (error) {
+      if (error.status !== 404) {
+        console.warn(error.message);
+      }
+
+      res.status(error.status || 502).json({
+        connected: true,
+        professions: [],
+        error: "Impossible de récupérer les métiers de ce personnage.",
+      });
+    }
+  },
+);
 
 router.get("/api/blizzard/status", (req, res) => {
   const accessToken = req.session.blizzard_access_token;
@@ -162,6 +347,19 @@ router.get("/api/blizzard/status", (req, res) => {
   res.json({
     connected,
   });
+});
+
+router.get("/api/collector", async (req, res) => {
+  try {
+    res.json(await readCollectorSummary());
+  } catch (error) {
+    console.error("Impossible de lire Azer Companion Collector :", error);
+    res.status(500).json({
+      available: false,
+      characters: [],
+      error: "Les données locales du collecteur sont illisibles.",
+    });
+  }
 });
 
 module.exports = router;

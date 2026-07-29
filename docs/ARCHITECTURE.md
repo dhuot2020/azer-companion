@@ -1,137 +1,71 @@
-# Architecture — OmbreLoup Companion
+# Architecture — Azer Companion
 
-## 1. Objectif du projet
+## Objectif
 
-OmbreLoup Companion est une application personnelle destinée à suivre la progression du personnage OmbreLoup dans World of Warcraft Retail.
+Azer Companion est une application personnelle pour World of Warcraft Retail.
+Elle connecte un compte Battle.net, présente ses personnages et servira de base
+au suivi de leur aventure, de leurs collections et de leur progression.
 
-L’application doit permettre de suivre progressivement :
+## Technologies
 
-- les zones;
-- les quêtes;
-- les donjons;
-- les raids;
-- les mascottes;
-- les familiers de chasseur;
-- les montures;
-- les jouets;
-- les hauts faits;
-- les rares;
-- les trésors;
-- les transmogrifications;
-- les données provenant d’addons comme All The Things, TomTom, RareScanner et Rematch.
+- Node.js et Express;
+- EJS pour le rendu serveur;
+- JavaScript natif dans le navigateur;
+- CSS personnalisé;
+- OAuth Battle.net et API WoW Profile;
+- `express-session` pour conserver temporairement le jeton OAuth.
 
-Le projet doit rester simple à utiliser, rapide, maintenable et évolutif.
+## Flux Battle.net
 
----
+1. `GET /auth/blizzard` démarre l’autorisation OAuth.
+2. `GET /auth/blizzard/callback` vérifie l’état OAuth et stocke le jeton dans la
+   session.
+3. `GET /api/characters` charge les personnages du compte.
+4. Le serveur enrichit chaque personnage avec son média Blizzard.
+5. `public/js/app.js` normalise les données et met à jour le Hall, la fiche du
+   héros, le tableau de bord et la barre latérale.
 
-## 2. Technologies principales
+L’API de profil ne fournit pas de manière fiable le personnage actuellement
+connecté dans le jeu. L’application mémorise donc le héros choisi par
+`nom + royaume` dans le stockage local du navigateur.
 
-- Node.js
-- Express
-- EJS
-- JavaScript
-- CSS
-- SQLite, lorsque la persistance en base de données sera ajoutée
-- Git
-- GitLab
+## Flux Azer Companion Collector
 
-Aucun framework CSS lourd ne sera utilisé au début.
+1. L’addon silencieux collecte l’identité, les sessions et la dernière
+   localisation connue du personnage.
+2. World of Warcraft écrit `AzerCompanionCollector.lua` lors d’un `/reload` ou
+   d’une déconnexion.
+3. `services/azerCollector.js` analyse ce sous-ensemble Lua sans exécuter le
+   fichier.
+4. `GET /api/collector` expose uniquement un résumé normalisé, sans révéler le
+   chemin du compte local.
+5. La barre latérale associe les données au personnage Battle.net par
+   `nom + royaume`.
 
-L’interface sera développée avec du CSS personnalisé afin de conserver un contrôle complet sur le design.
-
----
-
-## 3. Structure générale
+## Organisation actuelle
 
 ```text
-OmbreLoupCompanion/
-│
+AzerCompanionV2/
 ├── index.js
-├── package.json
-├── package-lock.json
-│
-├── config/
-│   └── appConfig.js
-│
-├── controllers/
-│   ├── dashboardController.js
-│   ├── zonesController.js
-│   └── dungeonsController.js
-│
 ├── routes/
-│   ├── dashboard.js
-│   ├── zones.js
-│   └── dungeons.js
-│
-├── services/
-│   ├── progressionService.js
-│   └── addonImportService.js
-│
-├── models/
-│   ├── zoneModel.js
-│   └── dungeonModel.js
-│
-├── middleware/
-│   ├── errorHandler.js
-│   └── notFoundHandler.js
-│
-├── utils/
-│   ├── logger.js
-│   └── formatters.js
-│
+│   └── carnet.js
 ├── views/
-│   ├── pages/
-│   │   ├── dashboard.ejs
-│   │   ├── zones.ejs
-│   │   └── dungeons.ejs
-│   │
-│   ├── partials/
-│   │   ├── header.ejs
-│   │   ├── sidebar.ejs
-│   │   ├── topbar.ejs
-│   │   └── footer.ejs
-│   │
-│   └── errors/
-│       ├── 404.ejs
-│       └── 500.ejs
-│
+│   ├── carnet.ejs
+│   ├── components/
+│   └── partials/
 ├── public/
+│   ├── assets/
 │   ├── css/
-│   │   ├── app.css
-│   │   ├── layout.css
-│   │   ├── components.css
-│   │   └── pages/
-│   │       ├── dashboard.css
-│   │       ├── zones.css
-│   │       └── dungeons.css
-│   │
-│   ├── js/
-│   │   ├── app.js
-│   │   └── modules/
-│   │       ├── navigation.js
-│   │       └── progress.js
-│   │
-│   ├── img/
-│   └── icons/
-│
-├── data/
-│   ├── zones.json
-│   └── dungeons.json
-│
-├── database/
-│   ├── ombreloup.db
-│   └── migrations/
-│
-├── addons/
-│   ├── att/
-│   ├── tomtom/
-│   ├── rarescanner/
-│   └── rematch/
-│
-├── tests/
-│
-├── .gitignore
-├── README.md
-├── CHANGELOG.md
-└── ARCHITECTURE.md
+│   └── js/
+└── docs/
 ```
+
+## Limites connues
+
+- Les cartes du carnet d’aventure contiennent encore des données de maquette.
+- Les personnages d’aperçu du Hall sont locaux et clairement séparés des
+  personnages Battle.net.
+- Les sessions utilisent actuellement le stockage mémoire d’Express, adapté au
+  développement local mais pas à un déploiement de production.
+- La logique du navigateur est encore regroupée dans `public/js/app.js`; elle
+  pourra être séparée par vue dans une prochaine branche.

@@ -1,11 +1,12 @@
 {
-  "name": "ombreloupcompanion",
+  "name": "azer-companion",
   "version": "1.0.0",
-  "description": "",
+  "description": "Compagnon World of Warcraft connecté à Battle.net.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

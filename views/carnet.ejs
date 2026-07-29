@@ -1,8 +1,8 @@
 <%- include('partials/header') %>
 
 <div class="azer-shell">
-  <aside class="side-menu" id="sideMenu" aria-label="Navigation principale">
-<div class="brand-block">
+  <aside class="side-menu" id="sideMenu">
+    <div class="brand-block">
       <div class="brand-label">
         <span></span>
         <b>DH STUDIO</b>
@@ -37,7 +37,7 @@
     </div>
 
     <nav class="main-nav" id="mainNav">
-      <a href="#" class="nav-item active">
+      <a href="#" class="nav-item active" data-view-target="dashboard">
         <span aria-hidden="true">📖</span>
         <b>Carnet d’aventure</b>
       </a>
@@ -104,50 +104,41 @@
     <section class="sidebar-live">
       <div class="sidebar-live-title">
         <span></span>
-        <b>AVENTURE EN COURS</b>
+        <b>HÉROS SÉLECTIONNÉ</b>
         <span></span>
       </div>
 
       <div class="sidebar-live-zone">
-        <div class="sidebar-live-icon">🗺️</div>
+        <div class="sidebar-live-icon" aria-hidden="true">♟</div>
 
         <div class="sidebar-live-zone-copy">
-          <small>Zone actuelle</small>
-          <strong>Les Hinterlands</strong>
+          <small>Personnage Battle.net</small>
+          <strong id="sidebar-character-name">Synchronisation...</strong>
 
           <div class="sidebar-player-status">
             <span class="sidebar-status-dot"></span>
-            <em>OmbreLoup est connecté</em>
+            <em id="sidebar-character-status">Connexion à Battle.net...</em>
           </div>
         </div>
       </div>
 
       <div class="sidebar-live-level">
         <div class="sidebar-live-level-head">
-          <span>Niveau 47</span>
-          <b>72 %</b>
+          <span id="sidebar-character-realm">Royaume —</span>
+          <b id="sidebar-character-level">Niv. —</b>
         </div>
 
-        <div class="sidebar-live-progress">
-          <i style="width: 72%"></i>
+        <small id="sidebar-character-details">Classe et race —</small>
+
+        <div class="sidebar-last-session" id="sidebar-last-session" hidden>
+          <span class="sidebar-last-session-icon" aria-hidden="true">⌖</span>
+
+          <div class="sidebar-last-session-copy">
+            <small>Dernier passage</small>
+            <strong id="sidebar-last-session-location">Lieu inconnu</strong>
+            <time id="sidebar-last-session-time"></time>
+          </div>
         </div>
-
-        <small>Prochain niveau : 48</small>
-      </div>
-
-      <div class="sidebar-live-objective">
-        <span>🎯</span>
-
-        <div>
-          <small>Objectif actif</small>
-          <strong>Terminer les quêtes des Hinterlands</strong>
-          <em>8 / 16 terminées</em>
-        </div>
-      </div>
-
-      <div class="sidebar-live-status">
-        <span class="sidebar-live-dot"></span>
-        <small>Dernière activité : il y a 12 min</small>
       </div>
     </section>
 
@@ -155,8 +146,7 @@
       class="character-switch"
       id="character-switch-button"
       type="button"
-      aria-haspopup="dialog"
-      aria-controls="characters-modal"
+      aria-controls="charactersView"
     >
       <span aria-hidden="true">♟</span>
       <span>Mes personnages</span>
@@ -167,350 +157,615 @@
     class="sidebar-handle"
     id="sidebarHandle"
     type="button"
-    aria-label="Réduire la navigation"
     aria-expanded="true"
-    aria-controls="sideMenu"
+    aria-label="Réduire la navigation"
   >
     <span class="sidebar-handle-icon" aria-hidden="true">‹</span>
   </button>
 
   <main class="main-area">
-    <section class="hero-area">
-      <div class="hero-atmosphere" aria-hidden="true"></div>
+    <section
+      id="dashboardView"
+      class="app-view app-view-active"
+      data-view="dashboard"
+    >
+      <section class="hero-area">
+        <div class="hero-atmosphere" aria-hidden="true"></div>
 
-      <div class="hero-copy">
-        <span class="hero-kicker">CARNET D’AVENTURE</span>
-        <h1>
-          Bon retour,
-          <strong id="hero-name">OmbreLoup</strong>.
-        </h1>
-        <h2 id="hero-subtitle">Les Hinterlands t’attendent encore.</h2>
-        <p>« Que l’aventure continue. »</p>
+        <div class="hero-copy">
+          <span class="hero-kicker">CARNET D’AVENTURE</span>
+          <h1>
+            Bon retour,
+            <strong id="hero-name">aventurier</strong>.
+          </h1>
+          <h2 id="hero-subtitle">Tes aventures t’attendent.</h2>
+          <p>« Que l’aventure continue. »</p>
+        </div>
 
-        <div class="hero-progress">
-          <span>Progression de la zone</span>
-          <div class="hero-progress-track">
-            <i style="width: 50%"></i>
+        <div class="player-head">
+          <div class="player-avatar">
+            <img
+              id="hero-avatar"
+              alt=""
+              hidden
+            />
           </div>
-          <b>8 / 16 quêtes</b>
-        </div>
-      </div>
 
-      <div class="player-head">
-        <div class="player-avatar">
-          <img
-            id="hero-avatar"
-            src="/assets/avatar-ombreloup.png"
-            alt="Portrait d’OmbreLoup"
-          />
-        </div>
+          <div class="player-identity">
+            <div class="player-name">
+              <div>
+                <strong id="hero-player-name">Synchronisation...</strong>
+                <span
+                  ><span id="hero-race">—</span> ·
+                  <em id="hero-class">—</em></span
+                >
+              </div>
+            </div>
 
-        <div class="player-identity">
-          <div class="player-name">
-            <div>
-              <strong id="hero-player-name">OmbreLoup</strong>
-              <span
-                ><span id="hero-race">Elfe de la nuit</span> ·
-                <em id="hero-class">Chasseur</em></span
-              >
+            <div class="player-meta">
+              <span id="hero-realm">Royaume —</span>
+              <i></i>
+              <span id="hero-faction">—</span>
             </div>
           </div>
 
-          <div class="player-meta">
-            <span>Les Hinterlands</span>
-            <i></i>
-            <span id="hero-faction">Alliance</span>
+          <div class="player-level-medallion" aria-label="Niveau non chargé">
+            <span class="player-level-label">NIV.</span>
+
+            <div class="player-level-value">
+              <i></i>
+              <b id="hero-level">—</b>
+              <i></i>
+            </div>
+          </div>
+
+          <div class="player-actions">
+            <button
+              class="hero-icon hero-compass"
+              id="heroCompassButton"
+              type="button"
+              aria-label="Ouvrir la rose des vents"
+              aria-haspopup="dialog"
+              aria-controls="compassMenu"
+              aria-expanded="false"
+            >
+              <img src="/assets/azer-compass.png" alt="" aria-hidden="true" />
+            </button>
+
+            <button
+              class="hero-icon bell"
+              type="button"
+              aria-label="Voir les notifications"
+            >
+              <span>🔔</span>
+              <i>3</i>
+            </button>
+
+            <button
+              class="hero-icon hero-time-toggle"
+              id="heroTimeToggle"
+              type="button"
+              aria-label="Basculer l’ambiance du Hero"
+            >
+              <span id="heroTimeIcon">☾</span>
+            </button>
           </div>
         </div>
+      </section>
 
-        <div class="player-level-medallion" aria-label="Niveau 47">
-          <span class="player-level-label">NIV.</span>
+      <section class="content-grid">
+        <div class="center-column">
+          <div class="top-cards">
+            <article class="feature-card blue-card">
+              <div class="card-title">📍 <span>CHAPITRE ACTUEL</span></div>
+              <h3>Les Hinterlands</h3>
 
-          <div class="player-level-value">
-            <i></i>
-            <b id="hero-level">47</b>
-            <i></i>
+              <img
+                class="card-image"
+                src="/assets/chapter-hinterlands.jpg"
+                alt="Les Hinterlands"
+              />
+
+              <div class="chapter-row">
+                <span class="round-icon">☼</span>
+                <div>
+                  <b>Chapitre 7</b>
+                  <small>Les terres sauvages</small>
+                </div>
+              </div>
+
+              <div class="progress-row">
+                <div class="progress-track">
+                  <i style="width: 70%"></i>
+                </div>
+                <b>70%</b>
+              </div>
+
+              <button class="card-button" type="button">
+                Voir le chapitre <span>📖</span>
+              </button>
+            </article>
+
+            <article class="feature-card green-card">
+              <div class="card-title">🎯 <span>PROCHAINE ÉTAPE</span></div>
+              <h3>Continue l’exploration</h3>
+
+              <ul class="detail-list">
+                <li><span>🗺️</span>8 quêtes t’attendent</li>
+                <li><span>🛡️</span>Visiter Zul’Farrak</li>
+                <li><span>🐾</span>Une mascotte t’attend</li>
+                <li><span>🧰</span>Découvrir 2 trésors</li>
+              </ul>
+
+              <button class="card-button" type="button">
+                Voir les détails <span>›</span>
+              </button>
+            </article>
+
+            <article class="feature-card purple-card">
+              <div class="card-title">📖 <span>JOURNAL D’AVENTURE</span></div>
+              <h3>Ce qui s’est passé</h3>
+
+              <ul class="journal-list">
+                <li>
+                  <span>✓</span>
+                  <div>
+                    <b>Hier</b>
+                    <p>Zul’Gurub terminé</p>
+                    <small>23 juillet 2026 · 21:48</small>
+                  </div>
+                </li>
+
+                <li>
+                  <span>✓</span>
+                  <div>
+                    <b>Niveau 47 atteint</b>
+                    <small>23 juillet 2026 · 18:32</small>
+                  </div>
+                </li>
+
+                <li>
+                  <span>✓</span>
+                  <div>
+                    <b>Haut fait obtenu</b>
+                    <p>Guerriers-esprits gurubashi</p>
+                    <small>23 juillet 2026 · 17:15</small>
+                  </div>
+                </li>
+              </ul>
+
+              <button class="card-button" type="button">
+                Voir le journal <span>⚑</span>
+              </button>
+            </article>
+
+            <article class="feature-card gold-card">
+              <div class="card-title">⭐ <span>MON AVENTURE</span></div>
+              <h3>Ton résumé</h3>
+
+              <ul class="stats-list">
+                <li><span>◷</span><b>Temps de jeu</b><em>11 j 4 h</em></li>
+                <li><span>🎁</span><b>Quêtes terminées</b><em>726</em></li>
+                <li><span>🏆</span><b>Hauts faits</b><em>1 205</em></li>
+                <li><span>🐾</span><b>Mascottes</b><em>38 / 160</em></li>
+                <li><span>🐴</span><b>Montures</b><em>24 / 370</em></li>
+                <li>
+                  <span>🏰</span><b>Donjons (Héroïque)</b><em>18 / 140</em>
+                </li>
+              </ul>
+
+              <button class="card-button" type="button">
+                Voir toutes les stats <span>▥</span>
+              </button>
+            </article>
           </div>
+
+          <section class="wide-panel today-panel">
+            <h3>À FAIRE AUJOURD’HUI</h3>
+
+            <div class="today-items">
+              <div>
+                <span>🗺️</span>
+                <b>Continuer les<br />Hinterlands</b>
+              </div>
+
+              <div>
+                <span>🛡️</span>
+                <b>Visiter<br />Zul’Farrak</b>
+              </div>
+
+              <div>
+                <span>🐾</span>
+                <b>Capturer<br />Suinteux de Jade</b>
+              </div>
+
+              <div>
+                <span>✥</span>
+                <b>Explorer de<br />nouveaux lieux</b>
+              </div>
+            </div>
+          </section>
+
+          <section class="wide-panel recent-panel">
+            <h3>ACTIVITÉS RÉCENTES</h3>
+
+            <div class="recent-items">
+              <div class="recent-entry">
+                <span class="recent-icon green">✓</span>
+                <p>
+                  Vous avez terminé la quête :
+                  <b>L’ennemi intérieur</b>
+                  <small>Aujourd’hui · 19:45</small>
+                </p>
+              </div>
+
+              <div class="recent-entry">
+                <span class="recent-icon gold">☼</span>
+                <p>
+                  Vous avez obtenu le haut fait :
+                  <b>Zul’Gurub</b>
+                  <small>Hier · 21:10</small>
+                </p>
+              </div>
+
+              <div class="recent-entry">
+                <span class="recent-icon green">🐾</span>
+                <p>
+                  Vous avez capturé la mascotte :
+                  <b>Bébé singe</b>
+                  <small>Hier · 17:33</small>
+                </p>
+              </div>
+
+              <button class="activity-button" type="button">
+                ⚡ Voir toutes les activités
+              </button>
+            </div>
+          </section>
         </div>
 
-        <div class="player-actions">
-          <button
-            class="hero-icon hero-compass"
-            id="heroCompassButton"
-            type="button"
-            aria-label="Ouvrir la rose des vents"
-            aria-haspopup="dialog"
-            aria-controls="compassMenu"
-            aria-expanded="false"
-          >
-            <img src="/assets/azer-compass.png" alt="" aria-hidden="true" />
-          </button>
+        <aside class="right-column">
+          <article class="side-card quote-card">
+            <h3>CITATION DU JOUR</h3>
 
-          <button
-            class="hero-icon bell"
-            type="button"
-            aria-label="Voir les notifications"
-          >
-            <span>🔔</span>
-            <i>3</i>
-          </button>
+            <blockquote>
+              “
+              <span>
+                Les Hinterlands cachent encore bien des secrets pour ceux qui
+                prennent le temps de les chercher.
+              </span>
+            </blockquote>
 
-          <button
-            class="hero-icon hero-time-toggle"
-            id="heroTimeToggle"
-            type="button"
-            aria-label="Basculer l’ambiance du Hero"
-          >
-            <span id="heroTimeIcon">☾</span>
-          </button>
-        </div>
-      </div>
-    </section>
+            <div class="mini-compass">✥</div>
+          </article>
 
-    <section class="content-grid">
-      <div class="center-column">
-        <div class="top-cards">
-          <article class="feature-card blue-card">
-            <div class="card-title">📍 <span>CHAPITRE ACTUEL</span></div>
-            <h3>Les Hinterlands</h3>
+          <article class="side-card destination-card">
+            <h3>PROCHAINE DESTINATION</h3>
 
             <img
-              class="card-image"
-              src="/assets/chapter-hinterlands.jpg"
-              alt="Les Hinterlands"
+              src="/assets/map-hinterlands.jpg"
+              alt="Carte des Hinterlands"
             />
 
-            <div class="chapter-row">
-              <span class="round-icon">☼</span>
+            <h4>Les Hinterlands</h4>
+            <p>
+              Continue ton exploration<br />
+              et découvre tous ses secrets.
+            </p>
+
+            <button class="card-button" type="button">
+              Ouvrir la carte <span>📖</span>
+            </button>
+          </article>
+
+          <article class="side-card objective-card">
+            <h3>OBJECTIFS ACTIFS (3)</h3>
+
+            <div class="objective-item">
               <div>
-                <b>Chapitre 7</b>
-                <small>Les terres sauvages</small>
+                <span>✥</span>
+                <b>Atteindre le niveau 50</b>
+                <em>47 / 50</em>
               </div>
-            </div>
 
-            <div class="progress-row">
               <div class="progress-track">
-                <i style="width: 70%"></i>
+                <i style="width: 94%"></i>
               </div>
-              <b>70%</b>
+            </div>
+
+            <div class="objective-item">
+              <div>
+                <span>✦</span>
+                <b>Quêtes des Hinterlands</b>
+                <em>8 / 16</em>
+              </div>
+
+              <div class="progress-track">
+                <i style="width: 50%"></i>
+              </div>
+            </div>
+
+            <div class="objective-item">
+              <div>
+                <span>✥</span>
+                <b>Capturer 10 nouvelles mascottes</b>
+                <em>6 / 10</em>
+              </div>
+
+              <div class="progress-track">
+                <i style="width: 60%"></i>
+              </div>
             </div>
 
             <button class="card-button" type="button">
-              Voir le chapitre <span>📖</span>
+              🎯 Voir tous les objectifs
             </button>
           </article>
+        </aside>
+      </section>
+    </section>
 
-          <article class="feature-card green-card">
-            <div class="card-title">🎯 <span>PROCHAINE ÉTAPE</span></div>
-            <h3>Continue l’exploration</h3>
-
-            <ul class="detail-list">
-              <li><span>🗺️</span>8 quêtes t’attendent</li>
-              <li><span>🛡️</span>Visiter Zul’Farrak</li>
-              <li><span>🐾</span>Une mascotte t’attend</li>
-              <li><span>🧰</span>Découvrir 2 trésors</li>
-            </ul>
-
-            <button class="card-button" type="button">
-              Voir les détails <span>›</span>
+    <section
+      id="charactersView"
+      class="app-view characters-view"
+      data-view="characters"
+      aria-hidden="true"
+    >
+      <section class="characters-panel" aria-labelledby="characters-title">
+        <header class="characters-header">
+          <div class="characters-title-block">
+            <button
+              id="charactersHomeCompass"
+              class="characters-title-icon"
+              type="button"
+              aria-label="Retourner au carnet d’aventure"
+              title="Retour au carnet"
+            >
+              <img src="/assets/azer-compass.png" alt="" aria-hidden="true" />
             </button>
-          </article>
 
-          <article class="feature-card purple-card">
-            <div class="card-title">📖 <span>JOURNAL D’AVENTURE</span></div>
-            <h3>Ce qui s’est passé</h3>
+            <div>
+              <span class="characters-kicker">AZER COMPANION</span>
+              <h2 id="characters-title">Hall des héros</h2>
+              <p>Choisis le personnage qui poursuivra ton aventure.</p>
+            </div>
+          </div>
 
-            <ul class="journal-list">
-              <li>
-                <span>✓</span>
-                <div>
-                  <b>Hier</b>
-                  <p>Zul’Gurub terminé</p>
-                  <small>23 juillet 2026 · 21:48</small>
-                </div>
-              </li>
+          <div class="characters-header-actions">
+            <label class="characters-search">
+              <span aria-hidden="true">⌕</span>
 
-              <li>
-                <span>✓</span>
-                <div>
-                  <b>Niveau 47 atteint</b>
-                  <small>23 juillet 2026 · 18:32</small>
-                </div>
-              </li>
+              <input
+                id="characters-search-input"
+                type="search"
+                placeholder="Rechercher un personnage, royaume..."
+                autocomplete="off"
+              />
+            </label>
 
-              <li>
-                <span>✓</span>
-                <div>
-                  <b>Haut fait obtenu</b>
-                  <p>Guerriers-esprits gurubashi</p>
-                  <small>23 juillet 2026 · 17:15</small>
-                </div>
-              </li>
-            </ul>
+            <div class="battle-status" id="battleStatus">
+              <span class="battle-status-icon" aria-hidden="true">✧</span>
+              <span class="battle-status-copy">
+                <b>Battle.net</b>
+                <small id="battleStatusText">Connexion en cours...</small>
+              </span>
+              <i id="battleStatusDot"></i>
+            </div>
 
-            <button class="card-button" type="button">
-              Voir le journal <span>⚑</span>
+            <button
+              id="backToDashboardTop"
+              class="characters-back-button"
+              type="button"
+              aria-label="Retour au carnet"
+            >
+              <span aria-hidden="true">←</span>
             </button>
-          </article>
+          </div>
+        </header>
 
-          <article class="feature-card gold-card">
-            <div class="card-title">⭐ <span>MON AVENTURE</span></div>
-            <h3>Ton résumé</h3>
-
-            <ul class="stats-list">
-              <li><span>◷</span><b>Temps de jeu</b><em>11 j 4 h</em></li>
-              <li><span>🎁</span><b>Quêtes terminées</b><em>726</em></li>
-              <li><span>🏆</span><b>Hauts faits</b><em>1 205</em></li>
-              <li><span>🐾</span><b>Mascottes</b><em>38 / 160</em></li>
-              <li><span>🐴</span><b>Montures</b><em>24 / 370</em></li>
-              <li><span>🏰</span><b>Donjons (Héroïque)</b><em>18 / 140</em></li>
-            </ul>
-
-            <button class="card-button" type="button">
-              Voir toutes les stats <span>▥</span>
+        <div class="characters-toolbar">
+          <div class="characters-filters">
+            <button
+              class="characters-filter active"
+              type="button"
+              data-faction-filter="all"
+            >
+              Tous
+              <span id="characters-count">0</span>
             </button>
-          </article>
+
+            <button
+              class="characters-filter"
+              type="button"
+              data-faction-filter="ALLIANCE"
+            >
+              Alliance
+            </button>
+
+            <button
+              class="characters-filter"
+              type="button"
+              data-faction-filter="HORDE"
+            >
+              Horde
+            </button>
+          </div>
+
+          <span class="characters-help">
+            <span class="characters-help-icon" aria-hidden="true">!</span>
+            <span>Clique sur une carte pour voir ses détails</span>
+          </span>
         </div>
 
-        <section class="wide-panel today-panel">
-          <h3>À FAIRE AUJOURD’HUI</h3>
+        <div id="characters-list" class="characters-list">
+          <div class="characters-loading">Chargement des personnages...</div>
+        </div>
+      </section>
+    </section>
 
-          <div class="today-items">
-            <div>
-              <span>🗺️</span>
-              <b>Continuer les<br />Hinterlands</b>
-            </div>
-
-            <div>
-              <span>🛡️</span>
-              <b>Visiter<br />Zul’Farrak</b>
-            </div>
-
-            <div>
-              <span>🐾</span>
-              <b>Capturer<br />Suinteux de Jade</b>
-            </div>
-
-            <div>
-              <span>✥</span>
-              <b>Explorer de<br />nouveaux lieux</b>
-            </div>
+    <section
+      id="characterProfileView"
+      class="app-view character-profile-view"
+      data-view="characterProfile"
+      aria-hidden="true"
+    >
+      <section
+        class="character-profile-panel"
+        aria-labelledby="profileCharacterName"
+      >
+        <header class="character-profile-header">
+          <div>
+            <span class="character-profile-kicker">FICHE DU HÉROS</span>
+            <h2 id="profileCharacterName">Personnage</h2>
+            <p id="profileCharacterSubtitle">Profil Battle.net synchronisé</p>
           </div>
-        </section>
 
-        <section class="wide-panel recent-panel">
-          <h3>ACTIVITÉS RÉCENTES</h3>
+          <div class="character-profile-header-actions">
+            <button
+              id="selectProfileCharacter"
+              class="select-character-button character-profile-select"
+              type="button"
+            >
+              Choisir ce héros
+            </button>
 
-          <div class="recent-items">
-            <div class="recent-entry">
-              <span class="recent-icon green">✓</span>
-              <p>
-                Vous avez terminé la quête :
-                <b>L’ennemi intérieur</b>
-                <small>Aujourd’hui · 19:45</small>
-              </p>
-            </div>
-
-            <div class="recent-entry">
-              <span class="recent-icon gold">☼</span>
-              <p>
-                Vous avez obtenu le haut fait :
-                <b>Zul’Gurub</b>
-                <small>Hier · 21:10</small>
-              </p>
-            </div>
-
-            <div class="recent-entry">
-              <span class="recent-icon green">🐾</span>
-              <p>
-                Vous avez capturé la mascotte :
-                <b>Bébé singe</b>
-                <small>Hier · 17:33</small>
-              </p>
-            </div>
-
-            <button class="activity-button" type="button">
-              ⚡ Voir toutes les activités
+            <button
+              id="backToCharacters"
+              class="characters-back-button"
+              type="button"
+              aria-label="Retour au Hall des héros"
+            >
+              <span aria-hidden="true">←</span>
             </button>
           </div>
-        </section>
-      </div>
+        </header>
 
-      <aside class="right-column">
-        <article class="side-card quote-card">
-          <h3>CITATION DU JOUR</h3>
+        <div class="character-profile-content">
+          <article class="character-profile-hero">
+            <span
+              id="profileCharacterClassIcon"
+              class="character-corner-icon character-corner-icon-top"
+              aria-hidden="true"
+            ></span>
 
-          <blockquote>
-            “
-            <span>
-              Les Hinterlands cachent encore bien des secrets pour ceux qui
-              prennent le temps de les chercher.
-            </span>
-          </blockquote>
+            <span
+              id="profileCharacterFactionIcon"
+              class="character-corner-icon character-corner-icon-bottom character-corner-faction"
+              aria-hidden="true"
+            ></span>
 
-          <div class="mini-compass">✥</div>
-        </article>
+            <span
+              class="character-border-comet character-border-comet-one"
+              aria-hidden="true"
+            ></span>
+            <span
+              class="character-border-comet character-border-comet-two"
+              aria-hidden="true"
+            ></span>
 
-        <article class="side-card destination-card">
-          <h3>PROCHAINE DESTINATION</h3>
-
-          <img src="/assets/map-hinterlands.jpg" alt="Carte des Hinterlands" />
-
-          <h4>Les Hinterlands</h4>
-          <p>
-            Continue ton exploration<br />
-            et découvre tous ses secrets.
-          </p>
-
-          <button class="card-button" type="button">
-            Ouvrir la carte <span>📖</span>
-          </button>
-        </article>
-
-        <article class="side-card objective-card">
-          <h3>OBJECTIFS ACTIFS (3)</h3>
-
-          <div class="objective-item">
-            <div>
-              <span>✥</span>
-              <b>Atteindre le niveau 50</b>
-              <em>47 / 50</em>
+            <div
+              class="character-profile-image-switch"
+              aria-label="Type d’image du personnage"
+            >
+              <button
+                type="button"
+                class="profile-image-mode-button is-active"
+                data-profile-image-mode="portrait"
+                aria-pressed="true"
+              >
+                Portrait
+              </button>
+              <button
+                type="button"
+                class="profile-image-mode-button"
+                data-profile-image-mode="full-body"
+                aria-pressed="false"
+              >
+                Plein corps
+              </button>
             </div>
 
-            <div class="progress-track">
-              <i style="width: 94%"></i>
+            <div class="character-profile-portrait">
+              <div class="character-profile-image-window">
+                <img
+                  id="profileCharacterImage"
+                  alt=""
+                />
+              </div>
             </div>
+          </article>
+
+          <div class="character-profile-details">
+            <section
+              class="character-profile-grid"
+              aria-label="Résumé du personnage"
+            >
+              <article>
+                <span>Niveau</span>
+                <strong id="profileCharacterLevel">—</strong>
+              </article>
+
+              <article>
+                <span>Classe</span>
+                <strong id="profileCharacterClass">—</strong>
+              </article>
+
+              <article>
+                <span>Race</span>
+                <strong id="profileCharacterRace">—</strong>
+              </article>
+
+              <article>
+                <span>Royaume</span>
+                <strong id="profileCharacterRealm">—</strong>
+              </article>
+
+              <article>
+                <span>Faction</span>
+                <strong id="profileCharacterFactionDetail">—</strong>
+              </article>
+
+              <article>
+                <span>Localisation</span>
+                <strong
+                  id="profileCharacterLocation"
+                  class="character-profile-location"
+                >
+                  Non fournie par Battle.net
+                </strong>
+              </article>
+            </section>
+
+            <section class="character-profile-sections">
+              <article>
+                <span>⚒</span>
+                <div>
+                  <h3>Métiers</h3>
+                  <p id="profileCharacterProfessions">
+                    Chargement des métiers...
+                  </p>
+                </div>
+              </article>
+
+              <article>
+                <span>🏆</span>
+                <div>
+                  <h3>Hauts faits</h3>
+                  <p>Le résumé des hauts faits sera ajouté ici.</p>
+                </div>
+              </article>
+
+              <article>
+                <span>🐴</span>
+                <div>
+                  <h3>Collections</h3>
+                  <p>Montures, mascottes et objets de collection.</p>
+                </div>
+              </article>
+            </section>
           </div>
-
-          <div class="objective-item">
-            <div>
-              <span>✦</span>
-              <b>Quêtes des Hinterlands</b>
-              <em>8 / 16</em>
-            </div>
-
-            <div class="progress-track">
-              <i style="width: 50%"></i>
-            </div>
-          </div>
-
-          <div class="objective-item">
-            <div>
-              <span>✥</span>
-              <b>Capturer 10 nouvelles mascottes</b>
-              <em>6 / 10</em>
-            </div>
-
-            <div class="progress-track">
-              <i style="width: 60%"></i>
-            </div>
-          </div>
-
-          <button class="card-button" type="button">
-            🎯 Voir tous les objectifs
-          </button>
-        </article>
-      </aside>
+        </div>
+      </section>
     </section>
   </main>
 
@@ -530,106 +785,5 @@
   ☰
 </button>
 
-<div id="characters-modal" class="characters-modal hidden">
-  <div class="characters-overlay" data-close-characters></div>
-
-  <section
-    class="characters-window"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="characters-title"
-  >
-    <header class="characters-header">
-      <div class="characters-title-block">
-        <span class="characters-title-icon">♜</span>
-
-        <div>
-          <h2 id="characters-title">Mes personnages</h2>
-          <p>Sélectionne un personnage pour afficher ses aventures.</p>
-        </div>
-      </div>
-
-      <div class="characters-header-actions">
-        <label class="characters-search">
-          <span aria-hidden="true">⌕</span>
-
-          <input
-            id="characters-search-input"
-            type="search"
-            placeholder="Rechercher un personnage, royaume..."
-            autocomplete="off"
-          />
-        </label>
-
-        <div class="battle-status">
-          <span class="battle-status-icon">✧</span>
-          <span>Battle.net connecté</span>
-          <i></i>
-        </div>
-
-        <button
-          id="closeCharacters"
-          class="characters-close"
-          type="button"
-          aria-label="Fermer"
-        >
-          ×
-        </button>
-      </div>
-    </header>
-
-    <div class="characters-toolbar">
-      <div class="characters-filters">
-        <button
-          class="characters-filter active"
-          type="button"
-          data-faction-filter="all"
-        >
-          Tous
-          <span id="characters-count">0</span>
-        </button>
-
-        <button
-          class="characters-filter"
-          type="button"
-          data-faction-filter="ALLIANCE"
-        >
-          Alliance
-        </button>
-
-        <button
-          class="characters-filter"
-          type="button"
-          data-faction-filter="HORDE"
-        >
-          Horde
-        </button>
-      </div>
-
-      <span class="characters-help">
-        Clique sur une carte pour la retourner
-      </span>
-    </div>
-
-    <div id="characters-list" class="characters-list">
-      <div class="characters-loading">Chargement des personnages...</div>
-    </div>
-
-    <footer class="characters-footer">
-      <span>
-        <i>ⓘ</i>
-        Clique sur une carte pour voir ses détails.
-      </span>
-
-      <button
-        class="characters-footer-close"
-        type="button"
-        data-close-characters
-      >
-        Fermer
-      </button>
-    </footer>
-  </section>
-</div>
 <%- include('components/compass/compass_menu') %> <%- include('partials/footer')
 %>

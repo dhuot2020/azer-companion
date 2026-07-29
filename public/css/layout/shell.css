@@ -1,10 +1,9 @@
 .azer-shell {
   position: relative;
-  display: flex;
+  display: block;
   min-height: 100vh;
-  padding: 0;
-  padding-bottom: 60px;
-  overflow: hidden;
+  padding: 0 0 60px;
+  overflow-x: hidden;
   border: 1px solid rgba(163, 102, 27, 0.55);
   box-shadow: inset 0 0 0 1px rgba(237, 174, 68, 0.08);
 }
@@ -12,7 +11,7 @@
 .side-menu {
   position: fixed;
   inset: 1px auto 60px 1px;
-  z-index: 20;
+  z-index: 60;
   display: flex;
   flex-direction: column;
   width: var(--sidebar-width);
@@ -25,14 +24,18 @@
     ),
     linear-gradient(180deg, rgba(4, 19, 31, 0.99), rgba(2, 14, 24, 1));
   border-right: 1px solid var(--line);
+  box-shadow: 14px 0 34px rgba(0, 0, 0, 0.22);
+  will-change: transform;
 }
 
+.main-area {
+  width: calc(100% - var(--sidebar-width));
+  min-width: 0;
+  min-height: calc(100vh - 60px);
+  margin-left: var(--sidebar-width);
+  will-change: width, margin-left;
+}
 
-/* =========================================================
-   SIDEBAR RETRACTABLE V0.5.1
-========================================================= */
-
-.azer-shell,
 .side-menu,
 .main-area {
   transition:
@@ -41,17 +44,8 @@
     transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.side-menu {
-  will-change: transform;
-}
-
-.main-area {
-  min-width: 0;
-  will-change: width, margin-left;
-}
-
 .azer-shell.sidebar-is-collapsed .side-menu {
-  transform: translateX(calc(-1 * var(--sidebar-width)));
+  transform: translateX(calc(-1 * var(--sidebar-width) - 2px));
   pointer-events: none;
 }
 
@@ -60,38 +54,135 @@
   margin-left: 0;
 }
 
-
 .azer-shell.sidebar-is-closing .side-menu {
-  animation: sidebar-panel-close 0.58s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: sidebar-panel-close 0.46s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.azer-shell.sidebar-is-opening .main-area,
-.azer-shell.sidebar-is-closing .main-area {
-  transition-duration: 0.68s;
+.azer-shell.sidebar-is-opening .side-menu {
+  animation: sidebar-panel-open 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes sidebar-panel-open {
-  0% {
-    opacity: 0.2;
-    filter: brightness(0.72) saturate(0.72);
+  from {
+    opacity: 0.35;
+    filter: brightness(0.8) saturate(0.8);
   }
-  48% {
-    opacity: 1;
-    filter: brightness(1.08) saturate(1.08);
-  }
-  100% {
+
+  to {
     opacity: 1;
     filter: brightness(1) saturate(1);
   }
 }
 
 @keyframes sidebar-panel-close {
-  0% {
+  from {
     opacity: 1;
     filter: brightness(1) saturate(1);
   }
-  100% {
-    opacity: 0.18;
-    filter: brightness(0.68) saturate(0.68);
+
+  to {
+    opacity: 0.25;
+    filter: brightness(0.72) saturate(0.72);
+  }
+}
+
+/* =========================================================
+   VUES DE L'APPLICATION
+========================================================= */
+
+.app-view {
+  display: none;
+  width: 100%;
+}
+
+.app-view.app-view-active {
+  display: block;
+  animation: app-view-fade-in 180ms ease;
+}
+
+@keyframes app-view-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   PAGE MES PERSONNAGES
+========================================================= */
+
+.characters-view {
+  min-height: calc(100vh - 60px);
+  padding: 28px;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(25, 102, 146, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(180deg, rgba(3, 18, 29, 0.98), rgba(1, 10, 17, 1));
+}
+
+.characters-view .characters-module {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  min-height: calc(100vh - 116px);
+  margin: 0;
+  transform: none;
+}
+
+.characters-view .characters-list {
+  max-height: none;
+  overflow: visible;
+}
+
+.characters-view .characters-back-button {
+  display: grid;
+  place-items: center;
+}
+
+/* =========================================================
+   TABLETTE ET MOBILE
+========================================================= */
+
+@media (max-width: 980px) {
+  .side-menu {
+    width: min(340px, calc(100vw - 42px));
+    box-shadow:
+      18px 0 44px rgba(0, 0, 0, 0.58),
+      0 0 0 100vmax rgba(0, 0, 0, 0.34);
+  }
+
+  .main-area,
+  .azer-shell.sidebar-is-collapsed .main-area {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .azer-shell.sidebar-is-collapsed .side-menu {
+    transform: translateX(calc(-100% - 4px));
+    box-shadow: none;
+  }
+
+  .characters-view {
+    padding: 16px;
+  }
+
+  .characters-view .characters-module {
+    min-height: calc(100vh - 92px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-menu,
+  .main-area,
+  .app-view.app-view-active {
+    animation: none;
+    transition-duration: 0.01ms;
   }
 }

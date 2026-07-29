@@ -1,23 +1,46 @@
 /* ======================================================
-   Responsive
+   Responsive - Mes personnages
 ====================================================== */
+
+@media (max-width: 1400px) {
+  .azer-shell:not(.sidebar-is-collapsed) .characters-list {
+    --character-card-width: 210px;
+    --character-grid-gap: 16px;
+    --character-grid-padding-inline: 18px;
+  }
+}
 
 @media (max-width: 1150px) {
   .battle-status {
     display: none;
   }
 
-  .characters-list {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .characters-list,
+  .azer-shell:not(.sidebar-is-collapsed) .characters-list,
+  .azer-shell.sidebar-is-collapsed .characters-list {
+    --character-card-width: 220px;
+    --character-grid-gap: 18px;
+  }
+}
+
+@media (max-width: 980px) {
+  .characters-view {
+    padding: 16px;
+  }
+
+  .characters-panel {
+    min-height: calc(100vh - 92px);
+  }
+
+  .characters-list,
+  .azer-shell:not(.sidebar-is-collapsed) .characters-list,
+  .azer-shell.sidebar-is-collapsed .characters-list {
+    --character-card-width: 215px;
+    --character-grid-padding-inline: 18px;
   }
 }
 
 @media (max-width: 850px) {
-  .characters-window {
-    width: calc(100vw - 16px);
-    height: calc(100vh - 16px);
-  }
-
   .characters-header {
     align-items: flex-start;
     padding: 16px;
@@ -29,7 +52,6 @@
 
   .characters-header-actions {
     flex: 1;
-    justify-content: flex-end;
   }
 
   .characters-search {
@@ -44,13 +66,19 @@
     display: none;
   }
 
-  .characters-list {
-    padding: 18px 16px 26px;
+  .characters-list,
+  .azer-shell:not(.sidebar-is-collapsed) .characters-list,
+  .azer-shell.sidebar-is-collapsed .characters-list {
+    --character-card-width: 205px;
+    --character-grid-gap: 16px;
+    --character-grid-padding-inline: 16px;
+    padding-block: 18px 26px;
   }
 }
 
 @media (max-width: 620px) {
-  .characters-title-icon {
+  .characters-title-icon,
+  .characters-search {
     display: none;
   }
 
@@ -58,28 +86,19 @@
     font-size: 1.25rem;
   }
 
-  .characters-search {
-    display: none;
-  }
-
   .characters-filter {
     min-width: 92px;
   }
 
-  .characters-list {
-    grid-template-columns: 1fr;
+  .characters-list,
+  .azer-shell:not(.sidebar-is-collapsed) .characters-list,
+  .azer-shell.sidebar-is-collapsed .characters-list {
+    --character-card-width: min(320px, 100%);
+    gap: 18px;
   }
 
-  .character-card {
-    width: min(320px, 100%);
+  .characters-list > .character-card {
     margin-inline: auto;
   }
 
-  .characters-footer span {
-    display: none;
-  }
-
-  .characters-footer {
-    justify-content: flex-end;
-  }
 }

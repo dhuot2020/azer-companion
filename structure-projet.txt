@@ -1,30 +1,17 @@
-./.env
-./.gitignore
-./CHANGELOG.md
-./docs/ARCHITECTURE.md
-./docs/DECISIONS.md
-./docs/DESIGN_SYSTEM.md
-./docs/ROADMAP.md
-./index.js
-./package.json
-./package-lock.json
-./public/assets/avatar-ombreloup.png
-./public/assets/azer-compass.png
-./public/assets/azer-compass1.png
-./public/assets/azer-compass2.png
-./public/assets/chapter-hinterlands.jpg
-./public/assets/ChatGPT Image 25 juill. 2026, 23 h 18 min 43 s.png
-./public/assets/hero-hinterlands.jpg
-./public/assets/hero-hinterlands-clean.jpg
-./public/assets/map-hinterlands.jpg
-./public/css/app.css
-./public/js/app.js
-./README.md
-./routes/carnet.js
-./sessions/3dVTBAQdElJb-pCPprOfTvxLtmCQYJBa.json
-./structure-projet.txt
-./views/carnet.ejs
-./views/partials/footer.ejs
-./views/partials/header.ejs
-./views/partials/sidebar.ejs
-./views/partials/topbar.ejs
+AzerCompanionV2/
+|-- index.js
+|-- package.json
+|-- package-lock.json
+|-- routes/
+|   `-- carnet.js
+|-- views/
+|   |-- carnet.ejs
+|   |-- components/
+|   `-- partials/
+|-- public/
+|   |-- assets/
+|   |-- css/
+|   `-- js/
+|-- docs/
+|-- README.md
+`-- CHANGELOG.md
