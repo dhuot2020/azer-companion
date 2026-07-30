@@ -5,11 +5,12 @@ const { readCollectorSummary } = require("../services/azerCollector");
 
 const router = express.Router();
 
-const BLIZZARD_REGION = String(process.env.BLIZZARD_REGION || "us").toLowerCase();
+const BLIZZARD_REGION = String(
+  process.env.BLIZZARD_REGION || "us",
+).toLowerCase();
 const BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
 const BLIZZARD_API_ORIGIN = `https://${BLIZZARD_REGION}.api.blizzard.com`;
-const BLIZZARD_PROFILE_QUERY =
-  `namespace=profile-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
+const BLIZZARD_PROFILE_QUERY = `namespace=profile-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
 const CHARACTER_MEDIA_CONCURRENCY = 6;
 
 async function mapWithConcurrency(items, concurrency, callback) {
@@ -31,10 +32,14 @@ async function mapWithConcurrency(items, concurrency, callback) {
 
 async function fetchCharacterAvatar(character, accessToken) {
   const realmSlug = encodeURIComponent(
-    String(character.realm || "").trim().toLowerCase(),
+    String(character.realm || "")
+      .trim()
+      .toLowerCase(),
   );
   const characterName = encodeURIComponent(
-    String(character.name || "").trim().toLowerCase(),
+    String(character.name || "")
+      .trim()
+      .toLowerCase(),
   );
   const mediaUrl =
     `${BLIZZARD_API_ORIGIN}/profile/wow/character/` +
@@ -68,15 +73,9 @@ async function fetchCharacterAvatar(character, accessToken) {
       )?.value;
     const avatarUrl = getAsset("avatar") || media.avatar_url || null;
     const fullBodyUrl =
-      getAsset("main") ||
-      getAsset("main-raw") ||
-      media.render_url ||
-      null;
+      getAsset("main") || getAsset("main-raw") || media.render_url || null;
     const portraitUrl =
-      getAsset("inset") ||
-      media.bust_url ||
-      fullBodyUrl ||
-      avatarUrl;
+      getAsset("inset") || media.bust_url || fullBodyUrl || avatarUrl;
 
     return {
       ...character,
@@ -116,10 +115,14 @@ function normalizeCharacterProfessions(data) {
 
 async function fetchCharacterProfessions(realm, name, accessToken) {
   const realmSlug = encodeURIComponent(
-    String(realm || "").trim().toLowerCase(),
+    String(realm || "")
+      .trim()
+      .toLowerCase(),
   );
   const characterName = encodeURIComponent(
-    String(name || "").trim().toLowerCase(),
+    String(name || "")
+      .trim()
+      .toLowerCase(),
   );
   const professionsUrl =
     `${BLIZZARD_API_ORIGIN}/profile/wow/character/` +
@@ -216,15 +219,12 @@ router.get("/auth/blizzard/callback", async (req, res) => {
     req.session.blizzard_token_expires_at =
       Date.now() + tokenData.expires_in * 1000;
 
-    res.send(`
-      <h1>Connexion Battle.net réussie</h1>
-      <p>Azer Companion est maintenant connecté à ton compte.</p>
-      <p><a href="/">Retourner à Azer Companion</a></p>
-    `);
+    // Retour direct au carnet
+    return res.redirect("/");
   } catch (error) {
     console.error("Erreur OAuth Blizzard :", error);
 
-    res
+    return res
       .status(500)
       .send("Une erreur est survenue pendant la connexion Battle.net.");
   }
@@ -278,10 +278,7 @@ router.get("/api/characters", async (req, res) => {
       characters,
       CHARACTER_MEDIA_CONCURRENCY,
       (character) =>
-        fetchCharacterAvatar(
-          character,
-          req.session.blizzard_access_token,
-        ),
+        fetchCharacterAvatar(character, req.session.blizzard_access_token),
     );
 
     res.json({
@@ -298,39 +295,36 @@ router.get("/api/characters", async (req, res) => {
   }
 });
 
-router.get(
-  "/api/characters/:realm/:name/professions",
-  async (req, res) => {
-    if (!req.session.blizzard_access_token) {
-      return res.status(401).json({
-        connected: false,
-      });
+router.get("/api/characters/:realm/:name/professions", async (req, res) => {
+  if (!req.session.blizzard_access_token) {
+    return res.status(401).json({
+      connected: false,
+    });
+  }
+
+  try {
+    const professions = await fetchCharacterProfessions(
+      req.params.realm,
+      req.params.name,
+      req.session.blizzard_access_token,
+    );
+
+    res.json({
+      connected: true,
+      professions,
+    });
+  } catch (error) {
+    if (error.status !== 404) {
+      console.warn(error.message);
     }
 
-    try {
-      const professions = await fetchCharacterProfessions(
-        req.params.realm,
-        req.params.name,
-        req.session.blizzard_access_token,
-      );
-
-      res.json({
-        connected: true,
-        professions,
-      });
-    } catch (error) {
-      if (error.status !== 404) {
-        console.warn(error.message);
-      }
-
-      res.status(error.status || 502).json({
-        connected: true,
-        professions: [],
-        error: "Impossible de récupérer les métiers de ce personnage.",
-      });
-    }
-  },
-);
+    res.status(error.status || 502).json({
+      connected: true,
+      professions: [],
+      error: "Impossible de récupérer les métiers de ce personnage.",
+    });
+  }
+});
 
 router.get("/api/blizzard/status", (req, res) => {
   const accessToken = req.session.blizzard_access_token;
@@ -347,6 +341,13 @@ router.get("/api/blizzard/status", (req, res) => {
   res.json({
     connected,
   });
+});
+
+router.get("/auth/blizzard/logout", (req, res) => {
+  delete req.session.blizzard_access_token;
+  delete req.session.blizzard_token_expires_at;
+
+  res.redirect("/");
 });
 
 router.get("/api/collector", async (req, res) => {
