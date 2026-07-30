@@ -81,19 +81,19 @@
 }
 
 :is(
-  .card-button,
-  .activity-button,
-  .characters-filter,
-  .select-character-button,
-  .characters-connect-button
-):is(:hover, :focus-visible, :active)::before,
+    .card-button,
+    .activity-button,
+    .characters-filter,
+    .select-character-button,
+    .characters-connect-button
+  ):is(:hover, :focus-visible, :active)::before,
 :is(
-  .card-button,
-  .activity-button,
-  .characters-filter,
-  .select-character-button,
-  .characters-connect-button
-):is(:hover, :focus-visible, :active)::after,
+    .card-button,
+    .activity-button,
+    .characters-filter,
+    .select-character-button,
+    .characters-connect-button
+  ):is(:hover, :focus-visible, :active)::after,
 .characters-filter.active::before,
 .characters-filter.active::after {
   border-color: rgba(244, 202, 116, 0.98);
@@ -310,4 +310,74 @@
   .characters-back-button span {
     transition-duration: 0.01ms;
   }
+}
+
+/* ======================================================
+   BOUTON BATTLE.NET
+====================================================== */
+
+.battle-net-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  margin-top: 8px;
+  padding: 5px 28px 5px 12px;
+  text-decoration: none;
+}
+
+/* On retire le losange décoratif de gauche */
+.battle-net-button::before {
+  display: none;
+}
+
+.battle-net-logo {
+  display: block;
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+}
+
+/* Losange unique à droite */
+.battle-net-button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid currentColor;
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.battle-net-button.is-offline::after {
+  border-color: #d95050;
+  background: #d95050;
+  box-shadow:
+    0 0 0 2px rgba(5, 25, 40, 0.95),
+    0 0 8px rgba(217, 80, 80, 0.85);
+}
+
+.battle-net-button.is-online::after {
+  border-color: #42d878;
+  background: #42d878;
+  box-shadow:
+    0 0 0 2px rgba(5, 25, 40, 0.95),
+    0 0 8px rgba(66, 216, 120, 0.9);
+}
+
+.battle-net-button.is-offline:is(:hover, :focus-visible)::after {
+  border-color: #ef6262;
+  background: #ef6262;
+}
+
+.battle-net-button.is-online:is(:hover, :focus-visible)::after {
+  border-color: #58ec8c;
+  background: #58ec8c;
 }

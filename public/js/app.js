@@ -362,7 +362,10 @@ function renderSidebarLastSession(character) {
     : `depuis ${formatCollectorClock(session.startedAt)}`;
   const details = [dateLabel, timeRange];
 
-  if (session.durationSeconds !== null && session.durationSeconds !== undefined) {
+  if (
+    session.durationSeconds !== null &&
+    session.durationSeconds !== undefined
+  ) {
     details.push(formatCollectorDuration(session.durationSeconds));
   }
 
@@ -1032,9 +1035,7 @@ function updateDashboardCharacter(character) {
   const heroRealm = document.getElementById("hero-realm");
   const heroLevel = document.getElementById("hero-level");
   const heroAvatar = document.getElementById("hero-avatar");
-  const heroLevelMedallion = document.querySelector(
-    ".player-level-medallion",
-  );
+  const heroLevelMedallion = document.querySelector(".player-level-medallion");
   const sidebarCharacterName = document.getElementById(
     "sidebar-character-name",
   );
@@ -1081,10 +1082,7 @@ function updateDashboardCharacter(character) {
   }
 
   if (heroLevelMedallion) {
-    heroLevelMedallion.setAttribute(
-      "aria-label",
-      `Niveau ${character.level}`,
-    );
+    heroLevelMedallion.setAttribute("aria-label", `Niveau ${character.level}`);
   }
 
   if (heroAvatar) {
@@ -1104,8 +1102,7 @@ function updateDashboardCharacter(character) {
     sidebarCharacterLevel.textContent = `Niv. ${character.level}`;
   }
   if (sidebarCharacterDetails) {
-    sidebarCharacterDetails.textContent =
-      `${character.raceName} · ${character.className}`;
+    sidebarCharacterDetails.textContent = `${character.raceName} · ${character.className}`;
   }
 
   renderSidebarLastSession(character);
@@ -1334,8 +1331,7 @@ function formatCharacterProfessions(professions) {
             )
             .join(" · ")
         : "niveau non disponible";
-      const typeLabel =
-        profession.type === "secondary" ? "Secondaire — " : "";
+      const typeLabel = profession.type === "secondary" ? "Secondaire — " : "";
 
       return `${typeLabel}${profession.name} — ${tierText}`;
     })
@@ -1406,9 +1402,7 @@ function renderCharacterProfileImage(character, requestedMode = "portrait") {
   const canShowFullBody = Boolean(fullBodyImage);
 
   profileImageMode =
-    requestedMode === "full-body" && canShowFullBody
-      ? "full-body"
-      : "portrait";
+    requestedMode === "full-body" && canShowFullBody ? "full-body" : "portrait";
   const usesFullBodyForPortrait =
     profileImageMode === "portrait" && canShowFullBody;
 
@@ -1459,9 +1453,7 @@ function openCharacterProfile(character) {
     "profileCharacterFactionDetail",
   );
   const profileLevel = document.getElementById("profileCharacterLevel");
-  const profileClassIcon = document.getElementById(
-    "profileCharacterClassIcon",
-  );
+  const profileClassIcon = document.getElementById("profileCharacterClassIcon");
   const profileFactionIcon = document.getElementById(
     "profileCharacterFactionIcon",
   );
@@ -1503,9 +1495,7 @@ function openCharacterProfile(character) {
 
     profileFactionIcon.classList.toggle("is-horde", isHorde);
     profileFactionIcon.classList.toggle("is-alliance", !isHorde);
-    profileFactionIcon.innerHTML = getFactionIconMarkup(
-      character.factionName,
-    );
+    profileFactionIcon.innerHTML = getFactionIconMarkup(character.factionName);
   }
 
   if (selectProfileCharacter) {
@@ -1568,12 +1558,10 @@ document
   .getElementById("charactersHomeCompass")
   ?.addEventListener("click", openDashboardView);
 
-document
-  .getElementById("backToCharacters")
-  ?.addEventListener("click", () => {
-    showView("characters");
-    revealSidebar();
-  });
+document.getElementById("backToCharacters")?.addEventListener("click", () => {
+  showView("characters");
+  revealSidebar();
+});
 
 document
   .getElementById("selectProfileCharacter")
@@ -1641,3 +1629,49 @@ document.querySelectorAll("[data-faction-filter]").forEach((button) => {
 });
 
 loadCharacters();
+
+async function updateBattleNetAuthButton() {
+  const authButton = document.getElementById("battleNetAuthButton");
+
+  if (!authButton) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/blizzard/status", {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Statut Battle.net indisponible (${response.status})`);
+    }
+
+    const status = await response.json();
+    const isConnected = Boolean(status.connected);
+
+    authButton.classList.toggle("is-online", isConnected);
+    authButton.classList.toggle("is-offline", !isConnected);
+
+    if (isConnected) {
+      authButton.href = "/auth/blizzard/logout";
+      authButton.title = "Battle.net connecté — cliquer pour se déconnecter";
+      authButton.setAttribute("aria-label", "Se déconnecter de Battle.net");
+    } else {
+      authButton.href = "/auth/blizzard";
+      authButton.title = "Battle.net non connecté — cliquer pour se connecter";
+      authButton.setAttribute("aria-label", "Se connecter à Battle.net");
+    }
+  } catch (error) {
+    console.error("Impossible de vérifier la connexion Battle.net :", error);
+
+    authButton.href = "/auth/blizzard";
+    authButton.classList.remove("is-online");
+    authButton.classList.add("is-offline");
+    authButton.title = "Battle.net non connecté";
+    authButton.setAttribute("aria-label", "Se connecter à Battle.net");
+  }
+}
+
+updateBattleNetAuthButton();
