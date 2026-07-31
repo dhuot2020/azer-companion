@@ -280,7 +280,10 @@ function getCollectorCharacterKey(character) {
 
 async function loadCollectorCharacters() {
   try {
-    const response = await fetch("/api/collector");
+    const response = await fetch(`/api/collector?ts=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
 
     if (!response.ok) {
       throw new Error("Données du collecteur indisponibles.");
@@ -297,6 +300,81 @@ async function loadCollectorCharacters() {
     collectorCharacters = new Map();
     console.warn("Impossible de charger Azer Companion Collector.", error);
   }
+}
+
+function getCollectorActivityTimestamp(character) {
+  const timestamps = [
+    character?.lastSeenAt,
+    character?.lastLoginAt,
+    character?.lastLogoutAt,
+    character?.latestSession?.startedAt,
+    character?.latestSession?.endedAt,
+  ]
+    .map((value) => Number(value || 0))
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+  return timestamps.length ? Math.max(...timestamps) : 0;
+}
+
+function getLastCollectorCharacter() {
+  const characters = [...collectorCharacters.values()]
+    .filter((character) => character?.name && character?.realm)
+    .map((character) => ({
+      character,
+      activityTimestamp: getCollectorActivityTimestamp(character),
+    }))
+    .sort(
+      (firstCharacter, secondCharacter) =>
+        secondCharacter.activityTimestamp - firstCharacter.activityTimestamp,
+    );
+
+  console.table(
+    characters.map(({ character, activityTimestamp }) => ({
+      personnage: character.name,
+      royaume: character.realm,
+      lastSeenAt: Number(character.lastSeenAt || 0),
+      lastLoginAt: Number(character.lastLoginAt || 0),
+      lastLogoutAt: Number(character.lastLogoutAt || 0),
+      sessionStartedAt: Number(character.latestSession?.startedAt || 0),
+      sessionEndedAt: Number(character.latestSession?.endedAt || 0),
+      dateRetenue: activityTimestamp
+        ? new Date(activityTimestamp * 1000).toLocaleString("fr-CA")
+        : "Aucune date",
+    })),
+  );
+
+  return characters[0]?.character || null;
+}
+
+function findBattleNetCharacterFromCollector(characters = []) {
+  const lastCollectorCharacter = getLastCollectorCharacter();
+
+  if (!lastCollectorCharacter) {
+    console.warn("Aucun dernier personnage trouvé dans le collecteur.");
+    return null;
+  }
+
+  const collectorKey = getCollectorCharacterKey(lastCollectorCharacter);
+  const collectorName = normalizeCollectorIdentity(lastCollectorCharacter.name);
+
+  const exactMatch = characters.find(
+    (character) => getCollectorCharacterKey(character) === collectorKey,
+  );
+
+  const nameMatch = characters.find(
+    (character) =>
+      normalizeCollectorIdentity(character?.name) === collectorName,
+  );
+
+  const matchedCharacter = exactMatch || nameMatch || null;
+
+  console.info("Azer Collector - dernier personnage :", {
+    collector: lastCollectorCharacter,
+    collectorKey,
+    matchedCharacter,
+  });
+
+  return matchedCharacter;
 }
 
 function formatCollectorDuration(durationSeconds) {
@@ -1174,7 +1252,10 @@ async function loadCharacters() {
 
   try {
     await loadCollectorCharacters();
-    const response = await fetch("/api/characters");
+    const response = await fetch(`/api/characters?ts=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
 
     if (response.status === 401) {
       renderBattleStatus("disconnected", "Compte non connecté");
@@ -1214,15 +1295,19 @@ async function loadCharacters() {
 
     blizzardCharacters = [...realCharacters, ...demoCharacters];
 
-    let selectedCharacter = blizzardCharacters.find(isCurrentCharacter);
+    const collectorSelectedCharacter =
+      findBattleNetCharacterFromCollector(realCharacters);
+    const savedSelectedCharacter = blizzardCharacters.find(isCurrentCharacter);
 
-    if (!selectedCharacter && realCharacters.length) {
-      selectedCharacter = realCharacters[0];
-      currentCharacterKey = getCharacterKey(selectedCharacter);
-      saveSelectedCharacterKey(currentCharacterKey);
-    }
+    const selectedCharacter =
+      collectorSelectedCharacter ||
+      savedSelectedCharacter ||
+      realCharacters[0] ||
+      null;
 
     if (selectedCharacter) {
+      currentCharacterKey = getCharacterKey(selectedCharacter);
+      saveSelectedCharacterKey(currentCharacterKey);
       updateDashboardCharacter(selectedCharacter);
     }
 
