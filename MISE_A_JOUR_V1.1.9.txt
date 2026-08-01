@@ -1,0 +1,9 @@
+AZER COMPANION - V1.1.9
+
+Correction fonctionnelle prioritaire :
+- L'accueil est maintenant totalement masque quand Hall des heros, Mes personnages ou le profil d'un personnage est ouvert.
+- La regression venait de .home-dashboard { display:flex; } dans la V1.1.8, qui annulait la regle generale .app-view { display:none; }.
+- Une regle de securite garantit qu'une seule vue est visible a la fois.
+- La grille des six panneaux utilise maintenant toute la hauteur disponible jusqu'au footer.
+- Les effets visuels existants des cartes Mes heros ne sont pas modifies.
+- Aucun changement aux donnees Battle.net, au collecteur ou au rendu des cartes.

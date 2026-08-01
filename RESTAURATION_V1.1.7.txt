@@ -1,0 +1,14 @@
+AZER COMPANION - RESTAURATION V1.1.7
+
+Cette version revient exactement sur la base V1.1.5.
+
+Restaure :
+- les effets visuels des cartes Mes heros ;
+- les bordures lumineuses animees ;
+- les effets de glow par classe ;
+- le soulevement au survol ;
+- les faisceaux lumineux sur les cadres ;
+- l'image Hero nette utilisee avant la V1.1.6 ;
+- la structure et la mise en page validees avant la regression.
+
+La V1.1.6 a ete abandonnee.

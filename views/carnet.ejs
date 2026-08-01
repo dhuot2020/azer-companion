@@ -3,12 +3,6 @@
 <div class="azer-shell">
   <aside class="side-menu" id="sideMenu">
     <div class="brand-block">
-      <div class="brand-label">
-        <span></span>
-        <b>DH STUDIO</b>
-        <span></span>
-      </div>
-
       <div class="brand-main">
         <img
           class="brand-compass"
@@ -38,108 +32,49 @@
 
     <nav class="main-nav" id="mainNav">
       <a href="#" class="nav-item active" data-view-target="dashboard">
-        <span aria-hidden="true">📖</span>
-        <b>Carnet d’aventure</b>
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-home"></use></svg></span>
+        <b>Accueil</b>
       </a>
-
-      <a href="#" class="nav-item">
-        <span aria-hidden="true">🌍</span>
-        <b>Monde</b>
+      <a href="#" class="nav-item" id="hallHeroesNav">
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-shield"></use></svg></span>
+        <b>Hall des héros</b>
       </a>
-
       <a href="#" class="nav-item">
-        <span aria-hidden="true">⚔️</span>
-        <b>Donjons</b>
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-journal"></use></svg></span>
+        <b>Journal d’aventure</b>
       </a>
-
       <a href="#" class="nav-item">
-        <span aria-hidden="true">🏰</span>
-        <b>Raids</b>
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-trophy"></use></svg></span>
+        <b>Réussites</b>
       </a>
-
       <a href="#" class="nav-item">
-        <span aria-hidden="true">🐾</span>
-        <b>Mascottes</b>
-      </a>
-
-      <a href="#" class="nav-item">
-        <span aria-hidden="true">🦄</span>
-        <b>Familiers</b>
-      </a>
-
-      <a href="#" class="nav-item">
-        <span aria-hidden="true">🐴</span>
-        <b>Montures</b>
-      </a>
-
-      <a href="#" class="nav-item">
-        <span aria-hidden="true">🏆</span>
-        <b>Hauts faits</b>
-      </a>
-
-      <a href="#" class="nav-item">
-        <span aria-hidden="true">🧰</span>
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-chest"></use></svg></span>
         <b>Collections</b>
       </a>
-
       <a href="#" class="nav-item">
-        <span aria-hidden="true">⚙️</span>
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-chart"></use></svg></span>
+        <b>Activités</b>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-tools"></use></svg></span>
+        <b>Outils</b>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-settings"></use></svg></span>
         <b>Paramètres</b>
       </a>
     </nav>
-    <div class="sidebar-medieval-ornament" aria-hidden="true">
-      <span class="ornament-line ornament-line-left"></span>
-
-      <div class="ornament-center">
-        <i class="ornament-diamond ornament-diamond-top"></i>
-        <i class="ornament-diamond ornament-diamond-center"></i>
-        <i class="ornament-diamond ornament-diamond-bottom"></i>
-
-        <b class="ornament-branch ornament-branch-left"></b>
-        <b class="ornament-branch ornament-branch-right"></b>
+    <section class="sidebar-faction" id="sidebarFaction" aria-label="Faction du dernier héros joué">
+      <span class="sidebar-faction-kicker">DERNIER HÉROS JOUÉ</span>
+      <div class="sidebar-faction-emblem-wrap">
+        <img
+          id="sidebar-faction-emblem"
+          class="sidebar-faction-emblem"
+          src="/assets/factions/azer-alliance.png"
+          alt="Alliance"
+        />
       </div>
-
-      <span class="ornament-line ornament-line-right"></span>
-    </div>
-    <section class="sidebar-live">
-      <div class="sidebar-live-title">
-        <span></span>
-        <b>HÉROS SÉLECTIONNÉ</b>
-        <span></span>
-      </div>
-
-      <div class="sidebar-live-zone">
-        <div class="sidebar-live-icon" aria-hidden="true">♟</div>
-
-        <div class="sidebar-live-zone-copy">
-          <small>Personnage Battle.net</small>
-          <strong id="sidebar-character-name">Synchronisation...</strong>
-
-          <div class="sidebar-player-status">
-            <span class="sidebar-status-dot"></span>
-            <em id="sidebar-character-status">Connexion à Battle.net...</em>
-          </div>
-        </div>
-      </div>
-
-      <div class="sidebar-live-level">
-        <div class="sidebar-live-level-head">
-          <span id="sidebar-character-realm">Royaume —</span>
-          <b id="sidebar-character-level">Niv. —</b>
-        </div>
-
-        <small id="sidebar-character-details">Classe et race —</small>
-
-        <div class="sidebar-last-session" id="sidebar-last-session" hidden>
-          <span class="sidebar-last-session-icon" aria-hidden="true">⌖</span>
-
-          <div class="sidebar-last-session-copy">
-            <small>Dernier passage</small>
-            <strong id="sidebar-last-session-location">Lieu inconnu</strong>
-            <time id="sidebar-last-session-time"></time>
-          </div>
-        </div>
-      </div>
+      <strong id="sidebar-faction-name">ALLIANCE</strong>
     </section>
 
     <button
@@ -148,9 +83,22 @@
       type="button"
       aria-controls="charactersView"
     >
-      <span aria-hidden="true">♟</span>
+      <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-heroes"></use></svg></span>
       <span>Mes personnages</span>
     </button>
+
+    <section class="sidebar-account" aria-label="Dernier personnage joué">
+      <div class="sidebar-account-avatar">
+        <img id="sidebar-account-avatar" alt="" hidden />
+        <span id="sidebar-account-initial">D</span>
+      </div>
+      <div class="sidebar-account-copy">
+        <span class="sidebar-account-label">PERSONNAGE ACTIF</span>
+        <strong id="sidebar-account-name">Synchronisation...</strong>
+        <small id="sidebar-account-details">Données Battle.net</small>
+      </div>
+      <span class="sidebar-account-status" title="Synchronisé"></span>
+    </section>
 
     <a
       href="/auth/blizzard"
@@ -165,6 +113,12 @@
         aria-hidden="true"
       />
     </a>
+
+    <div class="sidebar-dh-studio" aria-label="Une création de DH Studio">
+      <small>Une création de</small>
+      <img src="/assets/dhstudio.png" alt="DH" />
+      <span>STUDIO</span>
+    </div>
   </aside>
 
   <button
@@ -180,338 +134,114 @@
   <main class="main-area">
     <section
       id="dashboardView"
-      class="app-view app-view-active"
+      class="app-view app-view-active home-dashboard"
       data-view="dashboard"
     >
-      <section class="hero-area">
-        <div class="hero-atmosphere" aria-hidden="true"></div>
+      <svg class="azer-icon-library" aria-hidden="true">
+        <symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V21h-6v-6H9v6H3z"/></symbol>
+        <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 2 20 5v6c0 5.4-3.4 9.1-8 11-4.6-1.9-8-5.6-8-11V5z"/><path d="M12 6v11M8.5 10h7"/></symbol>
+        <symbol id="icon-journal" viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a4 4 0 0 0-4-3H4zM20 4h-3a3 3 0 0 0-3 3v13a4 4 0 0 1 4-3h2z"/></symbol>
+        <symbol id="icon-trophy" viewBox="0 0 24 24"><path d="M8 4h8v4c0 4-2 7-4 7s-4-3-4-7zM10 15v3M14 15v3M8 21h8M6 6H3v2c0 3 2 5 5 5M18 6h3v2c0 3-2 5-5 5"/></symbol>
+        <symbol id="icon-chest" viewBox="0 0 24 24"><path d="M4 8h16v12H4zM3 8l2-4h14l2 4M4 12h16M10 12h4v4h-4z"/></symbol>
+        <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></symbol>
+        <symbol id="icon-tools" viewBox="0 0 24 24"><path d="m4 20 7-7M15 9l5-5M14 4l6 6M5 4l5 5-3 3-5-5zM13 14l7 7"/></symbol>
+        <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+        <symbol id="icon-heroes" viewBox="0 0 24 24"><path d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 10a3 3 0 1 0 0-6M2 21v-3c0-3 2.5-5 6-5s6 2 6 5v3M15 13c4 0 7 2 7 5v3h-5"/></symbol>
+        <symbol id="icon-location" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-13A7 7 0 0 0 5 9c0 6.8 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></symbol>
+        <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+        <symbol id="icon-level" viewBox="0 0 24 24"><path d="m12 2 3 6 6 .8-4.5 4.4 1.1 6.3L12 16.5 6.4 19.5l1.1-6.3L3 8.8 9 8z"/></symbol>
+        <symbol id="icon-quest" viewBox="0 0 24 24"><path d="m5 20 5-5M14 4l6 6-8 8-6-6zM15 3l2 2M4 17l3 3"/></symbol>
+        <symbol id="icon-dungeon" viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13M9 21v-6h6v6M8 10h2M14 10h2"/></symbol>
+        <symbol id="icon-map" viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24"><path d="m4 13 5 5L20 6"/></symbol>
+        <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+      </svg>
 
-        <div class="hero-copy">
-          <span class="hero-kicker">CARNET D’AVENTURE</span>
-          <h1>
-            Bon retour,
-            <strong id="hero-name">aventurier</strong>.
-          </h1>
-          <h2 id="hero-subtitle">Tes aventures t’attendent.</h2>
-          <p>« Que l’aventure continue. »</p>
+      <section class="home-hero">
+        <div class="home-hero-overlay"></div>
+        <div class="home-welcome">
+          <span class="home-eyebrow">AZER COMPANION</span>
+          <h1>BONJOUR <strong>DANIEL</strong> !</h1>
+          <p>Bienvenue dans ton carnet d’aventure.</p>
+
+          <div class="last-hero-label">DERNIER HÉROS JOUÉ</div>
+          <div class="last-hero">
+            <div class="last-hero-medallion" id="homeHeroMedallion" data-faction="ALLIANCE">
+              <img class="last-hero-faction-frame" id="homeHeroFactionFrame" src="/assets/factions/azer-alliance.png" alt="" aria-hidden="true" />
+              <div class="last-hero-avatar"><img id="homeHeroAvatar" alt="" hidden /></div>
+            </div>
+            <div class="last-hero-copy">
+              <h2 id="homeHeroName">Synchronisation...</h2>
+              <p><strong id="homeHeroClass">—</strong> · Niveau <span id="homeHeroLevel">—</span></p>
+              <ul>
+                <li><svg><use href="#icon-location"></use></svg><span id="homeHeroLocation">Lieu non enregistré</span></li>
+                <li><svg><use href="#icon-clock"></use></svg><span id="homeHeroLastPlayed">Dernière session inconnue</span></li>
+                <li><svg><use href="#icon-clock"></use></svg><span id="homeHeroDuration">Durée non enregistrée</span></li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div class="player-head">
-          <div class="player-avatar">
-            <img id="hero-avatar" alt="" hidden />
-          </div>
-
-          <div class="player-identity">
-            <div class="player-name">
-              <div>
-                <strong id="hero-player-name">Synchronisation...</strong>
-                <span
-                  ><span id="hero-race">—</span> ·
-                  <em id="hero-class">—</em></span
-                >
-              </div>
-            </div>
-
-            <div class="player-meta">
-              <span id="hero-realm">Royaume —</span>
-              <i></i>
-              <span id="hero-faction">—</span>
-            </div>
-          </div>
-
-          <div class="player-level-medallion" aria-label="Niveau non chargé">
-            <span class="player-level-label">NIV.</span>
-
-            <div class="player-level-value">
-              <i></i>
-              <b id="hero-level">—</b>
-              <i></i>
-            </div>
-          </div>
-
-          <div class="player-actions">
-            <button
-              class="hero-icon hero-compass"
-              id="heroCompassButton"
-              type="button"
-              aria-label="Ouvrir la rose des vents"
-              aria-haspopup="dialog"
-              aria-controls="compassMenu"
-              aria-expanded="false"
-            >
-              <img src="/assets/azer-compass.png" alt="" aria-hidden="true" />
-            </button>
-
-            <button
-              class="hero-icon bell"
-              type="button"
-              aria-label="Voir les notifications"
-            >
-              <span>🔔</span>
-              <i>3</i>
-            </button>
-
-            <button
-              class="hero-icon hero-time-toggle"
-              id="heroTimeToggle"
-              type="button"
-              aria-label="Basculer l’ambiance du Hero"
-            >
-              <span id="heroTimeIcon">☾</span>
-            </button>
-          </div>
-        </div>
+        <aside class="account-overview">
+          <h2>VUE D’ENSEMBLE DU COMPTE</h2>
+          <ul>
+            <li><svg><use href="#icon-heroes"></use></svg><strong id="accountCharactersCount">—</strong><span>Personnages</span></li>
+            <li><svg><use href="#icon-level"></use></svg><strong id="accountLevelsTotal">—</strong><span>Niveaux cumulés</span></li>
+            <li><svg><use href="#icon-journal"></use></svg><strong id="accountSessionsCount">—</strong><span>Sessions enregistrées</span></li>
+            <li><svg><use href="#icon-map"></use></svg><strong id="accountZonesCount">—</strong><span>Zones explorées</span></li>
+            <li><svg><use href="#icon-clock"></use></svg><strong id="accountWeekTime">—</strong><span>Temps de jeu cette semaine</span></li>
+          </ul>
+        </aside>
       </section>
 
-      <section class="content-grid">
-        <div class="center-column">
-          <div class="top-cards">
-            <article class="feature-card blue-card">
-              <div class="card-title">📍 <span>CHAPITRE ACTUEL</span></div>
-              <h3>Les Hinterlands</h3>
-
-              <img
-                class="card-image"
-                src="/assets/chapter-hinterlands.jpg"
-                alt="Les Hinterlands"
-              />
-
-              <div class="chapter-row">
-                <span class="round-icon">☼</span>
-                <div>
-                  <b>Chapitre 7</b>
-                  <small>Les terres sauvages</small>
-                </div>
-              </div>
-
-              <div class="progress-row">
-                <div class="progress-track">
-                  <i style="width: 70%"></i>
-                </div>
-                <b>70%</b>
-              </div>
-
-              <button class="card-button" type="button">
-                Voir le chapitre <span>📖</span>
-              </button>
-            </article>
-
-            <article class="feature-card green-card">
-              <div class="card-title">🎯 <span>PROCHAINE ÉTAPE</span></div>
-              <h3>Continue l’exploration</h3>
-
-              <ul class="detail-list">
-                <li><span>🗺️</span>8 quêtes t’attendent</li>
-                <li><span>🛡️</span>Visiter Zul’Farrak</li>
-                <li><span>🐾</span>Une mascotte t’attend</li>
-                <li><span>🧰</span>Découvrir 2 trésors</li>
-              </ul>
-
-              <button class="card-button" type="button">
-                Voir les détails <span>›</span>
-              </button>
-            </article>
-
-            <article class="feature-card purple-card">
-              <div class="card-title">📖 <span>JOURNAL D’AVENTURE</span></div>
-              <h3>Ce qui s’est passé</h3>
-
-              <ul class="journal-list">
-                <li>
-                  <span>✓</span>
-                  <div>
-                    <b>Hier</b>
-                    <p>Zul’Gurub terminé</p>
-                    <small>23 juillet 2026 · 21:48</small>
-                  </div>
-                </li>
-
-                <li>
-                  <span>✓</span>
-                  <div>
-                    <b>Niveau 47 atteint</b>
-                    <small>23 juillet 2026 · 18:32</small>
-                  </div>
-                </li>
-
-                <li>
-                  <span>✓</span>
-                  <div>
-                    <b>Haut fait obtenu</b>
-                    <p>Guerriers-esprits gurubashi</p>
-                    <small>23 juillet 2026 · 17:15</small>
-                  </div>
-                </li>
-              </ul>
-
-              <button class="card-button" type="button">
-                Voir le journal <span>⚑</span>
-              </button>
-            </article>
-
-            <article class="feature-card gold-card">
-              <div class="card-title">⭐ <span>MON AVENTURE</span></div>
-              <h3>Ton résumé</h3>
-
-              <ul class="stats-list">
-                <li><span>◷</span><b>Temps de jeu</b><em>11 j 4 h</em></li>
-                <li><span>🎁</span><b>Quêtes terminées</b><em>726</em></li>
-                <li><span>🏆</span><b>Hauts faits</b><em>1 205</em></li>
-                <li><span>🐾</span><b>Mascottes</b><em>38 / 160</em></li>
-                <li><span>🐴</span><b>Montures</b><em>24 / 370</em></li>
-                <li>
-                  <span>🏰</span><b>Donjons (Héroïque)</b><em>18 / 140</em>
-                </li>
-              </ul>
-
-              <button class="card-button" type="button">
-                Voir toutes les stats <span>▥</span>
-              </button>
-            </article>
+      <section class="home-grid">
+        <article class="home-panel journal-panel">
+          <header><h2>JOURNAL D’AVENTURE</h2><button type="button">Voir tout</button></header>
+          <div class="timeline" id="homeTimeline">
+            <div class="timeline-item"><time>Maintenant</time><span class="timeline-icon"><svg><use href="#icon-location"></use></svg></span><div><strong>Dernier héros synchronisé</strong><small id="timelineCurrentLocation">Chargement...</small></div></div>
+            <div class="timeline-item"><time>Session</time><span class="timeline-icon"><svg><use href="#icon-clock"></use></svg></span><div><strong>Dernière aventure enregistrée</strong><small id="timelineSessionDuration">Chargement...</small></div></div>
+            <div class="timeline-item"><time>Battle.net</time><span class="timeline-icon"><svg><use href="#icon-check"></use></svg></span><div><strong>Personnages synchronisés</strong><small id="timelineCharacters">Chargement...</small></div></div>
           </div>
+        </article>
 
-          <section class="wide-panel today-panel">
-            <h3>À FAIRE AUJOURD’HUI</h3>
+        <article class="home-panel achievements-panel">
+          <header><h2>RÉUSSITES RÉCENTES</h2><button type="button">Voir toutes</button></header>
+          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span><div><strong>Explorateur d’Azeroth</strong><small>Poursuis la découverte de nouvelles régions.</small></div><b>10</b></div>
+          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-journal"></use></svg></span><div><strong>Maître des traditions</strong><small>Continue ton histoire personnelle.</small></div><b>10</b></div>
+          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-chest"></use></svg></span><div><strong>Une collection grandissante</strong><small>Montures, mascottes et souvenirs.</small></div><b>10</b></div>
+        </article>
 
-            <div class="today-items">
-              <div>
-                <span>🗺️</span>
-                <b>Continuer les<br />Hinterlands</b>
-              </div>
+        <article class="home-panel objectives-panel">
+          <header><h2>OBJECTIFS</h2><button type="button">Voir tout</button></header>
+          <div class="objective-row"><svg><use href="#icon-quest"></use></svg><div><strong>Continuer la campagne en cours</strong><small>Prochaine étape de l’aventure</small><i><span style="width:72%"></span></i></div><b>5/7</b></div>
+          <div class="objective-row"><svg><use href="#icon-tools"></use></svg><div><strong>Faire progresser un métier</strong><small>Objectif personnel</small><i><span style="width:58%"></span></i></div><b>42/75</b></div>
+          <div class="objective-row"><svg><use href="#icon-dungeon"></use></svg><div><strong>Terminer le donjon du jour</strong><small>Donjon héroïque</small><i><span style="width:100%"></span></i></div><b class="objective-done"><svg><use href="#icon-check"></use></svg></b></div>
+        </article>
 
-              <div>
-                <span>🛡️</span>
-                <b>Visiter<br />Zul’Farrak</b>
-              </div>
+        <article class="home-panel heroes-panel">
+          <header><h2>MES HÉROS</h2><button type="button" id="viewAllHeroesButton">Voir tous mes héros</button></header>
+          <div class="heroes-strip" id="homeHeroesStrip"></div>
+        </article>
 
-              <div>
-                <span>🐾</span>
-                <b>Capturer<br />Suinteux de Jade</b>
-              </div>
+        <article class="home-panel activity-panel">
+          <header><h2>ACTIVITÉ DU COMPTE</h2><span>Cette semaine</span></header>
+          <div class="activity-stats">
+            <div><svg><use href="#icon-clock"></use></svg><strong id="activityWeekTime">—</strong><small>Temps de jeu</small></div>
+            <div><svg><use href="#icon-level"></use></svg><strong>+3</strong><small>Niveaux gagnés</small></div>
+            <div><svg><use href="#icon-dungeon"></use></svg><strong>2</strong><small>Donjons</small></div>
+            <div><svg><use href="#icon-trophy"></use></svg><strong>1</strong><small>Réussite</small></div>
+            <div><svg><use href="#icon-quest"></use></svg><strong>15</strong><small>Quêtes terminées</small></div>
+          </div>
+        </article>
 
-              <div>
-                <span>✥</span>
-                <b>Explorer de<br />nouveaux lieux</b>
-              </div>
-            </div>
-          </section>
-
-          <section class="wide-panel recent-panel">
-            <h3>ACTIVITÉS RÉCENTES</h3>
-
-            <div class="recent-items">
-              <div class="recent-entry">
-                <span class="recent-icon green">✓</span>
-                <p>
-                  Vous avez terminé la quête :
-                  <b>L’ennemi intérieur</b>
-                  <small>Aujourd’hui · 19:45</small>
-                </p>
-              </div>
-
-              <div class="recent-entry">
-                <span class="recent-icon gold">☼</span>
-                <p>
-                  Vous avez obtenu le haut fait :
-                  <b>Zul’Gurub</b>
-                  <small>Hier · 21:10</small>
-                </p>
-              </div>
-
-              <div class="recent-entry">
-                <span class="recent-icon green">🐾</span>
-                <p>
-                  Vous avez capturé la mascotte :
-                  <b>Bébé singe</b>
-                  <small>Hier · 17:33</small>
-                </p>
-              </div>
-
-              <button class="activity-button" type="button">
-                ⚡ Voir toutes les activités
-              </button>
-            </div>
-          </section>
-        </div>
-
-        <aside class="right-column">
-          <article class="side-card quote-card">
-            <h3>CITATION DU JOUR</h3>
-
-            <blockquote>
-              “
-              <span>
-                Les Hinterlands cachent encore bien des secrets pour ceux qui
-                prennent le temps de les chercher.
-              </span>
-            </blockquote>
-
-            <div class="mini-compass">✥</div>
-          </article>
-
-          <article class="side-card destination-card">
-            <h3>PROCHAINE DESTINATION</h3>
-
-            <img
-              src="/assets/map-hinterlands.jpg"
-              alt="Carte des Hinterlands"
-            />
-
-            <h4>Les Hinterlands</h4>
-            <p>
-              Continue ton exploration<br />
-              et découvre tous ses secrets.
-            </p>
-
-            <button class="card-button" type="button">
-              Ouvrir la carte <span>📖</span>
-            </button>
-          </article>
-
-          <article class="side-card objective-card">
-            <h3>OBJECTIFS ACTIFS (3)</h3>
-
-            <div class="objective-item">
-              <div>
-                <span>✥</span>
-                <b>Atteindre le niveau 50</b>
-                <em>47 / 50</em>
-              </div>
-
-              <div class="progress-track">
-                <i style="width: 94%"></i>
-              </div>
-            </div>
-
-            <div class="objective-item">
-              <div>
-                <span>✦</span>
-                <b>Quêtes des Hinterlands</b>
-                <em>8 / 16</em>
-              </div>
-
-              <div class="progress-track">
-                <i style="width: 50%"></i>
-              </div>
-            </div>
-
-            <div class="objective-item">
-              <div>
-                <span>✥</span>
-                <b>Capturer 10 nouvelles mascottes</b>
-                <em>6 / 10</em>
-              </div>
-
-              <div class="progress-track">
-                <i style="width: 60%"></i>
-              </div>
-            </div>
-
-            <button class="card-button" type="button">
-              🎯 Voir tous les objectifs
-            </button>
-          </article>
-        </aside>
+        <article class="home-panel locations-panel">
+          <header><h2>DERNIERS LIEUX VISITÉS</h2><button type="button">Voir la carte</button></header>
+          <div class="locations-map">
+            <div class="map-pin pin-one"><svg><use href="#icon-location"></use></svg><span id="mapPrimaryLocation">Dernier lieu</span></div>
+            <div class="map-pin pin-two"><svg><use href="#icon-location"></use></svg><span>Hurlevent</span></div>
+            <div class="map-pin pin-three"><svg><use href="#icon-location"></use></svg><span>Tanaris</span></div>
+          </div>
+        </article>
       </section>
     </section>
 

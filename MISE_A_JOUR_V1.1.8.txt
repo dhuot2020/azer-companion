@@ -1,0 +1,10 @@
+AZER COMPANION - ACCUEIL V1.1.8
+
+Modifications limitees a la disposition de la page d'accueil :
+- les six panneaux sont rapproches du bouton Continuer l'aventure;
+- la grille occupe maintenant tout l'espace vertical restant;
+- le panneau Vue d'ensemble du compte est plus large et plus haut;
+- le panneau compte est rapproche du bord superieur et du bord droit;
+- son bas s'aligne visuellement avec la zone du bouton;
+- les effets existants des cartes Mes heros sont preserves;
+- aucune modification JavaScript, Battle.net ou collecteur.

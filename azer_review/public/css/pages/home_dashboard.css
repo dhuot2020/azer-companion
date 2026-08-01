@@ -1,0 +1,1506 @@
+/* =========================================================
+   AZER COMPANION - ACCUEIL DU COMPTE
+   Ajoute uniquement la nouvelle vue d'accueil.
+========================================================= */
+
+.azer-icon-library { position:absolute; width:0; height:0; overflow:hidden; }
+.home-dashboard { min-height:calc(100vh - 60px); color:#e9e4db; background:#06111b; }
+.home-dashboard svg { width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:1.65; stroke-linecap:round; stroke-linejoin:round; }
+
+.home-hero { position:relative; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(310px,.72fr); min-height:455px; overflow:hidden; border-bottom:1px solid rgba(216,156,54,.32); background:
+  linear-gradient(90deg,rgba(2,10,17,.96) 0%,rgba(2,13,22,.75) 43%,rgba(3,15,24,.4) 68%,rgba(2,10,17,.82) 100%),
+  linear-gradient(180deg,transparent 58%,#06111b 100%),
+  url('/assets/hero-hinterlands-clean.jpg') center 47%/cover no-repeat;
+}
+.home-hero::before { content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at 65% 12%,rgba(56,171,220,.15),transparent 30%),radial-gradient(circle at 18% 70%,rgba(211,145,42,.08),transparent 36%); }
+.home-hero-overlay { position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 -70px 90px #06111b; }
+.home-welcome { position:relative; z-index:2; align-self:center; max-width:760px; padding:52px clamp(28px,4.2vw,76px) 48px; }
+.home-eyebrow { display:inline-flex; align-items:center; gap:12px; margin-bottom:12px; color:#e8b85e; font-family:"Orbitron",sans-serif; font-size:10px; letter-spacing:.28em; }
+.home-eyebrow::before { content:""; width:38px; height:1px; background:linear-gradient(90deg,transparent,#e1aa4d); }
+.home-welcome h1 { margin:0; color:#f4eee3; font-family:"Cinzel",serif; font-size:clamp(36px,4vw,62px); font-weight:400; letter-spacing:.02em; text-shadow:0 4px 20px #000; }
+.home-welcome h1 strong { color:#efc36f; font-weight:500; }
+.home-welcome>p { margin:8px 0 26px; color:#bdc9ce; font-size:18px; }
+.last-hero-label { margin-bottom:10px; color:#daaa55; font-family:"Orbitron",sans-serif; font-size:9px; letter-spacing:.2em; }
+.last-hero { display:flex; align-items:center; gap:18px; max-width:570px; padding:15px 18px; border:1px solid rgba(216,156,54,.38); background:linear-gradient(90deg,rgba(7,28,43,.9),rgba(4,18,29,.7)); box-shadow:inset 0 0 26px rgba(35,140,187,.07),0 12px 30px rgba(0,0,0,.28); backdrop-filter:blur(8px); }
+.last-hero-avatar { flex:0 0 88px; width:88px; height:88px; overflow:hidden; border:1px solid #d99b39; border-radius:50%; background:radial-gradient(circle,#183c52,#06131f); box-shadow:0 0 0 3px rgba(4,17,27,.9),0 0 18px rgba(51,191,235,.2); }
+.last-hero-avatar img { width:100%; height:100%; object-fit:cover; object-position:center 18%; }
+.last-hero-copy { min-width:0; }
+.last-hero-copy h2 { margin:0; color:#fff3de; font-family:"Cinzel",serif; font-size:28px; font-weight:500; }
+.last-hero-copy>p { margin:3px 0 9px; color:#a7b8c1; font-size:12px; }
+.last-hero-copy>p strong { color:#a9d475; }
+.last-hero-copy ul { display:flex; flex-wrap:wrap; gap:6px 15px; margin:0; padding:0; list-style:none; color:#9fb1ba; font-size:11px; }
+.last-hero-copy li { display:flex; align-items:center; gap:5px; }
+.last-hero-copy li svg { color:#e4ad50; font-size:14px; }
+.home-primary-button { display:inline-flex; align-items:center; justify-content:center; gap:14px; min-width:250px; min-height:48px; margin-top:17px; padding:0 22px; color:#fff3dc; border:1px solid rgba(231,176,78,.82); border-radius:3px; background:linear-gradient(180deg,#154c70,#082a43); font-family:"Cinzel",serif; font-weight:600; letter-spacing:.06em; cursor:pointer; box-shadow:inset 0 0 20px rgba(37,164,219,.12),0 8px 20px rgba(0,0,0,.28); }
+.home-primary-button:hover { border-color:#f4ca79; background:linear-gradient(180deg,#1a628e,#0a354f); }
+.home-primary-button svg { font-size:18px; }
+
+.account-overview { position:relative; z-index:2; align-self:center; margin:28px 30px 28px 0; padding:19px 20px 12px; border:1px solid rgba(216,156,54,.38); background:linear-gradient(180deg,rgba(5,23,36,.9),rgba(2,13,22,.9)); backdrop-filter:blur(10px); box-shadow:inset 0 0 30px rgba(39,155,205,.07),0 18px 36px rgba(0,0,0,.3); }
+.account-overview h2 { margin:0 0 10px; padding-bottom:12px; color:#e6b45c; border-bottom:1px solid rgba(216,156,54,.2); font-family:"Orbitron",sans-serif; font-size:10px; font-weight:500; letter-spacing:.15em; text-align:center; }
+.account-overview ul { margin:0; padding:0; list-style:none; }
+.account-overview li { display:grid; grid-template-columns:36px 70px 1fr; align-items:center; min-height:54px; border-bottom:1px solid rgba(255,255,255,.055); }
+.account-overview li:last-child { border-bottom:0; }
+.account-overview svg { color:#e5ad4f; font-size:22px; }
+.account-overview strong { color:#f4eadb; font-family:"Cinzel",serif; font-size:22px; font-weight:500; }
+.account-overview span { color:#93a6b0; font-size:11px; }
+
+.home-grid { position:relative; z-index:4; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:13px; padding:0 16px 18px; margin-top:-28px; }
+.home-panel { overflow:hidden; border:1px solid rgba(190,128,38,.32); border-radius:5px; background:linear-gradient(180deg,rgba(8,29,44,.98),rgba(3,16,26,.98)); box-shadow:inset 0 0 24px rgba(28,126,176,.055),0 10px 24px rgba(0,0,0,.25); }
+.home-panel>header { display:flex; align-items:center; justify-content:space-between; min-height:46px; padding:0 15px; border-bottom:1px solid rgba(216,156,54,.17); background:linear-gradient(180deg,rgba(14,46,66,.5),rgba(6,25,38,.2)); }
+.home-panel>header h2 { margin:0; color:#e7b65e; font-family:"Orbitron",sans-serif; font-size:10px; font-weight:500; letter-spacing:.14em; }
+.home-panel>header button,.home-panel>header span { color:#7fa4b6; border:0; background:transparent; font-size:10px; cursor:pointer; }
+.home-panel>header button:hover { color:#f0c16c; }
+.journal-panel { grid-column:span 5; }
+.achievements-panel { grid-column:span 4; }
+.objectives-panel { grid-column:span 3; }
+.heroes-panel { grid-column:span 7; }
+.activity-panel { grid-column:span 5; }
+
+.timeline { padding:10px 16px 14px; }
+.timeline-item { position:relative; display:grid; grid-template-columns:72px 34px 1fr; align-items:center; min-height:61px; }
+.timeline-item:not(:last-child)::after { content:""; position:absolute; left:88px; top:45px; bottom:-15px; width:1px; background:rgba(216,156,54,.24); }
+.timeline-item time { color:#758e9b; font-size:9px; text-transform:uppercase; }
+.timeline-icon { position:relative; z-index:2; display:grid; place-items:center; width:28px; height:28px; color:#e2ab4f; border:1px solid rgba(216,156,54,.45); border-radius:50%; background:#071d2c; }
+.timeline-item strong,.timeline-item small { display:block; }
+.timeline-item strong { color:#e9e2d8; font-size:12px; font-weight:500; }
+.timeline-item small { margin-top:3px; color:#8197a2; font-size:10px; }
+
+.achievement-row { display:grid; grid-template-columns:42px 1fr 34px; align-items:center; gap:9px; min-height:71px; margin:0 14px; border-bottom:1px solid rgba(255,255,255,.055); }
+.achievement-row:last-child { border-bottom:0; }
+.achievement-icon { display:grid; place-items:center; width:34px; height:34px; color:#e5b055; border:1px solid rgba(217,157,55,.4); transform:rotate(45deg); background:#0b2638; }
+.achievement-icon svg { transform:rotate(-45deg); }
+.achievement-row strong,.achievement-row small { display:block; }
+.achievement-row strong { color:#ebe3d8; font-size:12px; }
+.achievement-row small { margin-top:4px; color:#788f9b; font-size:9px; }
+.achievement-row>b { display:grid; place-items:center; width:26px; height:26px; color:#f2c56d; border:1px solid rgba(217,157,55,.4); border-radius:50%; font-size:10px; }
+
+.objective-row { display:grid; grid-template-columns:28px 1fr 34px; gap:9px; align-items:start; padding:13px 14px; border-bottom:1px solid rgba(255,255,255,.055); }
+.objective-row:last-child { border-bottom:0; }
+.objective-row>svg { margin-top:2px; color:#e4ae50; font-size:21px; }
+.objective-row strong,.objective-row small { display:block; }
+.objective-row strong { color:#e9e1d5; font-size:11px; }
+.objective-row small { margin-top:3px; color:#788f9a; font-size:9px; }
+.objective-row i { display:block; height:4px; margin-top:8px; overflow:hidden; border-radius:5px; background:#122a38; }
+.objective-row i span { display:block; height:100%; background:linear-gradient(90deg,#167cab,#e0a842); }
+.objective-row>b { color:#d7b56f; font-size:10px; text-align:right; }
+.objective-done svg { color:#73d77c; font-size:18px; }
+
+.heroes-strip { display:grid; grid-template-columns:repeat(6,minmax(70px,1fr)); gap:10px; padding:15px; }
+.home-hero-card { min-width:0; padding:8px 6px 9px; color:#dfe5e6; border:1px solid rgba(216,156,54,.25); background:rgba(4,19,30,.82); text-align:center; cursor:pointer; }
+.home-hero-card:hover { border-color:var(--home-class-color,#e5b058); transform:translateY(-2px); }
+.home-hero-card img { width:58px; height:58px; object-fit:cover; border:1px solid var(--home-class-color,#d79b39); border-radius:50%; }
+.home-hero-card strong,.home-hero-card small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.home-hero-card strong { margin-top:6px; color:#eee7dd; font-size:10px; }
+.home-hero-card small { margin-top:2px; color:#78909c; font-size:8px; }
+.home-hero-card.is-active { border-color:var(--home-class-color,#e5b058); box-shadow:inset 0 0 16px color-mix(in srgb,var(--home-class-color,#e5b058) 15%,transparent); }
+
+.activity-stats { display:grid; grid-template-columns:repeat(4,1fr); min-height:122px; }
+.activity-stats>div { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border-right:1px solid rgba(255,255,255,.06); }
+.activity-stats>div:last-child { border-right:0; }
+.activity-stats svg { color:#e3ad51; font-size:23px; }
+.activity-stats strong { color:#f0e7d9; font-family:"Cinzel",serif; font-size:20px; font-weight:500; }
+.activity-stats small { color:#788f9b; font-size:9px; }
+
+.sidebar-spacer { flex:1 1 auto; min-height:16px; }
+.sidebar-account { display:grid; grid-template-columns:38px 1fr 10px; align-items:center; gap:10px; margin:0 12px 9px; padding:10px 11px; border-top:1px solid rgba(216,156,54,.15); border-bottom:1px solid rgba(216,156,54,.15); background:rgba(5,25,39,.5); }
+.sidebar-account-avatar { display:grid; place-items:center; width:36px; height:36px; overflow:hidden; color:#efd08c; border:1px solid rgba(216,156,54,.55); border-radius:50%; background:#0b2a3d; font-family:"Cinzel",serif; }
+.sidebar-account-avatar img { width:100%; height:100%; object-fit:cover; }
+.sidebar-account-copy strong,.sidebar-account-copy small { display:block; }
+.sidebar-account-copy strong { color:#eee6da; font-family:"Orbitron",sans-serif; font-size:9px; letter-spacing:.14em; }
+.sidebar-account-copy small { margin-top:3px; color:#7f96a2; font-size:8px; }
+.sidebar-account-status { width:7px; height:7px; border-radius:50%; background:#68d66d; box-shadow:0 0 7px #68d66d; }
+.sidebar-dh-studio { display:flex; flex-direction:column; align-items:center; justify-content:center; margin:0 12px 9px; opacity:.7; }
+.sidebar-dh-studio img { display:block; width:82px; height:34px; object-fit:contain; object-position:center; filter:grayscale(.12) drop-shadow(0 2px 4px #000); }
+.sidebar-dh-studio span { margin-top:-2px; color:#a9bcc5; font-family:"Orbitron",sans-serif; font-size:7px; font-weight:500; letter-spacing:.28em; line-height:1; white-space:nowrap; }
+.azer-nav-icon { color:#e1ab4f; }
+.azer-nav-icon svg { width:22px; height:22px; }
+
+@media (max-width:1250px) {
+  .home-hero { grid-template-columns:minmax(0,1fr) 330px; }
+  .journal-panel,.achievements-panel { grid-column:span 6; }
+  .objectives-panel { grid-column:span 12; }
+  .heroes-panel,.activity-panel { grid-column:span 12; }
+}
+@media (max-width:900px) {
+  .home-hero { grid-template-columns:1fr; }
+  .account-overview { margin:0 24px 52px; }
+  .home-welcome { padding-top:100px; }
+  .home-grid { margin-top:-25px; }
+  .journal-panel,.achievements-panel,.objectives-panel,.heroes-panel,.activity-panel { grid-column:span 12; }
+}
+@media (max-width:620px) {
+  .home-welcome { padding:92px 18px 32px; }
+  .home-welcome h1 { font-size:34px; }
+  .last-hero { align-items:flex-start; }
+  .last-hero-avatar { flex-basis:68px; width:68px; height:68px; }
+  .last-hero-copy h2 { font-size:21px; }
+  .account-overview { margin:0 12px 42px; }
+  .home-grid { padding-inline:8px; }
+  .heroes-strip { grid-template-columns:repeat(3,1fr); }
+  .activity-stats { grid-template-columns:repeat(2,1fr); }
+  .activity-stats>div { min-height:92px; border-bottom:1px solid rgba(255,255,255,.06); }
+}
+
+/* =========================================================
+   AJUSTEMENTS V1.0.1
+========================================================= */
+.home-hero {
+  background:
+    linear-gradient(90deg, rgba(2, 10, 17, 0.97) 0%, rgba(2, 13, 22, 0.78) 36%, rgba(3, 15, 24, 0.28) 66%, rgba(2, 10, 17, 0.72) 100%),
+    linear-gradient(180deg, transparent 55%, #06111b 100%),
+    url('/assets/home-hero-azeroth.jpg') center 48% / cover no-repeat;
+}
+
+.azer-nav-icon,
+.azer-nav-icon svg {
+  color: #e3ad51;
+}
+
+.azer-nav-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(227, 173, 81, 0.18));
+}
+
+.nav-item:hover .azer-nav-icon,
+.nav-item.active .azer-nav-icon,
+.character-switch:hover .azer-nav-icon {
+  color: #f2c56d;
+}
+
+.sidebar-dh-studio {
+  flex: 0 0 auto;
+  gap: 2px;
+  margin: 0 12px 10px;
+  padding: 9px 0 2px;
+  opacity: 0.92;
+  border-top: 1px solid rgba(216, 156, 54, 0.13);
+}
+
+.sidebar-dh-studio small {
+  color: #c4d0d5;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 8px;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+
+.sidebar-dh-studio img {
+  width: 94px;
+  height: 42px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.sidebar-dh-studio span {
+  width: 94px;
+  margin-top: 4px;
+  color: #c4d0d5;
+  font-family: "Orbitron", sans-serif;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.62em;
+  line-height: 1;
+  text-align: center;
+  text-indent: 0.62em;
+  white-space: nowrap;
+}
+
+.battle-net-button {
+  margin-bottom: 8px;
+}
+
+/* =========================================================
+   SIDEBAR V1.0.2 - FACTION ET PERSONNAGE ACTIF
+========================================================= */
+.sidebar-faction {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 12px 12px;
+  padding: 12px 10px 8px;
+  overflow: hidden;
+  border-top: 1px solid rgba(216, 156, 54, 0.12);
+  border-bottom: 1px solid rgba(216, 156, 54, 0.12);
+  background: radial-gradient(circle at 50% 52%, rgba(26, 103, 143, 0.12), transparent 58%);
+}
+
+.sidebar-faction::before,
+.sidebar-faction::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216, 156, 54, 0.28), transparent);
+}
+.sidebar-faction::before { top: 0; }
+.sidebar-faction::after { bottom: 0; }
+
+.sidebar-faction-kicker {
+  color: rgba(226, 177, 91, 0.72);
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sidebar-faction-emblem-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 122px;
+  height: 122px;
+  margin: 3px 0 1px;
+}
+
+.sidebar-faction-emblem-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 91, 135, 0.17), transparent 68%);
+  filter: blur(6px);
+}
+
+.sidebar-faction-emblem {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.82))
+    drop-shadow(0 0 12px rgba(216, 156, 54, 0.18));
+}
+
+.sidebar-faction strong {
+  color: rgba(226, 177, 91, 0.72);
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+
+.sidebar-account {
+  grid-template-columns: 52px minmax(0, 1fr) 10px;
+  gap: 12px;
+  min-height: 66px;
+  margin: 0 12px 10px;
+  padding: 8px 11px;
+  background: linear-gradient(180deg, rgba(8, 34, 51, 0.72), rgba(4, 21, 33, 0.72));
+  border: 1px solid rgba(216, 156, 54, 0.22);
+}
+
+.sidebar-account-avatar {
+  width: 48px;
+  height: 48px;
+  padding: 2px;
+  border-color: rgba(216, 156, 54, 0.72);
+  background: rgba(2, 15, 24, 0.95);
+  box-shadow: 0 0 0 2px rgba(2, 15, 24, 0.9), 0 0 10px rgba(216, 156, 54, 0.12);
+}
+
+.sidebar-account-avatar img {
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 18%;
+}
+
+.sidebar-account-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #d9a74f;
+  font-family: "Orbitron", sans-serif;
+  font-size: 6px;
+  letter-spacing: 0.16em;
+}
+
+.sidebar-account-copy strong {
+  overflow: hidden;
+  color: #f1e8dc;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account-copy small {
+  overflow: hidden;
+  margin-top: 3px;
+  color: #849ba7;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-height: 850px) and (min-width: 981px) {
+  .sidebar-faction { min-height: 108px; }
+  .sidebar-faction-emblem-wrap { width: 88px; height: 88px; }
+  .sidebar-faction-emblem { width: 82px; height: 82px; }
+}
+
+/* =========================================================
+   SIDEBAR V1.0.4 - ALIGNEMENT ET ESPACEMENT FINAL
+========================================================= */
+
+/* Descend légèrement le premier groupe de navigation. */
+.main-nav {
+  padding-top: 18px;
+}
+
+/* La zone de faction conserve sa présence sans absorber trop d'espace. */
+.sidebar-faction {
+  min-height: 132px;
+  margin-top: 8px;
+  padding-top: 7px;
+  padding-bottom: 5px;
+}
+
+/* Emblème plus grand, sans halo arrière prononcé. */
+.sidebar-faction-emblem-wrap {
+  width: 142px;
+  height: 142px;
+  margin: -2px 0 -5px;
+}
+
+.sidebar-faction-emblem-wrap::before {
+  display: none;
+}
+
+.sidebar-faction-emblem {
+  width: 136px;
+  height: 136px;
+  opacity: 1;
+  filter:
+    drop-shadow(0 2px 1px rgba(255, 221, 145, 0.12))
+    drop-shadow(0 4px 4px rgba(0, 0, 0, 0.48));
+}
+
+/* Mes personnages reprend exactement la grille des boutons principaux. */
+#character-switch-button {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 14px;
+  align-items: center;
+  justify-content: initial;
+  gap: 10px;
+  width: calc(100% - 24px);
+  height: 42px;
+  min-height: 42px;
+  padding: 0 14px;
+  text-align: left;
+}
+
+#character-switch-button > .azer-nav-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  min-width: 38px;
+}
+
+#character-switch-button > span:not(.azer-nav-icon) {
+  min-width: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+@media (max-height: 850px) and (min-width: 981px) {
+  .main-nav {
+    padding-top: 13px;
+  }
+
+  .sidebar-faction {
+    min-height: 92px;
+  }
+
+  .sidebar-faction-emblem-wrap {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sidebar-faction-emblem {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+
+/* =========================================================
+   SIDEBAR V1.0.5 - EMBLEMES PROPRES ET ETATS DE NAVIGATION
+========================================================= */
+
+/* Emblèmes SVG transparents : aucun halo ou panneau arrière. */
+.sidebar-faction {
+  background: transparent;
+}
+
+.sidebar-faction-emblem-wrap {
+  overflow: visible;
+  background: transparent;
+}
+
+.sidebar-faction-emblem-wrap::before,
+.sidebar-faction-emblem-wrap::after {
+  display: none !important;
+}
+
+.sidebar-faction-emblem {
+  width: 148px;
+  height: 148px;
+  opacity: 1;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.48));
+}
+
+/* Navigation normale : bleu profond discret. */
+.main-nav .nav-item,
+#character-switch-button {
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(9, 35, 53, 0.96), rgba(4, 21, 33, 0.98));
+}
+
+/* Survol : légèrement plus lumineux, sans effet agressif. */
+.main-nav .nav-item:hover,
+.main-nav .nav-item:focus-visible,
+#character-switch-button:hover,
+#character-switch-button:focus-visible {
+  color: #fff8eb;
+  border-color: rgba(233, 181, 84, 0.92);
+  background: linear-gradient(180deg, rgba(17, 58, 82, 0.98), rgba(7, 31, 47, 0.99));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 177, 0.06),
+    inset 0 0 18px rgba(34, 135, 181, 0.11),
+    0 6px 14px rgba(0, 0, 0, 0.24);
+}
+
+/* Page sélectionnée : teinte noble et repère cyan très mince. */
+.main-nav .nav-item.active {
+  color: #fff8eb;
+  border-color: rgba(235, 185, 91, 0.96);
+  background:
+    linear-gradient(90deg, rgba(22, 111, 153, 0.20), transparent 34%),
+    linear-gradient(180deg, rgba(18, 58, 82, 0.99), rgba(7, 31, 47, 0.99));
+  box-shadow:
+    inset 3px 0 0 #31c6ff,
+    inset 0 1px 0 rgba(255, 232, 177, 0.07),
+    inset 0 0 20px rgba(34, 135, 181, 0.12),
+    0 6px 14px rgba(0, 0, 0, 0.24);
+}
+
+.main-nav .nav-item.active::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, transparent, #31c6ff 20%, #31c6ff 80%, transparent);
+  pointer-events: none;
+}
+
+.main-nav .nav-item.active .azer-nav-icon {
+  color: #f0b85a;
+}
+
+.main-nav .nav-item.active::after {
+  border-color: rgba(244, 202, 116, 0.95);
+  background: rgba(15, 122, 181, 0.62);
+  box-shadow: 0 0 0 2px rgba(5, 25, 40, 0.95);
+}
+
+@media (max-height: 850px) and (min-width: 981px) {
+  .sidebar-faction-emblem {
+    width: 104px;
+    height: 104px;
+  }
+}
+
+
+/* =========================================================
+   SIDEBAR V1.0.6 - EMBLEMES PNG ET SURVOL DORE DOUX
+========================================================= */
+
+/* Utilise les emblèmes PNG détaillés, sans panneau ni halo arrière. */
+.sidebar-faction-emblem-wrap {
+  width: 158px;
+  height: 158px;
+  overflow: visible;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.sidebar-faction-emblem-wrap::before,
+.sidebar-faction-emblem-wrap::after {
+  display: none !important;
+}
+
+.sidebar-faction-emblem {
+  width: 158px;
+  height: 158px;
+  object-fit: contain;
+  opacity: 1;
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.38));
+}
+
+/* Survol doux : texte et repère gauche deviennent dorés. */
+.main-nav .nav-item:hover,
+.main-nav .nav-item:focus-visible,
+#character-switch-button:hover,
+#character-switch-button:focus-visible {
+  color: #e8c47d;
+}
+
+.main-nav .nav-item:hover b,
+.main-nav .nav-item:focus-visible b,
+#character-switch-button:hover > span:last-child,
+#character-switch-button:focus-visible > span:last-child {
+  color: #e8c47d;
+}
+
+.main-nav .nav-item:hover::before,
+.main-nav .nav-item:focus-visible::before,
+#character-switch-button:hover::before,
+#character-switch-button:focus-visible::before {
+  content: "";
+  position: absolute;
+  inset: 7px auto 7px 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, #d6aa5d 24%, #d6aa5d 76%, transparent);
+  pointer-events: none;
+}
+
+/* Élément actif : doré feutré, sans cyan agressif. */
+.main-nav .nav-item.active {
+  color: #efcf8e;
+  box-shadow:
+    inset 3px 0 0 #d6aa5d,
+    inset 0 1px 0 rgba(255, 232, 177, 0.07),
+    inset 0 0 20px rgba(34, 135, 181, 0.10),
+    0 6px 14px rgba(0, 0, 0, 0.24);
+}
+
+.main-nav .nav-item.active b {
+  color: #efcf8e;
+}
+
+.main-nav .nav-item.active::before {
+  width: 3px;
+  background: linear-gradient(180deg, transparent, #d6aa5d 20%, #d6aa5d 80%, transparent);
+}
+
+.main-nav .nav-item.active::after {
+  border-color: rgba(239, 201, 125, 0.95);
+  background: rgba(177, 126, 43, 0.52);
+  box-shadow: 0 0 0 2px rgba(5, 25, 40, 0.95);
+}
+
+@media (max-height: 850px) and (min-width: 981px) {
+  .sidebar-faction-emblem-wrap,
+  .sidebar-faction-emblem {
+    width: 112px;
+    height: 112px;
+  }
+}
+
+/* =========================================================
+   DASHBOARD V1.0.8 - HERO PREMIUM ET MEDAILLON DE FACTION
+========================================================= */
+.home-hero {
+  min-height: 500px;
+  background:
+    linear-gradient(90deg, rgba(2, 9, 15, 0.98) 0%, rgba(3, 15, 24, 0.86) 34%, rgba(3, 15, 24, 0.24) 65%, rgba(2, 10, 17, 0.82) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, transparent 48%, #06111b 100%),
+    url('/assets/home-hero-azeroth.jpg') center 46% / cover no-repeat;
+}
+
+.home-welcome {
+  padding-top: 64px;
+}
+
+.home-eyebrow {
+  margin-bottom: 16px;
+}
+
+.home-welcome h1 {
+  font-size: clamp(42px, 4.4vw, 70px);
+  line-height: 0.98;
+}
+
+.home-welcome > p {
+  margin-top: 13px;
+  margin-bottom: 31px;
+  color: #d3d9da;
+}
+
+.last-hero {
+  gap: 22px;
+  min-height: 138px;
+  padding: 18px 22px 18px 20px;
+  border-color: rgba(221, 170, 78, 0.48);
+  background: linear-gradient(90deg, rgba(6, 26, 41, 0.94), rgba(3, 16, 27, 0.78));
+}
+
+.last-hero-medallion {
+  position: relative;
+  flex: 0 0 126px;
+  width: 126px;
+  height: 126px;
+  display: grid;
+  place-items: center;
+}
+
+.last-hero-faction-frame {
+  position: absolute;
+  inset: -2px;
+  z-index: 2;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.48));
+}
+
+.last-hero-avatar {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 88px;
+  height: 88px;
+  margin-top: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(239, 195, 111, 0.7);
+  border-radius: 50%;
+  background: radial-gradient(circle, #183c52, #06131f);
+  box-shadow: 0 0 0 3px rgba(4, 17, 27, 0.94), 0 0 20px rgba(48, 174, 224, 0.2);
+}
+
+.last-hero-medallion[data-faction="HORDE"] .last-hero-avatar {
+  box-shadow: 0 0 0 3px rgba(27, 7, 7, 0.95), 0 0 20px rgba(166, 44, 35, 0.24);
+}
+
+.last-hero-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  transform: scale(1.24);
+  transform-origin: center 27%;
+}
+
+.last-hero-avatar img[data-character="floralune"] {
+  object-position: center 12%;
+  transform: scale(1.48);
+  transform-origin: center 22%;
+}
+
+.last-hero-copy h2 {
+  font-size: 31px;
+}
+
+.account-overview {
+  margin-right: 38px;
+  padding: 24px 24px 16px;
+  border-color: rgba(216, 156, 54, 0.46);
+  background: linear-gradient(180deg, rgba(5, 23, 36, 0.94), rgba(2, 13, 22, 0.93));
+}
+
+.home-grid {
+  gap: 15px;
+  padding: 0 20px 22px;
+}
+
+.home-panel {
+  border-color: rgba(199, 140, 48, 0.38);
+}
+
+.home-hero-card img {
+  object-position: center 18%;
+  transform: scale(1.12);
+}
+
+@media (max-width: 620px) {
+  .last-hero-medallion {
+    flex-basis: 96px;
+    width: 96px;
+    height: 96px;
+  }
+
+  .last-hero-faction-frame {
+    width: 100px;
+    height: 100px;
+  }
+
+  .last-hero-avatar {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+/* =========================================================
+   DASHBOARD V1.0.9 - MISE EN PAGE FIDELE A LA REFERENCE
+========================================================= */
+
+.home-dashboard {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: #06111b;
+}
+
+.home-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  min-height: 338px;
+  margin: 0 3px;
+  border: 1px solid rgba(117, 148, 166, 0.22);
+  border-radius: 0 0 10px 10px;
+  background:
+    linear-gradient(90deg, rgba(2, 10, 17, 0.98) 0%, rgba(2, 13, 22, 0.82) 31%, rgba(3, 15, 24, 0.22) 64%, rgba(2, 10, 17, 0.78) 100%),
+    linear-gradient(180deg, transparent 58%, rgba(3, 13, 21, 0.74) 100%),
+    url('/assets/home-hero-azeroth.jpg') center 50% / cover no-repeat;
+}
+
+.home-hero-overlay {
+  box-shadow: inset 0 -52px 70px rgba(3, 13, 21, 0.8);
+}
+
+.home-welcome {
+  align-self: stretch;
+  max-width: 690px;
+  padding: 25px 22px 21px;
+}
+
+.home-eyebrow {
+  margin: 0 0 8px;
+  font-size: 8px;
+  letter-spacing: .2em;
+}
+
+.home-eyebrow::before {
+  width: 26px;
+}
+
+.home-welcome h1 {
+  font-size: clamp(29px, 3vw, 42px);
+  line-height: 1.02;
+  text-transform: none;
+}
+
+.home-welcome > p {
+  margin: 5px 0 21px;
+  font-size: 14px;
+}
+
+.last-hero-label {
+  margin-bottom: 8px;
+  font-size: 9px;
+  letter-spacing: .13em;
+}
+
+.last-hero {
+  width: min(100%, 470px);
+  min-height: 105px;
+  gap: 16px;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.last-hero-medallion {
+  flex: 0 0 104px;
+  width: 104px;
+  height: 104px;
+}
+
+.last-hero-avatar {
+  z-index: 1;
+  width: 91px;
+  height: 91px;
+  margin: 0;
+  border: 3px solid #b68a3c;
+  box-shadow:
+    0 0 0 2px rgba(5, 18, 28, 0.96),
+    0 0 0 4px rgba(214, 169, 79, 0.55),
+    0 0 14px rgba(0, 0, 0, 0.72);
+}
+
+.last-hero-avatar img {
+  object-position: center 16%;
+  transform: scale(1.34);
+  transform-origin: center 22%;
+}
+
+.last-hero-avatar img[data-character="floralune"] {
+  object-position: center 10%;
+  transform: scale(1.66);
+  transform-origin: center 18%;
+}
+
+/* L'embleme de faction devient un petit sceau, pas le portrait complet. */
+.last-hero-faction-frame {
+  inset: auto -3px -3px auto;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  padding: 2px;
+  border-radius: 50%;
+  background: rgba(3, 14, 23, 0.94);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.75));
+}
+
+.last-hero-copy h2 {
+  font-size: 24px;
+}
+
+.last-hero-copy > p {
+  margin: 2px 0 7px;
+  font-size: 13px;
+}
+
+.last-hero-copy ul {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.home-primary-button {
+  min-width: 265px;
+  min-height: 41px;
+  margin-top: 10px;
+  padding: 0 18px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  background: linear-gradient(180deg, #12467b, #062b55);
+}
+
+.account-overview {
+  align-self: center;
+  width: auto;
+  margin: 22px 15px 22px 0;
+  padding: 14px 17px 9px;
+  border: 1px solid rgba(118, 145, 160, 0.24);
+  border-radius: 9px;
+  background: linear-gradient(180deg, rgba(5, 18, 29, 0.95), rgba(2, 12, 20, 0.95));
+}
+
+.account-overview h2 {
+  margin-bottom: 4px;
+  padding-bottom: 11px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-align: left;
+}
+
+.account-overview li {
+  grid-template-columns: 30px 48px 1fr;
+  min-height: 42px;
+}
+
+.account-overview svg {
+  color: #d6dde1;
+  font-size: 18px;
+}
+
+.account-overview strong {
+  font-family: inherit;
+  font-size: 18px;
+}
+
+.account-overview span {
+  font-size: 10px;
+}
+
+.home-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+  padding: 0 3px 14px;
+}
+
+.home-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(118, 145, 160, 0.22);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(5, 20, 32, 0.98), rgba(3, 14, 23, 0.98));
+  box-shadow: inset 0 0 18px rgba(32, 112, 151, 0.04);
+}
+
+.home-panel > header {
+  min-height: 39px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  background: transparent;
+}
+
+.home-panel > header h2 {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.home-panel > header button,
+.home-panel > header span {
+  font-size: 10px;
+  color: #76a8c4;
+}
+
+.journal-panel,
+.achievements-panel,
+.objectives-panel,
+.heroes-panel,
+.activity-panel,
+.locations-panel {
+  grid-column: span 4;
+}
+
+.timeline {
+  padding: 5px 15px 11px;
+}
+
+.timeline-item {
+  grid-template-columns: 50px 29px 1fr;
+  min-height: 55px;
+}
+
+.timeline-item:not(:last-child)::after {
+  left: 63px;
+  top: 39px;
+  bottom: -16px;
+}
+
+.timeline-item time {
+  font-size: 9px;
+  text-transform: none;
+}
+
+.timeline-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.timeline-item strong {
+  font-size: 11px;
+}
+
+.timeline-item small {
+  font-size: 9px;
+}
+
+.achievement-row {
+  grid-template-columns: 38px 1fr 31px;
+  min-height: 62px;
+  margin: 0 12px;
+}
+
+.achievement-icon {
+  width: 31px;
+  height: 31px;
+}
+
+.achievement-row strong {
+  font-size: 11px;
+}
+
+.objective-row {
+  grid-template-columns: 24px 1fr 31px;
+  padding: 11px 12px;
+}
+
+.objective-row strong {
+  font-size: 10px;
+}
+
+.objective-row i {
+  height: 4px;
+}
+
+.heroes-strip {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.home-hero-card {
+  padding: 5px 3px 7px;
+  border: 0;
+  background: transparent;
+}
+
+.home-hero-card img {
+  width: 56px;
+  height: 56px;
+  transform: scale(1.22);
+  object-position: center 15%;
+  box-shadow: 0 0 0 2px rgba(5,18,28,.96);
+}
+
+.home-hero-card strong {
+  margin-top: 7px;
+  font-size: 10px;
+}
+
+.home-hero-card small {
+  font-size: 8px;
+}
+
+.activity-stats {
+  grid-template-columns: repeat(5, 1fr);
+  min-height: 116px;
+}
+
+.activity-stats > div {
+  min-width: 0;
+  padding: 7px 3px;
+}
+
+.activity-stats svg {
+  font-size: 25px;
+}
+
+.activity-stats strong {
+  font-family: inherit;
+  font-size: 17px;
+}
+
+.activity-stats small {
+  text-align: center;
+}
+
+.locations-panel {
+  display: flex;
+  min-height: 194px;
+  flex-direction: column;
+}
+
+.locations-map {
+  position: relative;
+  flex: 1;
+  min-height: 145px;
+  margin: 0 10px 10px;
+  overflow: hidden;
+  border-radius: 2px;
+  background:
+    linear-gradient(rgba(6, 15, 20, .12), rgba(6, 15, 20, .2)),
+    url('/assets/map-hinterlands.jpg') center / cover no-repeat;
+  box-shadow: inset 0 0 26px rgba(0,0,0,.7);
+}
+
+.map-pin {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #f3f4f2;
+  font-size: 10px;
+  text-shadow: 0 1px 3px #000;
+}
+
+.map-pin svg {
+  color: #15a9f4;
+  font-size: 22px;
+  filter: drop-shadow(0 1px 2px #000);
+}
+
+.pin-one { left: 17%; top: 28%; }
+.pin-two { left: 45%; top: 52%; }
+.pin-three { right: 9%; bottom: 13%; }
+
+@media (max-width: 1180px) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+  .journal-panel,
+  .achievements-panel,
+  .objectives-panel,
+  .heroes-panel,
+  .activity-panel,
+  .locations-panel {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 850px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+  }
+  .account-overview {
+    margin: 0 15px 18px;
+  }
+  .home-welcome {
+    padding-top: 28px;
+  }
+}
+
+@media (max-width: 680px) {
+  .journal-panel,
+  .achievements-panel,
+  .objectives-panel,
+  .heroes-panel,
+  .activity-panel,
+  .locations-panel {
+    grid-column: span 12;
+  }
+  .heroes-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .activity-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* =========================================================
+   DASHBOARD V1.1.0 - SIX SECTIONS CENTRALES PLUS LISIBLES
+   Conserve la structure EJS et la logique JavaScript existantes.
+========================================================= */
+
+@media (min-width: 1181px) {
+  .home-grid {
+    gap: 14px;
+    margin-top: 14px;
+    padding: 0 16px 22px;
+  }
+
+  .journal-panel,
+  .achievements-panel,
+  .objectives-panel,
+  .heroes-panel,
+  .activity-panel,
+  .locations-panel {
+    grid-column: span 4;
+  }
+}
+
+.home-panel {
+  min-height: 262px;
+  border-color: rgba(201, 151, 72, 0.34);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(36, 112, 151, 0.10), transparent 48%),
+    linear-gradient(180deg, rgba(7, 25, 39, 0.99), rgba(3, 14, 23, 0.99));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 30px rgba(26, 99, 135, 0.055),
+    0 10px 24px rgba(0, 0, 0, 0.20);
+}
+
+.home-panel > header {
+  min-height: 55px;
+  padding: 0 20px;
+  border-bottom-color: rgba(218, 169, 84, 0.14);
+  background: linear-gradient(180deg, rgba(18, 48, 66, 0.34), rgba(5, 22, 34, 0.10));
+}
+
+.home-panel > header h2 {
+  color: #e9bd6b;
+  font-family: "Orbitron", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.home-panel > header button,
+.home-panel > header span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.timeline {
+  display: grid;
+  align-content: center;
+  min-height: 205px;
+  padding: 10px 20px 16px;
+}
+
+.timeline-item {
+  grid-template-columns: 66px 38px minmax(0, 1fr);
+  min-height: 63px;
+  gap: 7px;
+}
+
+.timeline-item:not(:last-child)::after {
+  left: 84px;
+  top: 44px;
+  bottom: -19px;
+}
+
+.timeline-item time {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.timeline-icon {
+  width: 31px;
+  height: 31px;
+}
+
+.timeline-icon svg {
+  font-size: 16px;
+}
+
+.timeline-item strong {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.timeline-item small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.achievements-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.achievement-row {
+  grid-template-columns: 48px minmax(0, 1fr) 38px;
+  flex: 1;
+  min-height: 68px;
+  margin: 0 17px;
+  gap: 12px;
+}
+
+.achievement-icon {
+  width: 39px;
+  height: 39px;
+}
+
+.achievement-icon svg {
+  font-size: 20px;
+}
+
+.achievement-row strong {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.achievement-row small {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.achievement-row b {
+  min-width: 31px;
+  font-size: 13px;
+}
+
+.objectives-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.objective-row {
+  grid-template-columns: 34px minmax(0, 1fr) 42px;
+  flex: 1;
+  min-height: 68px;
+  padding: 13px 18px;
+  gap: 11px;
+}
+
+.objective-row > svg {
+  font-size: 22px;
+}
+
+.objective-row strong {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.objective-row small {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.objective-row i {
+  height: 6px;
+  margin-top: 9px;
+}
+
+.objective-row > b {
+  font-size: 13px;
+}
+
+.heroes-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroes-strip {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  flex: 1;
+  align-items: stretch;
+  gap: 11px;
+  padding: 17px 16px 18px;
+}
+
+.home-hero-card {
+  display: flex;
+  min-height: 158px;
+  padding: 12px 6px 11px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(130, 158, 173, 0.13);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(9, 31, 46, 0.72), rgba(3, 16, 26, 0.40));
+}
+
+.home-hero-card:hover,
+.home-hero-card.is-active {
+  border-color: var(--home-class-color, #e5b058);
+  background: linear-gradient(180deg, rgba(13, 40, 57, 0.90), rgba(4, 19, 30, 0.72));
+}
+
+.home-hero-card img {
+  width: 78px;
+  height: 78px;
+  transform: scale(1.12);
+  object-position: center 15%;
+}
+
+.home-hero-card strong {
+  margin-top: 13px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.home-hero-card small {
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.activity-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  flex: 1;
+  min-height: 205px;
+  padding: 17px 10px;
+}
+
+.activity-stats > div {
+  min-width: 0;
+  min-height: 150px;
+  padding: 15px 8px;
+  justify-content: center;
+  gap: 7px;
+}
+
+.activity-stats svg {
+  font-size: 34px;
+}
+
+.activity-stats strong {
+  font-family: "Cinzel", serif;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.activity-stats small {
+  max-width: 92px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.locations-panel {
+  min-height: 262px;
+}
+
+.locations-map {
+  min-height: 197px;
+  margin: 0 14px 14px;
+  border-radius: 5px;
+}
+
+.map-pin {
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.map-pin svg {
+  font-size: 27px;
+}
+
+@media (max-width: 1500px) and (min-width: 1181px) {
+  .home-panel > header h2 {
+    font-size: 12px;
+  }
+
+  .timeline-item strong,
+  .achievement-row strong,
+  .objective-row strong {
+    font-size: 12px;
+  }
+
+  .timeline-item small,
+  .achievement-row small,
+  .objective-row small {
+    font-size: 10px;
+  }
+
+  .home-hero-card img {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .home-panel {
+    min-height: 250px;
+  }
+
+  .heroes-strip {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .home-panel > header {
+    min-height: 50px;
+    padding-inline: 15px;
+  }
+
+  .home-panel > header h2 {
+    font-size: 12px;
+  }
+
+  .heroes-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activity-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

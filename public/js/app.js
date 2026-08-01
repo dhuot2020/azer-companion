@@ -868,6 +868,23 @@ function getCharacterFallbackPortrait(character) {
   return `/assets/characters/showcase/avatars/showcase-${String(portraitIndex).padStart(2, "0")}.webp`;
 }
 
+function getCharacterPortraitImage(character) {
+  if (character.isShowcase) {
+    return getShowcasePortrait(character);
+  }
+
+  return (
+    getMediaAsset(character, "avatar") ||
+    character.avatarUrl ||
+    character.avatar ||
+    character.media?.avatar ||
+    getMediaAsset(character, "inset") ||
+    character.media?.bust_url ||
+    character.portraitUrl ||
+    getCharacterFallbackPortrait(character)
+  );
+}
+
 function getCharacterImage(character) {
   if (character.isShowcase) {
     return getShowcasePortrait(character);
@@ -1184,6 +1201,7 @@ function updateDashboardCharacter(character) {
   }
 
   renderSidebarLastSession(character);
+  renderHomeDashboardCharacter(character);
 }
 
 function renderCharacterUnavailable(message) {
@@ -1321,6 +1339,7 @@ async function loadCharacters() {
     );
 
     renderCharacters();
+    renderHomeDashboardAccount(realCharacters);
   } catch (error) {
     console.error(error);
 
@@ -1333,6 +1352,240 @@ async function loadCharacters() {
     `;
   }
 }
+
+
+// ======================================================
+// Accueil du compte Azer Companion
+// ======================================================
+
+function formatHomeDate(timestamp) {
+  if (!timestamp) return "Dernière session inconnue";
+
+  return new Intl.DateTimeFormat("fr-CA", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(Number(timestamp) * 1000));
+}
+
+function getCollectorCharacter(character) {
+  return collectorCharacters.get(getCollectorCharacterKey(character)) || null;
+}
+
+function getCollectorSessions(character) {
+  const collectorCharacter = getCollectorCharacter(character);
+  const sessions = Array.isArray(collectorCharacter?.sessions)
+    ? collectorCharacter.sessions
+    : [];
+
+  if (collectorCharacter?.latestSession) {
+    const latestKey = `${collectorCharacter.latestSession.startedAt || 0}:${collectorCharacter.latestSession.endedAt || 0}`;
+    const alreadyIncluded = sessions.some(
+      (session) => `${session.startedAt || 0}:${session.endedAt || 0}` === latestKey,
+    );
+
+    if (!alreadyIncluded) sessions.push(collectorCharacter.latestSession);
+  }
+
+  return sessions;
+}
+
+function getHomeLocation(character) {
+  const collectorCharacter = getCollectorCharacter(character);
+  const parts = [
+    collectorCharacter?.location?.subZone,
+    collectorCharacter?.location?.zone,
+  ].filter(Boolean);
+
+  return [...new Set(parts)].join(" · ") || "Lieu non enregistré";
+}
+
+function getLastHomeSession(character) {
+  const collectorCharacter = getCollectorCharacter(character);
+  return collectorCharacter?.latestSession || null;
+}
+
+function renderHomeDashboardCharacter(character) {
+  if (!character) return;
+
+  const collectorCharacter = getCollectorCharacter(character);
+  const session = getLastHomeSession(character);
+  const lastTimestamp = getCollectorActivityTimestamp(collectorCharacter);
+  const location = getHomeLocation(character);
+  const duration = session?.durationSeconds
+    ? formatCollectorDuration(session.durationSeconds)
+    : "Durée non enregistrée";
+
+  const values = {
+    homeHeroName: character.name,
+    homeHeroClass: character.className,
+    homeHeroLevel: character.level,
+    homeHeroLocation: location,
+    homeHeroLastPlayed: formatHomeDate(lastTimestamp),
+    homeHeroDuration: duration,
+    timelineCurrentLocation: location,
+    timelineSessionDuration: duration,
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+
+  const portraitImage = getCharacterPortraitImage(character);
+  const avatar = document.getElementById("homeHeroAvatar");
+  const heroMedallion = document.getElementById("homeHeroMedallion");
+  const heroFactionFrame = document.getElementById("homeHeroFactionFrame");
+  const normalizedCharacterName = String(character.name || "").trim().toLowerCase();
+  const isHorde = character.factionName === "HORDE";
+
+  if (avatar) {
+    avatar.src = portraitImage;
+    avatar.alt = `Portrait de ${character.name}`;
+    avatar.hidden = false;
+    avatar.dataset.character = normalizedCharacterName;
+  }
+  if (heroMedallion) {
+    heroMedallion.dataset.faction = isHorde ? "HORDE" : "ALLIANCE";
+  }
+  if (heroFactionFrame) {
+    heroFactionFrame.src = isHorde
+      ? "/assets/factions/azer-horde.png"
+      : "/assets/factions/azer-alliance.png";
+  }
+
+  const accountAvatar = document.getElementById("sidebar-account-avatar");
+  const accountInitial = document.getElementById("sidebar-account-initial");
+  const accountName = document.getElementById("sidebar-account-name");
+  const accountDetails = document.getElementById("sidebar-account-details");
+  const factionEmblem = document.getElementById("sidebar-faction-emblem");
+  const factionName = document.getElementById("sidebar-faction-name");
+
+  if (accountAvatar) {
+    accountAvatar.src = portraitImage;
+    accountAvatar.alt = `Portrait de ${character.name}`;
+    accountAvatar.hidden = false;
+  }
+  if (accountInitial) accountInitial.hidden = true;
+  if (accountName) accountName.textContent = character.name;
+  if (accountDetails) {
+    accountDetails.textContent = `${character.className} · Niv. ${character.level} · ${character.realm}`;
+  }
+  if (factionEmblem) {
+    factionEmblem.src = isHorde
+      ? "/assets/factions/azer-horde.png"
+      : "/assets/factions/azer-alliance.png";
+    factionEmblem.alt = isHorde ? "Horde" : "Alliance";
+  }
+  if (factionName) factionName.textContent = isHorde ? "HORDE" : "ALLIANCE";
+}
+
+function renderHomeHeroes(characters) {
+  const strip = document.getElementById("homeHeroesStrip");
+  if (!strip) return;
+
+  strip.innerHTML = "";
+
+  const displayedCharacters = characters
+    .slice()
+    .sort((a, b) => Number(isCurrentCharacter(b)) - Number(isCurrentCharacter(a)))
+    .slice(0, 4);
+
+  displayedCharacters.forEach((character) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "home-hero-card";
+    button.classList.toggle("is-active", isCurrentCharacter(character));
+    button.style.setProperty("--home-class-color", character.classColor);
+    button.innerHTML = `
+      <span class="home-card-comet home-card-comet-one" aria-hidden="true"></span>
+      <span class="home-card-comet home-card-comet-two" aria-hidden="true"></span>
+      <img src="${character.image}" alt="" />
+      <strong>${character.name}</strong>
+      <small>Niv. ${character.level} · ${character.className}</small>
+    `;
+    button.addEventListener("click", () => openCharacterProfile(character));
+    strip.appendChild(button);
+  });
+
+  const placeholderCount = Math.max(0, 4 - displayedCharacters.length);
+  for (let index = 0; index < placeholderCount; index += 1) {
+    const placeholder = document.createElement("div");
+    placeholder.className = "home-hero-card home-hero-placeholder";
+    placeholder.setAttribute("aria-hidden", "true");
+    placeholder.innerHTML = `
+      <span class="home-hero-placeholder-medallion"></span>
+      <strong>Héros à découvrir</strong>
+      <small>Synchronisation Battle.net</small>
+    `;
+    strip.appendChild(placeholder);
+  }
+}
+
+function renderHomeDashboardAccount(characters) {
+  const realCharacters = characters.filter((character) => !character.isShowcase);
+  const collectorList = [...collectorCharacters.values()];
+  const totalLevels = realCharacters.reduce(
+    (total, character) => total + (Number(character.level) || 0),
+    0,
+  );
+  const zones = new Set(
+    collectorList
+      .map((character) => character?.location?.zone)
+      .filter(Boolean),
+  );
+  const sessions = collectorList.flatMap((character) => {
+    const list = Array.isArray(character?.sessions) ? character.sessions : [];
+    return list.length ? list : character?.latestSession ? [character.latestSession] : [];
+  });
+  const nowSeconds = Date.now() / 1000;
+  const weekStart = nowSeconds - 7 * 24 * 60 * 60;
+  const weekSeconds = sessions.reduce((total, session) => {
+    const startedAt = Number(session?.startedAt || 0);
+    if (startedAt < weekStart) return total;
+    return total + Number(session?.durationSeconds || 0);
+  }, 0);
+  const weekLabel = formatCollectorDuration(weekSeconds);
+
+  const values = {
+    accountCharactersCount: realCharacters.length,
+    accountLevelsTotal: totalLevels,
+    accountSessionsCount: sessions.length,
+    accountZonesCount: zones.size,
+    accountWeekTime: weekLabel,
+    activityWeekTime: weekLabel,
+    timelineCharacters: `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""} Battle.net`,
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+
+  renderHomeHeroes(realCharacters);
+}
+
+function openCurrentCharacterProfile() {
+  const character = blizzardCharacters.find(isCurrentCharacter);
+  if (character) openCharacterProfile(character);
+}
+
+document
+  .getElementById("continueAdventureButton")
+  ?.addEventListener("click", openCurrentCharacterProfile);
+
+document
+  .getElementById("viewAllHeroesButton")
+  ?.addEventListener("click", openCharactersView);
+
+document
+  .getElementById("hallHeroesNav")
+  ?.addEventListener("click", (event) => {
+    event.preventDefault();
+    openCharactersView();
+  });
 
 // ======================================================
 // Navigation entre les vues

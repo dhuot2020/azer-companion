@@ -1,0 +1,8 @@
+AZER COMPANION - ACCUEIL V1.1.4
+
+- Nouvelle image du Hero integree dans le projet.
+- Version haute resolution 3548 x 1774 px.
+- Aucun filtre CSS de flou.
+- Aucune bordure autour du Hero.
+- Fusion progressive vers la couleur exacte du fond #06111b.
+- Bouton Continuer l'aventure conserve au style de la sidebar avec losange.

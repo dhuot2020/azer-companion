@@ -1,0 +1,9 @@
+AZER COMPANION - ACCUEIL V1.1.5
+
+Modification ciblée : panneau « Vue d’ensemble du compte ».
+
+- Transparence réduite pour améliorer la lisibilité.
+- Effet de vitre embrouillée avec backdrop-filter blur(18px).
+- Saturation et luminosité du décor réduites sous le panneau.
+- Légère buée interne, sans flouter le texte ni les icônes.
+- Aucun changement au Hero, aux cartes ou à la logique JavaScript.

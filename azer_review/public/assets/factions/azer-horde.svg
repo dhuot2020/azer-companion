@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title">
+  <title id="title">Horde</title>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0a8"/><stop offset=".24" stop-color="#d9a23c"/><stop offset=".6" stop-color="#7c430f"/><stop offset="1" stop-color="#e8bb5b"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#731b1d"/><stop offset="1" stop-color="#25070b"/>
+    </linearGradient>
+    <filter id="emboss" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.8" flood-color="#000" flood-opacity=".45"/>
+    </filter>
+  </defs>
+  <path d="M120 18 151 40 184 35 184 67 209 90 193 119 201 151 170 158 150 187 120 220 90 187 70 158 39 151 47 119 31 90 56 67 56 35 89 40Z" fill="url(#red)" stroke="url(#gold)" stroke-width="8" filter="url(#emboss)"/>
+  <path d="M120 50 156 87 142 103 155 126 137 133 137 170 120 190 103 170 103 133 85 126 98 103 84 87Z" fill="none" stroke="url(#gold)" stroke-width="12" stroke-linejoin="miter"/>
+  <path d="M120 78 137 102 129 122 120 141 111 122 103 102Z" fill="url(#gold)"/>
+  <path d="m120 36 7 13 14 3-10 10 2 15-13-7-13 7 2-15-10-10 14-3Z" fill="url(#gold)"/>
+</svg>
