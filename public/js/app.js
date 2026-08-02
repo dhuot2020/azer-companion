@@ -1339,7 +1339,9 @@ async function loadCharacters() {
     );
 
     renderCharacters();
-    renderHomeDashboardAccount(realCharacters);
+    renderHomeDashboardAccount(realCharacters, data.dashboard || null);
+    renderHomeJournal(data.journal || []);
+    renderHomeAchievements(data.achievements || []);
   } catch (error) {
     console.error(error);
 
@@ -1524,39 +1526,36 @@ function renderHomeHeroes(characters) {
   }
 }
 
-function renderHomeDashboardAccount(characters) {
+function renderHomeDashboardAccount(characters, dashboardSummary = null) {
   const realCharacters = characters.filter((character) => !character.isShowcase);
-  const collectorList = [...collectorCharacters.values()];
-  const totalLevels = realCharacters.reduce(
-    (total, character) => total + (Number(character.level) || 0),
-    0,
+  const fallbackCollectorList = [...collectorCharacters.values()];
+  const fallbackSessions = fallbackCollectorList.flatMap((character) =>
+    Array.isArray(character?.sessions) ? character.sessions : [],
   );
-  const zones = new Set(
-    collectorList
-      .map((character) => character?.location?.zone)
-      .filter(Boolean),
-  );
-  const sessions = collectorList.flatMap((character) => {
-    const list = Array.isArray(character?.sessions) ? character.sessions : [];
-    return list.length ? list : character?.latestSession ? [character.latestSession] : [];
-  });
-  const nowSeconds = Date.now() / 1000;
-  const weekStart = nowSeconds - 7 * 24 * 60 * 60;
-  const weekSeconds = sessions.reduce((total, session) => {
-    const startedAt = Number(session?.startedAt || 0);
-    if (startedAt < weekStart) return total;
-    return total + Number(session?.durationSeconds || 0);
-  }, 0);
-  const weekLabel = formatCollectorDuration(weekSeconds);
+  const summary = dashboardSummary || {
+    characterCount: realCharacters.length,
+    totalLevels: realCharacters.reduce(
+      (total, character) => total + (Number(character.level) || 0),
+      0,
+    ),
+    sessionCount: fallbackSessions.length,
+    uniqueZoneCount: 0,
+    weekPlaySeconds: 0,
+    latestLocations: [],
+  };
+  const weekLabel = formatCollectorDuration(summary.weekPlaySeconds || 0);
 
   const values = {
-    accountCharactersCount: realCharacters.length,
-    accountLevelsTotal: totalLevels,
-    accountSessionsCount: sessions.length,
-    accountZonesCount: zones.size,
+    accountCharactersCount: summary.characterCount,
+    accountLevelsTotal: summary.totalLevels,
+    accountSessionsCount: summary.sessionCount,
+    accountZonesCount: summary.uniqueZoneCount,
     accountWeekTime: weekLabel,
     activityWeekTime: weekLabel,
-    timelineCharacters: `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""} Battle.net`,
+    activitySessionsCount: summary.sessionCount,
+    activityZonesCount: summary.uniqueZoneCount,
+    activityHeroesCount: summary.characterCount,
+    timelineCharacters: `${summary.characterCount} personnage${summary.characterCount > 1 ? "s" : ""} Battle.net`,
   };
 
   Object.entries(values).forEach(([id, value]) => {
@@ -1564,7 +1563,160 @@ function renderHomeDashboardAccount(characters) {
     if (element) element.textContent = value;
   });
 
+  renderHomeLocations(summary.latestLocations || []);
   renderHomeHeroes(realCharacters);
+}
+
+function escapeHomeJournalText(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatJournalMoment(timestamp) {
+  const date = new Date(Number(timestamp || 0) * 1000);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return date.toLocaleTimeString("fr-CA", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return date.toLocaleDateString("fr-CA", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function journalLocationLabel(location) {
+  if (!location) return "";
+  return [location.subZone, location.zone]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(" · ");
+}
+
+function journalEventPresentation(event) {
+  const character = event.characterName || "Personnage inconnu";
+  const location = journalLocationLabel(event.location);
+
+  if (event.type === "SESSION_ACTIVE") {
+    return {
+      icon: "icon-location",
+      title: `${character} est en aventure`,
+      detail: location || "Session actuellement active",
+    };
+  }
+
+  if (event.type === "TRAVEL_RECORDED") {
+    const from = journalLocationLabel(event.fromLocation);
+    return {
+      icon: "icon-map",
+      title: `${character} a voyagé`,
+      detail: from && location ? `${from} → ${location}` : location || from || "Déplacement enregistré",
+    };
+  }
+
+  if (event.type === "SESSION_ENDED") {
+    const duration = formatCollectorDuration(event.durationSeconds || 0);
+    return {
+      icon: "icon-clock",
+      title: `${character} a terminé sa session`,
+      detail: [duration, location].filter(Boolean).join(" · ") || "Session enregistrée",
+    };
+  }
+
+  return {
+    icon: "icon-journal",
+    title: `${character} s’est connecté`,
+    detail: location || "Début d’une nouvelle aventure",
+  };
+}
+
+function renderHomeJournal(events) {
+  const timeline = document.getElementById("homeTimeline");
+  if (!timeline) return;
+
+  if (!Array.isArray(events) || !events.length) {
+    timeline.innerHTML = `<div class="home-empty-state">
+      <strong>Aucune session enregistrée</strong>
+      <small>Connecte-toi en jeu avec le Collector actif, puis fais /reload ou déconnecte-toi.</small>
+    </div>`;
+    return;
+  }
+
+  timeline.innerHTML = events.slice(0, 5).map((event) => {
+    const presentation = journalEventPresentation(event);
+    return `<div class="timeline-item">
+      <time>${escapeHomeJournalText(formatJournalMoment(event.timestamp))}</time>
+      <span class="timeline-icon"><svg><use href="#${presentation.icon}"></use></svg></span>
+      <div>
+        <strong>${escapeHomeJournalText(presentation.title)}</strong>
+        <small>${escapeHomeJournalText(presentation.detail)}</small>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderHomeAchievements(achievements) {
+  const container = document.getElementById("homeAchievementsList");
+  if (!container) return;
+
+  if (!Array.isArray(achievements) || !achievements.length) {
+    container.innerHTML = `<div class="home-empty-state">
+      <span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span>
+      <strong>Aucune réussite synchronisée</strong>
+      <small>Obtiens un haut fait en jeu avec le Collector actif, puis fais /reload ou déconnecte-toi.</small>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = achievements.slice(0, 3).map((achievement) => {
+    const detail = [
+      achievement.description,
+      achievement.characterName ? `Obtenu par ${achievement.characterName}` : "",
+    ].filter(Boolean).join(" · ");
+
+    return `<div class="achievement-row">
+      <span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span>
+      <div>
+        <strong>${escapeHomeJournalText(achievement.name || "Haut fait obtenu")}</strong>
+        <small>${escapeHomeJournalText(detail || formatJournalMoment(achievement.earnedAt))}</small>
+      </div>
+      <b>${escapeHomeJournalText(achievement.points || 0)}</b>
+    </div>`;
+  }).join("");
+}
+
+function renderHomeLocations(locations) {
+  const map = document.querySelector(".locations-map");
+  if (!map) return;
+
+  if (!Array.isArray(locations) || !locations.length) {
+    map.innerHTML = `<div class="home-empty-state">
+      <strong>Aucun lieu enregistré</strong>
+      <small>Le Collector ajoutera ici les derniers endroits visités.</small>
+    </div>`;
+    return;
+  }
+
+  map.innerHTML = locations.slice(0, 3).map((entry, index) => {
+    const label = [entry.location?.subZone, entry.location?.zone]
+      .filter(Boolean)
+      .join(" · ") || "Lieu enregistré";
+    return `<div class="map-pin pin-${["one", "two", "three"][index] || "one"}">
+      <svg><use href="#icon-location"></use></svg>
+      <span>${label}</span>
+    </div>`;
+  }).join("");
 }
 
 function openCurrentCharacterProfile() {

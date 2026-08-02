@@ -1,9 +1,0 @@
-AZER COMPANION - V1.1.10
-
-- Retrait du bouton Continuer l aventure.
-- Panneau Vue d ensemble du compte moins large et mieux espace des panneaux du bas.
-- Cartes Mes heros remises au ratio vertical du Hall des heros.
-- Medaillons des cartes reduits.
-- Effets lumineux des cartes conserves.
-- Signature DH Studio du footer avec effet bleu metallique proche du logo.
-- Aucun changement aux donnees Battle.net, au collecteur ou a la navigation.

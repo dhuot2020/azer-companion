@@ -2728,3 +2728,66 @@
     drop-shadow(0 0 3px rgba(214, 225, 232, 0.16))
     drop-shadow(3px 0 5px rgba(30, 130, 193, 0.25));
 }
+
+/* ==========================================================
+   PHASE 2 - ETATS VIDES AVEC DONNEES REELLES
+   ========================================================== */
+
+.home-empty-state {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  color: rgba(232, 239, 247, 0.72);
+}
+
+.home-empty-state .achievement-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+}
+
+.home-empty-state svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: #d7aa52;
+  stroke-width: 1.6;
+}
+
+.home-empty-state strong {
+  color: #f2f5f8;
+  font-family: "Cinzel", serif;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.home-empty-state small {
+  max-width: 360px;
+  color: rgba(210, 220, 231, 0.62);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+
+/* ==========================================================
+   V1.1.2 - REUSSITES REELLES
+   ========================================================== */
+.home-achievements-list {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-achievements-list .achievement-row {
+  flex: 1 1 0;
+}

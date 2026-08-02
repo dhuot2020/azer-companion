@@ -2,6 +2,9 @@ const crypto = require("crypto");
 
 const express = require("express");
 const { readCollectorSummary } = require("../services/azerCollector");
+const { buildDashboardSummary } = require("../core/dashboard.service");
+const { buildSessionJournal } = require("../core/journal.service");
+const { buildRecentAchievements } = require("../core/achievements.service");
 
 const router = express.Router();
 
@@ -281,10 +284,23 @@ router.get("/api/characters", async (req, res) => {
         fetchCharacterAvatar(character, req.session.blizzard_access_token),
     );
 
+    let collector = { available: false, characters: [] };
+    try {
+      collector = await readCollectorSummary();
+    } catch (collectorError) {
+      console.warn("Résumé Collector indisponible :", collectorError.message);
+    }
+
     res.json({
       connected: true,
       count: charactersWithAvatars.length,
       characters: charactersWithAvatars,
+      dashboard: buildDashboardSummary(
+        charactersWithAvatars,
+        collector.characters || [],
+      ),
+      journal: buildSessionJournal(collector.characters || [], 12),
+      achievements: buildRecentAchievements(collector.achievements || [], 3),
     });
   } catch (error) {
     console.error("Erreur de récupération des personnages Blizzard :", error);

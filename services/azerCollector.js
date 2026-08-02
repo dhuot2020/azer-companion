@@ -301,8 +301,54 @@ function normalizeLocation(...locations) {
   };
 }
 
+function normalizeSessions(sessions) {
+  const values = Array.isArray(sessions)
+    ? sessions
+    : Object.entries(sessions || {})
+        .filter(([key]) => /^\d+$/.test(key))
+        .sort(([firstKey], [secondKey]) => Number(firstKey) - Number(secondKey))
+        .map(([, value]) => value);
+
+  return values
+    .filter((session) => session && typeof session === "object")
+    .map((session) => ({
+      id: String(session.id || ""),
+      startedAt: toFiniteNumber(session.startedAt),
+      endedAt: toFiniteNumber(session.endedAt),
+      durationSeconds: toFiniteNumber(session.durationSeconds),
+      endReason: String(session.endReason || ""),
+      startLocation: normalizeLocation(session.startLocation),
+      endLocation: normalizeLocation(session.endLocation),
+    }));
+}
+
+
+function normalizeAchievements(achievements) {
+  const values = Array.isArray(achievements)
+    ? achievements
+    : Object.entries(achievements || {})
+        .filter(([key]) => /^\d+$/.test(key))
+        .sort(([firstKey], [secondKey]) => Number(firstKey) - Number(secondKey))
+        .map(([, value]) => value);
+
+  return values
+    .filter((achievement) => achievement && typeof achievement === "object")
+    .map((achievement) => ({
+      id: toFiniteNumber(achievement.id),
+      name: String(achievement.name || ""),
+      description: String(achievement.description || ""),
+      points: toFiniteNumber(achievement.points),
+      icon: toFiniteNumber(achievement.icon),
+      earnedAt: toFiniteNumber(achievement.earnedAt),
+      characterGuid: String(achievement.characterGuid || ""),
+      characterName: String(achievement.characterName || ""),
+      characterRealm: String(achievement.characterRealm || ""),
+    }));
+}
+
 function normalizeCharacter(character) {
-  const session = latestSession(character.sessions);
+  const sessions = normalizeSessions(character.sessions);
+  const session = sessions.at(-1) || null;
   const location = normalizeLocation(
     session?.endLocation,
     character.location,
@@ -315,17 +361,26 @@ function normalizeCharacter(character) {
     realm: String(character.realm || ""),
     level: toFiniteNumber(character.profile?.level),
     className: String(character.profile?.className || ""),
+    classId: toFiniteNumber(character.profile?.classID),
+    raceName: String(character.profile?.raceName || ""),
+    raceId: toFiniteNumber(character.profile?.raceID),
+    faction: String(character.profile?.faction || ""),
+    money: toFiniteNumber(character.profile?.money),
+    professions: Array.isArray(character.professions)
+      ? character.professions
+      : Object.values(character.professions || {}),
     lastLoginAt: toFiniteNumber(character.lastLoginAt),
     lastLogoutAt: toFiniteNumber(character.lastLogoutAt),
     lastSeenAt: toFiniteNumber(character.lastSeenAt),
     reportedOnline: character.online === true,
     location,
-    latestSession: session
+    sessions,
+    latestSession: session,
+    currentSession: character.currentSession && typeof character.currentSession === "object"
       ? {
-          startedAt: toFiniteNumber(session.startedAt),
-          endedAt: toFiniteNumber(session.endedAt),
-          durationSeconds: toFiniteNumber(session.durationSeconds),
-          endReason: String(session.endReason || ""),
+          id: String(character.currentSession.id || ""),
+          startedAt: toFiniteNumber(character.currentSession.startedAt),
+          startLocation: normalizeLocation(character.currentSession.startLocation),
         }
       : null,
   };
@@ -397,6 +452,7 @@ async function readCollectorSummary() {
     sourceUpdatedAt: Math.floor(stats.mtimeMs / 1000),
     dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
     lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
+    achievements: normalizeAchievements(database.account?.achievements),
     characters,
   };
 }

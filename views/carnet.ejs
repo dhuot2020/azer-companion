@@ -41,7 +41,7 @@
       </a>
       <a href="#" class="nav-item">
         <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-journal"></use></svg></span>
-        <b>Journal d’aventure</b>
+        <b>Journal de bord</b>
       </a>
       <a href="#" class="nav-item">
         <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-trophy"></use></svg></span>
@@ -196,26 +196,33 @@
 
       <section class="home-grid">
         <article class="home-panel journal-panel">
-          <header><h2>JOURNAL D’AVENTURE</h2><button type="button">Voir tout</button></header>
+          <header><h2>JOURNAL DE BORD</h2><button type="button" id="viewFullJournalButton">Voir tout</button></header>
           <div class="timeline" id="homeTimeline">
-            <div class="timeline-item"><time>Maintenant</time><span class="timeline-icon"><svg><use href="#icon-location"></use></svg></span><div><strong>Dernier héros synchronisé</strong><small id="timelineCurrentLocation">Chargement...</small></div></div>
-            <div class="timeline-item"><time>Session</time><span class="timeline-icon"><svg><use href="#icon-clock"></use></svg></span><div><strong>Dernière aventure enregistrée</strong><small id="timelineSessionDuration">Chargement...</small></div></div>
-            <div class="timeline-item"><time>Battle.net</time><span class="timeline-icon"><svg><use href="#icon-check"></use></svg></span><div><strong>Personnages synchronisés</strong><small id="timelineCharacters">Chargement...</small></div></div>
+            <div class="home-empty-state">
+              <strong>Chargement du Journal de bord...</strong>
+              <small>Les sessions réelles du Collector apparaîtront ici.</small>
+            </div>
           </div>
         </article>
 
         <article class="home-panel achievements-panel">
-          <header><h2>RÉUSSITES RÉCENTES</h2><button type="button">Voir toutes</button></header>
-          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span><div><strong>Explorateur d’Azeroth</strong><small>Poursuis la découverte de nouvelles régions.</small></div><b>10</b></div>
-          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-journal"></use></svg></span><div><strong>Maître des traditions</strong><small>Continue ton histoire personnelle.</small></div><b>10</b></div>
-          <div class="achievement-row"><span class="achievement-icon"><svg><use href="#icon-chest"></use></svg></span><div><strong>Une collection grandissante</strong><small>Montures, mascottes et souvenirs.</small></div><b>10</b></div>
+          <header><h2>RÉUSSITES RÉCENTES</h2></header>
+          <div id="homeAchievementsList" class="home-achievements-list">
+            <div class="home-empty-state">
+              <span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span>
+              <strong>Aucune réussite synchronisée</strong>
+              <small>Les prochains hauts faits obtenus avec le Collector actif apparaîtront ici.</small>
+            </div>
+          </div>
         </article>
 
         <article class="home-panel objectives-panel">
-          <header><h2>OBJECTIFS</h2><button type="button">Voir tout</button></header>
-          <div class="objective-row"><svg><use href="#icon-quest"></use></svg><div><strong>Continuer la campagne en cours</strong><small>Prochaine étape de l’aventure</small><i><span style="width:72%"></span></i></div><b>5/7</b></div>
-          <div class="objective-row"><svg><use href="#icon-tools"></use></svg><div><strong>Faire progresser un métier</strong><small>Objectif personnel</small><i><span style="width:58%"></span></i></div><b>42/75</b></div>
-          <div class="objective-row"><svg><use href="#icon-dungeon"></use></svg><div><strong>Terminer le donjon du jour</strong><small>Donjon héroïque</small><i><span style="width:100%"></span></i></div><b class="objective-done"><svg><use href="#icon-check"></use></svg></b></div>
+          <header><h2>OBJECTIFS</h2></header>
+          <div class="home-empty-state">
+            <span class="achievement-icon"><svg><use href="#icon-quest"></use></svg></span>
+            <strong>Aucun objectif configuré</strong>
+            <small>Les objectifs personnels seront ajoutés dans une prochaine étape.</small>
+          </div>
         </article>
 
         <article class="home-panel heroes-panel">
@@ -227,19 +234,19 @@
           <header><h2>ACTIVITÉ DU COMPTE</h2><span>Cette semaine</span></header>
           <div class="activity-stats">
             <div><svg><use href="#icon-clock"></use></svg><strong id="activityWeekTime">—</strong><small>Temps de jeu</small></div>
-            <div><svg><use href="#icon-level"></use></svg><strong>+3</strong><small>Niveaux gagnés</small></div>
-            <div><svg><use href="#icon-dungeon"></use></svg><strong>2</strong><small>Donjons</small></div>
-            <div><svg><use href="#icon-trophy"></use></svg><strong>1</strong><small>Réussite</small></div>
-            <div><svg><use href="#icon-quest"></use></svg><strong>15</strong><small>Quêtes terminées</small></div>
+            <div><svg><use href="#icon-journal"></use></svg><strong id="activitySessionsCount">—</strong><small>Sessions</small></div>
+            <div><svg><use href="#icon-map"></use></svg><strong id="activityZonesCount">—</strong><small>Zones connues</small></div>
+            <div><svg><use href="#icon-heroes"></use></svg><strong id="activityHeroesCount">—</strong><small>Personnages</small></div>
           </div>
         </article>
 
         <article class="home-panel locations-panel">
           <header><h2>DERNIERS LIEUX VISITÉS</h2><button type="button">Voir la carte</button></header>
           <div class="locations-map">
-            <div class="map-pin pin-one"><svg><use href="#icon-location"></use></svg><span id="mapPrimaryLocation">Dernier lieu</span></div>
-            <div class="map-pin pin-two"><svg><use href="#icon-location"></use></svg><span>Hurlevent</span></div>
-            <div class="map-pin pin-three"><svg><use href="#icon-location"></use></svg><span>Tanaris</span></div>
+            <div class="home-empty-state">
+              <strong>Chargement des lieux...</strong>
+              <small>Les emplacements réels du Collector apparaîtront ici.</small>
+            </div>
           </div>
         </article>
       </section>
@@ -507,9 +514,9 @@
   </main>
 
   <footer class="app-footer">
-    <span>◈ &nbsp; AZER COMPANION v0.1.0</span>
+    <span>◈ &nbsp; AZER COMPANION v1.1.2</span>
     <strong>Ton aventure. Ton histoire. Ton héritage.</strong>
-    <span>Une création de <b>DH Studio</b></span>
+    <span aria-hidden="true"></span>
   </footer>
 </div>
 

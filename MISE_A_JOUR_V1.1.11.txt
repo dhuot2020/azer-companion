@@ -1,8 +1,0 @@
-AZER COMPANION - V1.1.11
-
-- L accueil affiche au maximum 4 heros afin de garder de grandes cartes.
-- Les autres personnages restent disponibles via Voir tous mes heros.
-- Les cartes conservent le ratio vertical du Hall des heros.
-- Les medaillons sont redimensionnes pour rester proportionnes.
-- La signature DH Studio utilise maintenant un degrade horizontal gris metallique vers bleu, comme le logo.
-- Aucun changement a Battle.net, au collecteur ou au mecanisme des vues.

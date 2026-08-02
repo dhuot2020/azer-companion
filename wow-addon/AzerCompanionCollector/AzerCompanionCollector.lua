@@ -1,7 +1,8 @@
 local addonName = ...
 
-local SCHEMA_VERSION = 1
+local SCHEMA_VERSION = 2
 local MAX_SESSION_HISTORY = 50
+local MAX_ACHIEVEMENT_HISTORY = 50
 local LOCATION_REFRESH_SECONDS = 30
 
 local eventFrame = CreateFrame("Frame")
@@ -33,6 +34,7 @@ local function initializeDatabase()
 	AzerCompanionDB.addonVersion = addonVersion()
 	AzerCompanionDB.characters = AzerCompanionDB.characters or {}
 	AzerCompanionDB.account = AzerCompanionDB.account or {}
+	AzerCompanionDB.account.achievements = AzerCompanionDB.account.achievements or {}
 end
 
 local function playerIdentity()
@@ -331,6 +333,50 @@ local function finishSession()
 	AzerCompanionDB.account.updatedAt = endedAt
 end
 
+local function captureAchievement(achievementID, alreadyEarned)
+	if alreadyEarned or not achievementID then
+		return
+	end
+
+	initializeDatabase()
+	local character = ensureCharacter()
+	local id, name, points, completed, month, day, year, description, flags, icon =
+		GetAchievementInfo(achievementID)
+
+	if not id or not name then
+		return
+	end
+
+	local achievements = AzerCompanionDB.account.achievements
+	local earnedAt = now()
+
+	for _, achievement in ipairs(achievements) do
+		if achievement.id == id and achievement.earnedAt == earnedAt then
+			return
+		end
+	end
+
+	table.insert(achievements, {
+		id = id,
+		name = name,
+		description = description,
+		points = points,
+		icon = icon,
+		earnedAt = earnedAt,
+		characterGuid = character and character.guid or nil,
+		characterName = character and character.name or nil,
+		characterRealm = character and character.realm or nil,
+	})
+
+	while #achievements > MAX_ACHIEVEMENT_HISTORY do
+		table.remove(achievements, 1)
+	end
+
+	AzerCompanionDB.account.lastEvent = "achievement_earned"
+	AzerCompanionDB.account.lastEventAt = earnedAt
+	AzerCompanionDB.account.updatedAt = earnedAt
+end
+
 local function delayedRefresh()
 	refreshCharacter()
 	if C_Timer and C_Timer.After then
@@ -353,6 +399,15 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
 		finishSession()
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		delayedRefresh()
+	elseif event == "ACHIEVEMENT_EARNED" then
+		local achievementID, alreadyEarned = ...
+		if C_Timer and C_Timer.After then
+			C_Timer.After(0.5, function()
+				captureAchievement(achievementID, alreadyEarned)
+			end)
+		else
+			captureAchievement(achievementID, alreadyEarned)
+		end
 	else
 		refreshCharacter()
 	end
@@ -370,3 +425,4 @@ eventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 eventFrame:RegisterEvent("SKILL_LINES_CHANGED")
 eventFrame:RegisterEvent("PLAYER_MONEY")
+eventFrame:RegisterEvent("ACHIEVEMENT_EARNED")
