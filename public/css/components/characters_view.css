@@ -916,3 +916,65 @@
     left: 14px;
   }
 }
+
+
+/* ======================================================
+   Synchronisation manuelle Battle.net - Sync 1.0
+====================================================== */
+.characters-sync-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(226, 174, 72, 0.52);
+  border-radius: 10px;
+  color: #f2d58d;
+  background: linear-gradient(180deg, rgba(24, 42, 56, 0.96), rgba(5, 16, 26, 0.96));
+  box-shadow: inset 0 0 14px rgba(226, 174, 72, 0.06);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.characters-sync-button:hover,
+.characters-sync-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(226, 174, 72, 0.9);
+  box-shadow: 0 0 18px rgba(226, 174, 72, 0.14);
+  outline: none;
+}
+
+.characters-sync-button:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.characters-sync-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.characters-sync-button.is-syncing .characters-sync-icon {
+  animation: azer-sync-rotate 850ms linear infinite;
+}
+
+@keyframes azer-sync-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1180px) {
+  .characters-sync-label {
+    display: none;
+  }
+
+  .characters-sync-button {
+    width: 42px;
+    padding: 0;
+  }
+}

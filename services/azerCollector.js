@@ -2,7 +2,10 @@ const fs = require("fs/promises");
 const path = require("path");
 
 const COLLECTOR_FILE_NAME = "AzerCompanionCollector.lua";
-const MAX_COLLECTOR_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_COLLECTOR_FILE_SIZE = 25 * 1024 * 1024;
+const MAX_LUA_NESTING_DEPTH = 120;
+const MIN_LUA_NODE_LIMIT = 500000;
+const MAX_LUA_NODE_LIMIT = 5000000;
 const DEFAULT_WOW_INSTALL_PATH =
   "C:\\Program Files (x86)\\World of Warcraft";
 
@@ -11,6 +14,13 @@ class LuaSavedVariablesParser {
     this.source = source;
     this.position = 0;
     this.nodeCount = 0;
+    // Le Collector 2.0 peut produire plusieurs centaines de milliers de
+    // valeurs (hauts faits, critères et quêtes). La limite évolue avec la
+    // taille du fichier tout en restant bornée pour éviter un fichier abusif.
+    this.maxNodeCount = Math.min(
+      MAX_LUA_NODE_LIMIT,
+      Math.max(MIN_LUA_NODE_LIMIT, Math.ceil(source.length / 3)),
+    );
   }
 
   parse() {
@@ -156,13 +166,17 @@ class LuaSavedVariablesParser {
   }
 
   parseValue(depth) {
-    if (depth > 40) {
-      throw new Error("Imbrication excessive dans le fichier du collecteur.");
+    if (depth > MAX_LUA_NESTING_DEPTH) {
+      throw new Error(
+        `Imbrication excessive dans le fichier du collecteur (>${MAX_LUA_NESTING_DEPTH}).`,
+      );
     }
 
     this.nodeCount += 1;
-    if (this.nodeCount > 100000) {
-      throw new Error("Fichier du collecteur trop complexe.");
+    if (this.nodeCount > this.maxNodeCount) {
+      throw new Error(
+        `Fichier du collecteur trop complexe (${this.nodeCount} valeurs, limite ${this.maxNodeCount}).`,
+      );
     }
 
     this.skipIgnored();
@@ -339,14 +353,18 @@ function normalizeAchievements(achievements) {
       description: String(achievement.description || ""),
       points: toFiniteNumber(achievement.points),
       icon: toFiniteNumber(achievement.icon),
-      earnedAt: toFiniteNumber(achievement.earnedAt),
+      completed: achievement.completed === true,
+      completedAt: toFiniteNumber(achievement.completedAt),
+      observedEarnedAt: toFiniteNumber(achievement.observedEarnedAt),
+      wasEarnedByMe: achievement.wasEarnedByMe === true,
+      earnedBy: String(achievement.earnedBy || ""),
       characterGuid: String(achievement.characterGuid || ""),
       characterName: String(achievement.characterName || ""),
       characterRealm: String(achievement.characterRealm || ""),
     }));
 }
 
-function normalizeCharacter(character) {
+function normalizeCharacter(character, storageKey = "") {
   const sessions = normalizeSessions(character.sessions);
   const session = sessions.at(-1) || null;
   const location = normalizeLocation(
@@ -356,6 +374,8 @@ function normalizeCharacter(character) {
   );
 
   return {
+    storageKey: String(storageKey || character.storageKey || ""),
+    identityKey: String(character.key || ""),
     guid: String(character.guid || ""),
     name: String(character.name || ""),
     realm: String(character.realm || ""),
@@ -369,6 +389,16 @@ function normalizeCharacter(character) {
     professions: Array.isArray(character.professions)
       ? character.professions
       : Object.values(character.professions || {}),
+    achievements: normalizeAchievements(character.achievements),
+    quests: {
+      active: Object.values(character.quests?.active || {}),
+      completedObserved: Array.isArray(character.quests?.completedObserved)
+        ? character.quests.completedObserved
+        : Object.values(character.quests?.completedObserved || {}),
+      completedHistory: Object.values(character.quests?.completedHistory || {}),
+      completedHistoryCount: toFiniteNumber(character.quests?.completedHistoryCount),
+      completedHistoryScannedAt: toFiniteNumber(character.quests?.completedHistoryScannedAt),
+    },
     lastLoginAt: toFiniteNumber(character.lastLoginAt),
     lastLogoutAt: toFiniteNumber(character.lastLogoutAt),
     lastSeenAt: toFiniteNumber(character.lastSeenAt),
@@ -443,9 +473,9 @@ async function readCollectorSummary() {
 
   const source = await fs.readFile(collectorFile, "utf8");
   const database = new LuaSavedVariablesParser(source).parse();
-  const characters = Object.values(database.characters || {})
-    .filter((character) => character && typeof character === "object")
-    .map(normalizeCharacter);
+  const characters = Object.entries(database.characters || {})
+    .filter(([, character]) => character && typeof character === "object")
+    .map(([storageKey, character]) => normalizeCharacter(character, storageKey));
 
   return {
     available: true,
@@ -453,6 +483,13 @@ async function readCollectorSummary() {
     dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
     lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
     achievements: normalizeAchievements(database.account?.achievements),
+    achievementSummary: database.account?.achievementSummary || {},
+    questSummary: {
+      completedObserved: Object.values(
+        database.account?.quests?.completedObserved || {},
+      ),
+    },
+    sync: database.sync || {},
     characters,
   };
 }

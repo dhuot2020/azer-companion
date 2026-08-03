@@ -1,0 +1,19 @@
+AZER COMPANION - SYNC 1.0.1
+
+1. Faire une sauvegarde du projet actuel.
+2. Copier les fichiers de ce ZIP dans le projet en conservant l'arborescence.
+3. Redemarrer Node.js.
+4. Ouvrir Mes personnages.
+5. Cliquer sur Synchroniser.
+
+Nouveaux fichiers :
+- core/sync/syncManager.js
+- core/sync/collectorSync.js
+- core/sync/achievementSync.js
+
+Fichiers modifies :
+- routes/carnet.js
+- public/js/app.js
+- docs/CHANGELOG.md
+
+La synchronisation manuelle appelle maintenant POST /api/sync et retourne un rapport complet.

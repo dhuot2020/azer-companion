@@ -1,0 +1,20 @@
+AZER COMPANION COLLECTOR 2.0 - ALPHA 13.2
+==========================================
+
+Cette version ajoute l'historique complet des identifiants de quêtes terminées
+retournés par WoW pour chaque personnage.
+
+1. Remplacer le projet Web par cette version.
+2. Copier wow-addon/AzerCompanionCollector dans :
+   World of Warcraft/_retail_/Interface/AddOns/AzerCompanionCollector
+3. Pour CHAQUE personnage :
+   /reload
+   /azer scan
+   /reload
+4. Redémarrer Azer Companion avec npm start.
+5. Ouvrir Journal des quêtes et cliquer Actualiser.
+
+Notes :
+- Les identifiants terminés sont importés immédiatement.
+- WoW peut charger les titres de certaines anciennes quêtes progressivement.
+- Les quêtes terminées sont paginées par groupes de 40.

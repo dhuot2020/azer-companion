@@ -219,24 +219,48 @@ const charactersSearchInput = document.getElementById(
 const charactersCount = document.getElementById("characters-count");
 const battleStatus = document.getElementById("battleStatus");
 const battleStatusText = document.getElementById("battleStatusText");
+const syncCharactersButton = document.getElementById("syncCharactersButton");
 
 let blizzardCharacters = [];
+let charactersSyncInProgress = false;
+const missingPortraitWarnings = new Set();
 let collectorCharacters = new Map();
 let currentFactionFilter = "all";
 let profiledCharacter = null;
 let profileImageMode = "portrait";
 const selectedCharacterStorageKey = "azerCompanion.selectedCharacter";
+const charactersRosterStorageKey = "azerCompanion.charactersRoster.v1";
 let currentCharacterKey = readSelectedCharacterKey();
 
-function getCharacterKey(character) {
-  const realm = String(character?.realm || "")
+function normalizeCharacterIdentityPart(value) {
+  return String(value || "")
+    .normalize("NFKC")
     .trim()
-    .toLowerCase();
-  const name = String(character?.name || "")
-    .trim()
-    .toLowerCase();
+    .toLocaleLowerCase("fr-CA");
+}
 
+function getCharacterKey(character) {
+  if (character?.characterKey) {
+    return String(character.characterKey);
+  }
+
+  const realm = normalizeCharacterIdentityPart(character?.realm);
+  const name = normalizeCharacterIdentityPart(character?.name);
   return `${realm}::${name}`;
+}
+
+function hasCharacterMedia(character) {
+  return Boolean(
+    character?.avatarUrl ||
+    character?.portraitUrl ||
+    character?.fullBodyUrl
+  );
+}
+
+function isOwnedCharacterMedia(character) {
+  if (!character || !hasCharacterMedia(character)) return false;
+  if (!character.mediaOwnerKey) return false;
+  return character.mediaOwnerKey === getCharacterKey(character);
 }
 
 function readSelectedCharacterKey() {
@@ -246,6 +270,94 @@ function readSelectedCharacterKey() {
     console.warn("Impossible de lire le personnage sélectionné.", error);
     return "";
   }
+}
+
+function readCachedCharacterRoster() {
+  try {
+    const rawValue = localStorage.getItem(charactersRosterStorageKey);
+    if (!rawValue) {
+      return [];
+    }
+
+    const parsedValue = JSON.parse(rawValue);
+    const cachedCharacters = Array.isArray(parsedValue?.characters)
+      ? parsedValue.characters
+      : [];
+
+    return cachedCharacters.filter(
+      (character) => character?.name && character?.realm,
+    );
+  } catch (error) {
+    console.warn("Impossible de lire le roster Azer Companion.", error);
+    return [];
+  }
+}
+
+function saveCachedCharacterRoster(characters = []) {
+  try {
+    localStorage.setItem(
+      charactersRosterStorageKey,
+      JSON.stringify({
+        updatedAt: Date.now(),
+        characters,
+      }),
+    );
+  } catch (error) {
+    console.warn("Impossible de sauvegarder le roster Azer Companion.", error);
+  }
+}
+
+function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
+  const mergedCharacters = new Map();
+
+  for (const character of previousCharacters) {
+    if (character?.name && character?.realm) {
+      mergedCharacters.set(getCharacterKey(character), character);
+    }
+  }
+
+  // Les données fraîches ont toujours priorité sur le cache.
+  for (const character of freshCharacters) {
+    if (!character?.name || !character?.realm) {
+      continue;
+    }
+
+    const characterKey = getCharacterKey(character);
+    const previousCharacter = mergedCharacters.get(characterKey) || {};
+
+    // Les données fraîches mettent à jour les statistiques, mais une réponse
+    // média vide ne doit jamais effacer un portrait Battle.net déjà valide.
+    const freshMediaIsOwned = isOwnedCharacterMedia(character);
+    const previousMediaIsOwned = isOwnedCharacterMedia(previousCharacter);
+    const mediaSource = freshMediaIsOwned &&
+      (character.avatarUrl || character.portraitUrl || character.fullBodyUrl)
+      ? character
+      : previousMediaIsOwned
+        ? previousCharacter
+        : {};
+
+    const mergedCharacter = {
+      ...previousCharacter,
+      ...character,
+      characterKey,
+      avatarUrl: mediaSource.avatarUrl || null,
+      portraitUrl: mediaSource.portraitUrl || null,
+      fullBodyUrl: mediaSource.fullBodyUrl || null,
+      media: mediaSource.media || null,
+      mediaOwnerKey:
+        mediaSource.mediaOwnerKey ||
+        ((mediaSource.avatarUrl || mediaSource.portraitUrl || mediaSource.fullBodyUrl)
+          ? characterKey
+          : null),
+    };
+
+    mergedCharacters.set(characterKey, normalizeCharacter(mergedCharacter));
+  }
+
+  return [...mergedCharacters.values()].sort(
+    (firstCharacter, secondCharacter) =>
+      Number(secondCharacter.level || 0) - Number(firstCharacter.level || 0),
+  );
 }
 
 function saveSelectedCharacterKey(characterKey) {
@@ -327,21 +439,6 @@ function getLastCollectorCharacter() {
       (firstCharacter, secondCharacter) =>
         secondCharacter.activityTimestamp - firstCharacter.activityTimestamp,
     );
-
-  console.table(
-    characters.map(({ character, activityTimestamp }) => ({
-      personnage: character.name,
-      royaume: character.realm,
-      lastSeenAt: Number(character.lastSeenAt || 0),
-      lastLoginAt: Number(character.lastLoginAt || 0),
-      lastLogoutAt: Number(character.lastLogoutAt || 0),
-      sessionStartedAt: Number(character.latestSession?.startedAt || 0),
-      sessionEndedAt: Number(character.latestSession?.endedAt || 0),
-      dateRetenue: activityTimestamp
-        ? new Date(activityTimestamp * 1000).toLocaleString("fr-CA")
-        : "Aucune date",
-    })),
-  );
 
   return characters[0]?.character || null;
 }
@@ -593,253 +690,6 @@ const raceNames = {
 };
 
 // ======================================================
-// Personnages de demonstration - Hall des heros
-// Ils sont ajoutes apres les vrais personnages Battle.net.
-// ======================================================
-
-const showcaseCharacters = [
-  {
-    name: "Aegis",
-    classId: 1,
-    raceId: 37,
-    faction: "ALLIANCE",
-    realm: "Forgefer",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Lumiel",
-    classId: 2,
-    raceId: 30,
-    faction: "ALLIANCE",
-    realm: "Exodar",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Sylvaris",
-    classId: 3,
-    raceId: 34,
-    faction: "ALLIANCE",
-    realm: "Forgefer",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Noctelys",
-    classId: 4,
-    raceId: 29,
-    faction: "ALLIANCE",
-    realm: "Telogrus",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Seraphine",
-    classId: 5,
-    raceId: 1,
-    faction: "ALLIANCE",
-    realm: "Hurlevent",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Givrecoeur",
-    classId: 6,
-    raceId: 22,
-    faction: "ALLIANCE",
-    realm: "Gilneas",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Oragebleu",
-    classId: 7,
-    raceId: 11,
-    faction: "ALLIANCE",
-    realm: "Exodar",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Arcanis",
-    classId: 8,
-    raceId: 32,
-    faction: "ALLIANCE",
-    realm: "Boralus",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Grimmoire",
-    classId: 9,
-    raceId: 7,
-    faction: "ALLIANCE",
-    realm: "Gnomeregan",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Brumepatte",
-    classId: 10,
-    raceId: 24,
-    faction: "ALLIANCE",
-    realm: "Île Vagabonde",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Verdelune",
-    classId: 11,
-    raceId: 4,
-    faction: "ALLIANCE",
-    realm: "Darnassus",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Ombrelame",
-    classId: 12,
-    raceId: 4,
-    faction: "ALLIANCE",
-    realm: "Darnassus",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Azurion",
-    classId: 13,
-    raceId: 52,
-    faction: "ALLIANCE",
-    realm: "Valdrakken",
-    level: 80,
-    genderName: "♂",
-  },
-
-  {
-    name: "Gromkar",
-    classId: 1,
-    raceId: 6,
-    faction: "HORDE",
-    realm: "Mulgore",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Solaria",
-    classId: 2,
-    raceId: 31,
-    faction: "HORDE",
-    realm: "Zuldazar",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Crocdombre",
-    classId: 3,
-    raceId: 35,
-    faction: "HORDE",
-    realm: "Voldun",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Rasepièce",
-    classId: 4,
-    raceId: 9,
-    faction: "HORDE",
-    realm: "Kezan",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Mornevoile",
-    classId: 5,
-    raceId: 5,
-    faction: "HORDE",
-    realm: "Fossoyeuse",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Crânefer",
-    classId: 6,
-    raceId: 36,
-    faction: "HORDE",
-    realm: "Draenor",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Tonnerre",
-    classId: 7,
-    raceId: 8,
-    faction: "HORDE",
-    realm: "Durotar",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Astrelune",
-    classId: 8,
-    raceId: 27,
-    faction: "HORDE",
-    realm: "Suramar",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Maleficus",
-    classId: 9,
-    raceId: 2,
-    faction: "HORDE",
-    realm: "Orgrimmar",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Brumezen",
-    classId: 10,
-    raceId: 26,
-    faction: "HORDE",
-    realm: "Île Vagabonde",
-    level: 80,
-    genderName: "♂",
-  },
-  {
-    name: "Roncehaute",
-    classId: 11,
-    raceId: 28,
-    faction: "HORDE",
-    realm: "Haut-Roc",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Fielsang",
-    classId: 12,
-    raceId: 10,
-    faction: "HORDE",
-    realm: "Lune-d’Argent",
-    level: 80,
-    genderName: "♀",
-  },
-  {
-    name: "Rubécaile",
-    classId: 13,
-    raceId: 70,
-    faction: "HORDE",
-    realm: "Valdrakken",
-    level: 80,
-    genderName: "♀",
-  },
-].map((character, index) => ({
-  ...character,
-  id: `showcase-${index + 1}`,
-  isShowcase: true,
-}));
-
-// ======================================================
 // Portraits des personnages
 // ======================================================
 
@@ -851,26 +701,35 @@ function getMediaAsset(character, key) {
   return asset?.value || null;
 }
 
-function getShowcasePortrait(character) {
-  const numericId = Number(String(character.id || "").replace(/\D/g, "")) || 1;
-  return `/assets/characters/showcase/avatars/showcase-${String(numericId).padStart(2, "0")}.webp`;
-}
-
 function getCharacterFallbackPortrait(character) {
-  const classId = Math.min(13, Math.max(1, Number(character.classId) || 1));
-  const factionOffset =
-    String(character.factionName || character.faction || "").toUpperCase() ===
-    "HORDE"
-      ? 13
-      : 0;
-  const portraitIndex = classId + factionOffset;
+  const faction = String(
+    character.factionName || character.faction || "ALLIANCE",
+  ).toUpperCase();
 
-  return `/assets/characters/showcase/avatars/showcase-${String(portraitIndex).padStart(2, "0")}.webp`;
+  // Ne jamais montrer le portrait fictif d'un autre personnage.
+  // Tant que Blizzard n'a pas produit l'avatar réel, on affiche uniquement
+  // l'emblème officiel de la faction.
+  return faction === "HORDE"
+    ? "/assets/ui/factions/horde.png"
+    : "/assets/ui/factions/alliance.png";
 }
 
 function getCharacterPortraitImage(character) {
-  if (character.isShowcase) {
-    return getShowcasePortrait(character);
+  if (!isOwnedCharacterMedia(character)) {
+    const characterKey = getCharacterKey(character);
+
+    // Un portrait manquant est un état normal pour un personnage dont le
+    // profil individuel Blizzard n'est pas encore publié. On ne journalise
+    // qu'une seule fois par personnage afin d'éviter le spam de la console.
+    if (!missingPortraitWarnings.has(characterKey)) {
+      missingPortraitWarnings.add(characterKey);
+      console.info(
+        `Portrait Blizzard indisponible pour ${character?.name}-${character?.realm}; ` +
+          `image de faction utilisée temporairement.`,
+      );
+    }
+
+    return getCharacterFallbackPortrait(character);
   }
 
   return (
@@ -886,34 +745,12 @@ function getCharacterPortraitImage(character) {
 }
 
 function getCharacterImage(character) {
-  if (character.isShowcase) {
-    return getShowcasePortrait(character);
-  }
-
-  const battleNetImage =
-    character.portraitUrl ||
-    getMediaAsset(character, "inset") ||
-    character.media?.bust_url ||
-    character.avatarUrl ||
-    character.avatar ||
-    character.imageUrl ||
-    character.image ||
-    character.media?.avatar ||
-    getMediaAsset(character, "avatar") ||
-    getMediaAsset(character, "main-raw");
-
-  if (battleNetImage) {
-    return battleNetImage;
-  }
-
-  return getCharacterFallbackPortrait(character);
+  // Les cartes utilisent exclusivement les médias cadrés de Blizzard.
+  // main et main-raw sont réservés à la vue plein corps du profil.
+  return getCharacterPortraitImage(character);
 }
 
 function getCharacterFullBodyImage(character) {
-  if (character.isShowcase) {
-    return null;
-  }
-
   return (
     character.fullBodyUrl ||
     getMediaAsset(character, "main") ||
@@ -1255,37 +1092,103 @@ function renderBattleStatus(state, message) {
 // Chargement depuis Blizzard
 // ======================================================
 
-async function loadCharacters() {
-  if (!charactersList) {
-    return;
-  }
 
-  renderBattleStatus("loading", "Synchronisation...");
-
-  charactersList.innerHTML = `
-    <div class="characters-loading">
-      Chargement des personnages...
-    </div>
-  `;
-
+async function isBattleNetSessionConnected() {
   try {
-    await loadCollectorCharacters();
-    const response = await fetch(`/api/characters?ts=${Date.now()}`, {
+    const response = await fetch("/api/blizzard/status", {
       cache: "no-store",
       headers: { Accept: "application/json" },
     });
 
+    if (!response.ok) {
+      return false;
+    }
+
+    const status = await response.json();
+    return Boolean(status.connected);
+  } catch (_error) {
+    return false;
+  }
+}
+
+function restoreCachedCharactersForExpiredSession() {
+  const cachedCharacters = readCachedCharacterRoster().map(normalizeCharacter);
+
+  if (cachedCharacters.length) {
+    blizzardCharacters = mergeCharacterRosters(
+      blizzardCharacters,
+      cachedCharacters,
+    );
+    renderCharacters();
+    renderBattleStatus(
+      "disconnected",
+      `${blizzardCharacters.length} personnages en cache · reconnecte Battle.net`,
+    );
+    return true;
+  }
+
+  renderBattleStatus("disconnected", "Compte non connecté");
+  renderCharacterUnavailable("Compte Battle.net non connecté");
+  charactersList.innerHTML = `
+    <div class="characters-empty">
+      <p>Ton compte Battle.net n’est pas connecté.</p>
+      <a class="characters-connect-button" href="/auth/blizzard">
+        Se connecter à Battle.net
+      </a>
+    </div>
+  `;
+  return false;
+}
+
+async function loadCharacters(options = {}) {
+  if (!charactersList) {
+    return;
+  }
+
+  if (charactersSyncInProgress) {
+    return;
+  }
+
+  charactersSyncInProgress = true;
+  const isManualSync = Boolean(options.manual);
+
+  syncCharactersButton?.classList.add("is-syncing");
+  syncCharactersButton?.setAttribute("disabled", "");
+  syncCharactersButton?.setAttribute("aria-busy", "true");
+  renderBattleStatus("loading", isManualSync ? "Mise à jour en cours..." : "Synchronisation...");
+
+  if (!blizzardCharacters.length) {
+    charactersList.innerHTML = `
+      <div class="characters-loading">
+        Chargement des personnages...
+      </div>
+    `;
+  }
+
+  try {
+    await loadCollectorCharacters();
+
+    // Évite volontairement l'appel à /api/characters lorsque la session est
+    // déjà expirée. Cela supprime le 401 rouge au chargement automatique.
+    if (!isManualSync && !(await isBattleNetSessionConnected())) {
+      restoreCachedCharactersForExpiredSession();
+      return;
+    }
+
+    const syncEndpoint = isManualSync
+      ? `/api/sync?ts=${Date.now()}`
+      : `/api/characters?ts=${Date.now()}`;
+    const response = await fetch(syncEndpoint, {
+      method: isManualSync ? "POST" : "GET",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+
     if (response.status === 401) {
-      renderBattleStatus("disconnected", "Compte non connecté");
-      renderCharacterUnavailable("Compte Battle.net non connecté");
-      charactersList.innerHTML = `
-        <div class="characters-empty">
-          <p>Ton compte Battle.net n’est pas connecté.</p>
-          <a class="characters-connect-button" href="/auth/blizzard">
-            Se connecter à Battle.net
-          </a>
-        </div>
-      `;
+      restoreCachedCharactersForExpiredSession();
       return;
     }
 
@@ -1308,10 +1211,24 @@ async function loadCharacters() {
       return;
     }
 
-    const realCharacters = (data.characters || []).map(normalizeCharacter);
-    const demoCharacters = showcaseCharacters.map(normalizeCharacter);
+    const freshCharacters = (data.characters || []).map(normalizeCharacter);
+    const cachedCharacters = readCachedCharacterRoster().map(normalizeCharacter);
+    const previousCharacters = blizzardCharacters.length
+      ? blizzardCharacters
+      : cachedCharacters;
 
-    blizzardCharacters = [...realCharacters, ...demoCharacters];
+    // Une réponse Battle.net temporairement incomplète ne doit jamais faire
+    // disparaître des personnages déjà connus. Les données fraîches mettent à
+    // jour le roster, tandis que le dernier roster complet conserve les absents.
+    const realCharacters = mergeCharacterRosters(
+      freshCharacters,
+      previousCharacters,
+    );
+
+    blizzardCharacters = realCharacters;
+    saveCachedCharacterRoster(blizzardCharacters);
+
+
 
     const collectorSelectedCharacter =
       findBattleNetCharacterFromCollector(realCharacters);
@@ -1333,10 +1250,32 @@ async function loadCharacters() {
       charactersCount.textContent = blizzardCharacters.length;
     }
 
-    renderBattleStatus(
-      "connected",
-      `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""} Battle.net + ${demoCharacters.length} aperçus`,
-    );
+    const syncTime = new Intl.DateTimeFormat("fr-CA", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(new Date());
+
+    const achievementCount = Number(data.sync?.achievements?.count || 0);
+    const syncDuration = Number(data.sync?.durationMs || 0);
+    const statusParts = [
+      `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""}`,
+    ];
+
+    const achievementLabel = `${achievementCount} haut${achievementCount > 1 ? "s" : ""} fait${achievementCount > 1 ? "s" : ""}`;
+    statusParts.push(achievementLabel);
+
+    statusParts.push(syncTime);
+    renderBattleStatus("connected", statusParts.join(" · "));
+
+    if (isManualSync && data.sync) {
+      console.info("Azer Companion Sync 1.0.1", {
+        durationMs: syncDuration,
+        battleNet: data.sync.battleNet,
+        collector: data.sync.collector,
+        achievements: data.sync.achievements,
+      });
+    }
 
     renderCharacters();
     renderHomeDashboardAccount(realCharacters, data.dashboard || null);
@@ -1347,13 +1286,25 @@ async function loadCharacters() {
 
     renderBattleStatus("disconnected", "Synchronisation impossible");
     renderCharacterUnavailable("Synchronisation impossible");
-    charactersList.innerHTML = `
-      <div class="characters-empty">
-        Impossible de charger les personnages Battle.net.
-      </div>
-    `;
+
+    if (!blizzardCharacters.length) {
+      charactersList.innerHTML = `
+        <div class="characters-empty">
+          Impossible de charger les personnages Battle.net.
+        </div>
+      `;
+    }
+  } finally {
+    charactersSyncInProgress = false;
+    syncCharactersButton?.classList.remove("is-syncing");
+    syncCharactersButton?.removeAttribute("disabled");
+    syncCharactersButton?.removeAttribute("aria-busy");
   }
 }
+
+syncCharactersButton?.addEventListener("click", () => {
+  loadCharacters({ manual: true });
+});
 
 
 // ======================================================
@@ -1853,6 +1804,12 @@ async function loadCharacterProfessions(character) {
       `/api/characters/${realm}/${name}/professions`,
     );
 
+    if (response.status === 401) {
+      professionsElement.textContent =
+        "Reconnecte Battle.net pour actualiser les métiers.";
+      return;
+    }
+
     if (!response.ok) {
       throw new Error("Métiers indisponibles.");
     }
@@ -1870,7 +1827,7 @@ async function loadCharacterProfessions(character) {
       data.professions || [],
     );
   } catch (error) {
-    console.error(error);
+    console.warn(error.message || error);
 
     if (
       profiledCharacter &&
@@ -2165,3 +2122,272 @@ async function updateBattleNetAuthButton() {
 }
 
 updateBattleNetAuthButton();
+
+// ======================================================
+// Collector 2.0 - Vue Quêtes
+// ======================================================
+
+const questsState = {
+  loaded: false,
+  loading: false,
+  payload: null,
+  selectedKey: "",
+  historyPage: 1,
+  historyPageSize: 40,
+};
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function questCharacterKey(character) {
+  return String(character?.identityKey || `${character?.name || ""}-${character?.realm || ""}`)
+    .normalize("NFKC")
+    .toLowerCase();
+}
+
+function formatQuestDate(timestamp) {
+  const value = Number(timestamp || 0);
+  if (!value) return "Date inconnue";
+  return new Intl.DateTimeFormat("fr-CA", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value * 1000));
+}
+
+function getSelectedQuestCharacter() {
+  const characters = questsState.payload?.characters || [];
+  return characters.find((character) => questCharacterKey(character) === questsState.selectedKey)
+    || characters[0]
+    || null;
+}
+
+function renderQuestCharacterOptions() {
+  const select = document.getElementById("questsCharacterSelect");
+  if (!select) return;
+
+  const characters = [...(questsState.payload?.characters || [])].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), "fr", { sensitivity: "base" }),
+  );
+
+  select.innerHTML = characters
+    .map((character) => {
+      const key = questCharacterKey(character);
+      return `<option value="${escapeHtml(key)}">${escapeHtml(character.name)} — ${escapeHtml(character.realm)}</option>`;
+    })
+    .join("");
+
+  if (!questsState.selectedKey && characters[0]) {
+    questsState.selectedKey = questCharacterKey(characters[0]);
+  }
+  select.value = questsState.selectedKey;
+}
+
+function normalizeQuestHistoryTitle(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’‘`]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLocaleLowerCase("fr");
+}
+
+function groupQuestHistoryByTitle(quests = []) {
+  const groups = new Map();
+
+  quests.forEach((quest) => {
+    const fallbackTitle = `Quête #${Number(quest?.id || 0)}`;
+    const title = String(quest?.title || fallbackTitle).trim() || fallbackTitle;
+    const normalizedTitle = normalizeQuestHistoryTitle(title);
+    const key = normalizedTitle || `quest-id:${Number(quest?.id || 0)}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        title,
+        mapName: quest?.mapName || "",
+        quests: [],
+        ids: [],
+      });
+    }
+
+    const group = groups.get(key);
+    const questId = Number(quest?.id || 0);
+    group.quests.push(quest);
+    if (questId && !group.ids.includes(questId)) group.ids.push(questId);
+    if (!group.mapName && quest?.mapName) group.mapName = quest.mapName;
+  });
+
+  return [...groups.values()]
+    .map((group) => ({
+      ...group,
+      ids: group.ids.sort((a, b) => a - b),
+      variantCount: group.ids.length || group.quests.length,
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title, "fr", { sensitivity: "base" }));
+}
+
+function renderQuestsView() {
+  const grid = document.getElementById("questsGrid");
+  const completedList = document.getElementById("questsCompletedList");
+  if (!grid || !completedList) return;
+
+  renderQuestCharacterOptions();
+  const character = getSelectedQuestCharacter();
+  const active = [...(character?.active || [])];
+  const observed = [...(character?.completedObserved || [])].sort(
+    (a, b) => Number(b.completedAt || 0) - Number(a.completedAt || 0),
+  );
+  const history = [...(character?.completedHistory || [])].sort((a, b) => {
+    const firstTitle = String(a.title || "");
+    const secondTitle = String(b.title || "");
+    if (firstTitle && secondTitle) {
+      return firstTitle.localeCompare(secondTitle, "fr", { sensitivity: "base" });
+    }
+    return Number(a.id || 0) - Number(b.id || 0);
+  });
+  const groupedHistory = groupQuestHistoryByTitle(history);
+  const remainingObjectives = active.reduce(
+    (total, quest) => total + (quest.objectives || []).filter((objective) => !objective.finished).length,
+    0,
+  );
+
+  document.getElementById("questsActiveCount").textContent = String(active.length);
+  document.getElementById("questsObjectivesCount").textContent = String(remainingObjectives);
+  document.getElementById("questsCompletedCount").textContent = String(groupedHistory.length);
+  const accountShared = [...(character?.completedAccountShared || [])];
+  const accountSharedCount = document.getElementById("questsAccountSharedCount");
+  if (accountSharedCount) accountSharedCount.textContent = String(accountShared.length);
+
+  if (!character) {
+    grid.innerHTML = '<div class="quest-empty"><strong>Aucune donnée de quête</strong><br><small>Lance /azer scan dans WoW, puis /reload.</small></div>';
+    completedList.innerHTML = '<div class="quest-empty">Aucun historique disponible.</div>';
+    return;
+  }
+
+  grid.innerHTML = active.length
+    ? active
+        .sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""), "fr"))
+        .map((quest) => {
+          const objectives = quest.objectives || [];
+          const location = quest.mapName || "Zone non précisée";
+          return `
+            <article class="quest-card ${quest.isComplete ? "is-complete" : ""}">
+              <h3>${escapeHtml(quest.title || `Quête ${quest.id}`)}</h3>
+              <div class="quest-card-meta">
+                <span>#${Number(quest.id || 0)}</span>
+                <span>${escapeHtml(location)}</span>
+                ${quest.isWorldQuest ? "<span>Quête mondiale</span>" : ""}
+                ${quest.campaignID ? "<span>Campagne</span>" : ""}
+              </div>
+              <ul class="quest-objectives">
+                ${objectives.length
+                  ? objectives.map((objective) => `<li class="${objective.finished ? "done" : ""}">${escapeHtml(objective.text || "Objectif")}</li>`).join("")
+                  : "<li>Aucun objectif détaillé fourni par WoW.</li>"}
+              </ul>
+            </article>`;
+        })
+        .join("")
+    : '<div class="quest-empty"><strong>Aucune quête active pour ce personnage</strong><br><small>Les quêtes apparaîtront après un /azer scan.</small></div>';
+
+  const totalPages = Math.max(1, Math.ceil(groupedHistory.length / questsState.historyPageSize));
+  questsState.historyPage = Math.min(Math.max(1, questsState.historyPage), totalPages);
+  const firstIndex = (questsState.historyPage - 1) * questsState.historyPageSize;
+  const pageItems = groupedHistory.slice(firstIndex, firstIndex + questsState.historyPageSize);
+
+  const historyHtml = pageItems.length
+    ? pageItems.map((group) => {
+        const idsLabel = group.ids.map((id) => `#${id}`).join(", ");
+        const variantLabel = group.variantCount > 1
+          ? `${group.variantCount} variantes`
+          : idsLabel || "1 quête";
+        return `
+          <div class="quest-history-item" title="${escapeHtml(idsLabel)}">
+            <strong>${escapeHtml(group.title)}</strong>
+            <span>${escapeHtml(group.mapName || character.realm)} · ${escapeHtml(variantLabel)}</span>
+          </div>`;
+      }).join("")
+    : '<div class="quest-empty">Aucune quête personnelle terminée détectée pour ce personnage. Les quêtes partagées du compte sont comptées séparément.</div>';
+
+  const observedHtml = observed.length
+    ? `<div class="quest-observed-block">
+        <h4>Dernières quêtes observées par le Collector</h4>
+        ${observed.slice(0, 10).map((quest) => `
+          <div class="quest-history-item is-observed">
+            <strong>${escapeHtml(quest.title || `Quête #${quest.id}`)}</strong>
+            <span>${formatQuestDate(quest.completedAt)}</span>
+          </div>`).join("")}
+      </div>`
+    : "";
+
+  const paginationHtml = groupedHistory.length > questsState.historyPageSize
+    ? `<div class="quest-pagination">
+        <button type="button" data-quest-page="${questsState.historyPage - 1}" ${questsState.historyPage <= 1 ? "disabled" : ""}>← Précédent</button>
+        <span>Page ${questsState.historyPage} sur ${totalPages} · ${groupedHistory.length} titres uniques (${history.length} IDs)</span>
+        <button type="button" data-quest-page="${questsState.historyPage + 1}" ${questsState.historyPage >= totalPages ? "disabled" : ""}>Suivant →</button>
+      </div>`
+    : groupedHistory.length
+      ? `<div class="quest-pagination"><span>${groupedHistory.length} titres uniques · ${history.length} IDs de quête conservés</span></div>`
+      : "";
+
+  completedList.innerHTML = historyHtml + paginationHtml + observedHtml;
+  completedList.querySelectorAll("[data-quest-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextPage = Number(button.dataset.questPage || 1);
+      if (nextPage < 1 || nextPage > totalPages) return;
+      questsState.historyPage = nextPage;
+      renderQuestsView();
+      completedList.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
+async function loadQuests(force = false) {
+  if (questsState.loading || (questsState.loaded && !force)) {
+    renderQuestsView();
+    return;
+  }
+
+  questsState.loading = true;
+  const grid = document.getElementById("questsGrid");
+  if (grid) grid.innerHTML = '<div class="quest-empty">Chargement des quêtes...</div>';
+
+  try {
+    const response = await fetch(`/api/quests?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error("Quêtes indisponibles.");
+    questsState.payload = await response.json();
+    questsState.loaded = true;
+    renderQuestsView();
+  } catch (error) {
+    console.warn(error.message || error);
+    if (grid) grid.innerHTML = '<div class="quest-empty"><strong>Impossible de lire les quêtes</strong><br><small>Vérifie le SavedVariables et relance la synchronisation.</small></div>';
+  } finally {
+    questsState.loading = false;
+  }
+}
+
+function openQuestsView() {
+  showView("quests");
+  revealSidebar();
+  loadQuests();
+}
+
+views.quests = document.getElementById("questsView");
+
+document.getElementById("questsNav")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  openQuestsView();
+});
+
+document.getElementById("questsRefreshButton")?.addEventListener("click", () => loadQuests(true));
+
+document.getElementById("questsCharacterSelect")?.addEventListener("change", (event) => {
+  questsState.selectedKey = event.target.value;
+  questsState.historyPage = 1;
+  renderQuestsView();
+});

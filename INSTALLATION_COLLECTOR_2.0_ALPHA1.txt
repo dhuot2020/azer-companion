@@ -1,0 +1,21 @@
+AZER COMPANION COLLECTOR 2.0 - ALPHA 1
+
+1. Fermer World of Warcraft.
+2. Copier le dossier :
+   wow-addon/AzerCompanionCollector
+3. Le coller dans :
+   World of Warcraft/_retail_/Interface/AddOns/
+4. Remplacer l'ancien dossier AzerCompanionCollector.
+5. Lancer WoW et activer l'addon.
+6. Connecter un personnage et entrer :
+   /azer scan
+7. Attendre le message « Analyse terminée ».
+8. Entrer :
+   /azer status
+9. Faire /reload ou se déconnecter afin d'écrire SavedVariables.
+10. Dans Azer Companion, cliquer sur Synchroniser.
+
+La première analyse des hauts faits peut prendre quelques secondes.
+Les quêtes actives sont importées. Les quêtes terminées sont enregistrées à
+partir de cette installation; la reconstruction historique complète viendra
+avec le catalogue de quêtes dans une étape suivante.

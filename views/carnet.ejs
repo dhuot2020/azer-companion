@@ -39,6 +39,10 @@
         <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-shield"></use></svg></span>
         <b>Hall des héros</b>
       </a>
+      <a href="#" class="nav-item" id="questsNav">
+        <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-quest"></use></svg></span>
+        <b>Quêtes</b>
+      </a>
       <a href="#" class="nav-item">
         <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-journal"></use></svg></span>
         <b>Journal de bord</b>
@@ -252,6 +256,33 @@
       </section>
     </section>
 
+    <section id="questsView" class="app-view quests-view" data-view="quests" aria-hidden="true">
+      <section class="quests-panel" aria-labelledby="quests-title">
+        <header class="quests-header">
+          <div>
+            <span class="characters-kicker">COLLECTOR 2.0</span>
+            <h2 id="quests-title">Journal des quêtes</h2>
+            <p>Quêtes actives et historique complet connu pour chacun de tes héros.</p>
+          </div>
+          <div class="quests-actions">
+            <select id="questsCharacterSelect" class="quests-select" aria-label="Personnage"></select>
+            <button id="questsRefreshButton" class="quests-refresh" type="button">Actualiser</button>
+          </div>
+        </header>
+        <div class="quests-summary">
+          <div class="quest-kpi"><strong id="questsActiveCount">0</strong><span>Quêtes actives</span></div>
+          <div class="quest-kpi"><strong id="questsObjectivesCount">0</strong><span>Objectifs à terminer</span></div>
+          <div class="quest-kpi"><strong id="questsCompletedCount">0</strong><span>Titres de quêtes uniques terminés</span></div>
+          <div class="quest-kpi"><strong id="questsAccountSharedCount">0</strong><span>Quêtes partagées du compte</span></div>
+        </div>
+        <div id="questsGrid" class="quests-grid"></div>
+        <section class="quest-completed-list">
+          <h3>Historique personnel des quêtes terminées</h3>
+          <div id="questsCompletedList" class="quest-history"></div>
+        </section>
+      </section>
+    </section>
+
     <section
       id="charactersView"
       class="app-view characters-view"
@@ -298,6 +329,17 @@
               </span>
               <i id="battleStatusDot"></i>
             </div>
+
+            <button
+              id="syncCharactersButton"
+              class="characters-sync-button"
+              type="button"
+              aria-label="Synchroniser les personnages Battle.net"
+              title="Synchroniser les personnages Battle.net"
+            >
+              <span class="characters-sync-icon" aria-hidden="true">↻</span>
+              <span class="characters-sync-label">Synchroniser</span>
+            </button>
 
             <button
               id="backToDashboardTop"
