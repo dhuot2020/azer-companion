@@ -6,15 +6,15 @@
       "id": 185237374,
       "name": "Octaviia",
       "realm": "silvermoon",
-      "level": 6,
+      "level": 10,
       "status": "waiting",
-      "attempts": 2,
-      "lastCheckedAt": 1785877733262,
-      "nextCheckAt": 1785878333262,
-      "profileStatus": 404,
+      "attempts": 3,
+      "lastCheckedAt": 1785879212577,
+      "nextCheckAt": 1785880412577,
+      "profileStatus": 200,
       "mediaStatus": 404,
-      "reason": "Profil ou média Blizzard encore non publié."
+      "reason": "Erreur temporaire pendant la récupération du média."
     }
   },
-  "updatedAt": "2026-08-04T21:08:53.262Z"
+  "updatedAt": "2026-08-04T21:33:32.577Z"
 }

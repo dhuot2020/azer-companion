@@ -6,6 +6,7 @@ const express = require("express");
 const { readCollectorSummary } = require("../services/azerCollector");
 const { buildSyncResult } = require("../core/sync/syncManager");
 const mediaRetry = require("../services/blizzardMediaRetry");
+const { getStatus: getAseStatus } = require("../core/ase");
 
 const router = express.Router();
 
@@ -774,6 +775,14 @@ router.post("/api/blizzard-sync/retry/:realm/:name", (req, res) => {
     accepted: true,
     character: `${req.params.name}-${req.params.realm}`,
     message: "La prochaine synchronisation vérifiera immédiatement Blizzard.",
+  });
+});
+
+
+router.get("/api/ase/status", (req, res) => {
+  res.json({
+    ok: true,
+    ...getAseStatus(),
   });
 });
 

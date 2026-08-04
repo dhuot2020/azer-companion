@@ -3,6 +3,8 @@ const { buildSessionJournal } = require("../journal.service");
 const { buildRecentAchievements } = require("../achievements.service");
 const { summarizeAchievements } = require("./achievementSync");
 const { summarizeCollector } = require("./collectorSync");
+const { ASE_VERSION, getStatus } = require("../ase");
+const characterEngine = require("../engine/character/register");
 
 function buildSyncResult({ characters = [], collector = {}, startedAt }) {
   const collectorCharacters = Array.isArray(collector.characters)
@@ -11,35 +13,45 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
   const collectorAchievements = Array.isArray(collector.achievements)
     ? collector.achievements
     : [];
+
+  const characterResult = characterEngine.buildCharacters({
+    characters,
+    collectorCharacters,
+  });
+  const normalizedCharacters = characterResult.characters;
   const completedAt = Date.now();
-  const mediaAvailable = characters.filter(
+  const mediaAvailable = normalizedCharacters.filter(
     (character) => character?.mediaStatus === "available",
   ).length;
-  const mediaPending = characters.filter(
+  const mediaPending = normalizedCharacters.filter(
     (character) => character?.mediaStatus === "pending",
   ).length;
-  const mediaErrors = characters.filter(
+  const mediaErrors = normalizedCharacters.filter(
     (character) => character?.mediaStatus === "error",
   ).length;
-  const mediaWaiting = characters.filter(
+  const mediaWaiting = normalizedCharacters.filter(
     (character) => character?.mediaStatus === "waiting",
   ).length;
 
   return {
     connected: true,
-    count: characters.length,
-    characters,
-    dashboard: buildDashboardSummary(characters, collectorCharacters),
+    count: normalizedCharacters.length,
+    characters: normalizedCharacters,
+    dashboard: buildDashboardSummary(normalizedCharacters, collectorCharacters),
     journal: buildSessionJournal(collectorCharacters, 12),
     achievements: buildRecentAchievements(collectorAchievements, 3),
+    ase: {
+      ...getStatus(),
+      character: characterResult.summary,
+    },
     sync: {
-      version: "1.1.0-test1",
+      version: `2.0.1-ase-${ASE_VERSION}`,
       startedAt,
       completedAt,
       durationMs: Math.max(0, completedAt - startedAt),
       battleNet: {
         available: true,
-        characterCount: characters.length,
+        characterCount: normalizedCharacters.length,
         mediaAvailable,
         mediaPending,
         mediaWaiting,
