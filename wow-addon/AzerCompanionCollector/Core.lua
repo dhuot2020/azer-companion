@@ -3,7 +3,7 @@ Collector = Collector or {}
 _G.AzerCompanionCollector = Collector
 
 Collector.addonName = addonName
-Collector.schemaVersion = 5
+Collector.schemaVersion = 7
 Collector.modules = Collector.modules or {}
 Collector.moduleOrder = Collector.moduleOrder or {}
 Collector.scanState = Collector.scanState or {

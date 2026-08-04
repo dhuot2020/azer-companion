@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-04T21:08:52.251Z",
+  "characters": {
+    "242924228::duskwood::danielboone": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/duskwood/196/242924228-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/duskwood/196/242924228-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/duskwood/196/242924228-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/duskwood/danielboone/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/duskwood/danielboone?namespace=profile-us"
+          },
+          "name": "Danielboone",
+          "id": 242924228,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/1258?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 1258,
+            "slug": "duskwood"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/duskwood/196/242924228-avatar.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/duskwood/196/242924228-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "duskwood::danielboone",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732094
+    },
+    "185153967::silvermoon::ombreloup": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/175/185153967-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/175/185153967-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/175/185153967-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/silvermoon/ombreloup/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/silvermoon/ombreloup?namespace=profile-us"
+          },
+          "name": "Ombreloup",
+          "id": 185153967,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/86?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 86,
+            "slug": "silvermoon"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/silvermoon/175/185153967-avatar.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/silvermoon/175/185153967-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "silvermoon::ombreloup",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732251
+    },
+    "244371551::zuljin::floralune": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/zuljin/95/244371551-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/zuljin/95/244371551-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/zuljin/95/244371551-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/zuljin/floralune/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/zuljin/floralune?namespace=profile-us"
+          },
+          "name": "Floralune",
+          "id": 244371551,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/61?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 61,
+            "slug": "zuljin"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/zuljin/95/244371551-avatar.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/zuljin/95/244371551-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "zuljin::floralune",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732191
+    },
+    "244001643::zuljin::tanakio": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/zuljin/tanakio/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/zuljin/tanakio?namespace=profile-us"
+          },
+          "name": "Tanakio",
+          "id": 244001643,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/61?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 61,
+            "slug": "zuljin"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-avatar.jpg"
+          },
+          {
+            "key": "inset",
+            "value": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-inset.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/zuljin/107/244001643-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "zuljin::tanakio",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732204
+    },
+    "242929016::duskwood::poutchie": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/duskwood/120/242929016-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/duskwood/120/242929016-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/duskwood/120/242929016-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/duskwood/poutchie/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/duskwood/poutchie?namespace=profile-us"
+          },
+          "name": "Poutchie",
+          "id": 242929016,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/1258?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 1258,
+            "slug": "duskwood"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/duskwood/120/242929016-avatar.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/duskwood/120/242929016-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "duskwood::poutchie",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732224
+    },
+    "185239948::silvermoon::electria": {
+      "avatarUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/140/185239948-avatar.jpg",
+      "portraitUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/140/185239948-avatar.jpg",
+      "fullBodyUrl": "https://render.worldofwarcraft.com/us/character/silvermoon/140/185239948-main-raw.png",
+      "media": {
+        "_links": {
+          "self": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/silvermoon/electria/character-media?namespace=profile-us"
+          }
+        },
+        "character": {
+          "key": {
+            "href": "https://us.api.blizzard.com/profile/wow/character/silvermoon/electria?namespace=profile-us"
+          },
+          "name": "Electria",
+          "id": 185239948,
+          "realm": {
+            "key": {
+              "href": "https://us.api.blizzard.com/data/wow/realm/86?namespace=dynamic-us"
+            },
+            "name": null,
+            "id": 86,
+            "slug": "silvermoon"
+          }
+        },
+        "assets": [
+          {
+            "key": "avatar",
+            "value": "https://render.worldofwarcraft.com/us/character/silvermoon/140/185239948-avatar.jpg"
+          },
+          {
+            "key": "main-raw",
+            "value": "https://render.worldofwarcraft.com/us/character/silvermoon/140/185239948-main-raw.png"
+          }
+        ]
+      },
+      "mediaOwnerKey": "silvermoon::electria",
+      "mediaStatus": "available",
+      "cachedAt": 1785877732225
+    }
+  }
+}

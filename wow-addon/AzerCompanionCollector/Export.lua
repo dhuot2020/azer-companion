@@ -85,12 +85,16 @@ SlashCmdList.AZERCOMPANION = function(message)
         else
             Collector:Log("Aucun diagnostic d'écriture disponible.")
         end
+    elseif command == "portrait" then
+        Collector:ShowPortraitPreview(false)
+    elseif command == "portrait screenshot" or command == "portrait capture" then
+        Collector:ShowPortraitPreview(true)
     elseif command == "export" then
         Collector:InitializeDatabase()
         AzerCompanionDB.sync.exportRequestedAt = Collector.Utils.Now()
         Collector:VerifyCurrentCharacter("export")
         Collector:Log("Données prêtes. Faites /reload ou déconnectez-vous pour écrire SavedVariables.")
     else
-        Collector:Log("Commandes: /azer scan, /azer status, /azer who, /azer verify, /azer diag, /azer export")
+        Collector:Log("Commandes: /azer scan, /azer portrait, /azer portrait screenshot, /azer status, /azer who, /azer verify, /azer diag, /azer export")
     end
 end

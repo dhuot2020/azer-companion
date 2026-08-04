@@ -21,6 +21,30 @@ local function captureProfile(character)
         averageItemLevel, equippedItemLevel, pvpItemLevel = GetAverageItemLevel()
     end
 
+    local sexID = UnitSex("player")
+    local sexSlug = sexID == 3 and "female" or (sexID == 2 and "male" or "unknown")
+    local raceSlug = string.lower(tostring(raceFile or raceName or "unknown")):gsub("[^%w]", "")
+    local classSlug = string.lower(tostring(classFile or className or "unknown")):gsub("[^%w]", "")
+    local displayID = UnitCreatureDisplayID and UnitCreatureDisplayID("player") or nil
+
+    character.appearance = {
+        raceID = raceID,
+        raceName = raceName,
+        raceFile = raceFile,
+        raceSlug = raceSlug,
+        classID = classID,
+        className = className,
+        classFile = classFile,
+        classSlug = classSlug,
+        sexID = sexID,
+        sex = sexSlug,
+        faction = faction,
+        displayID = displayID,
+        portraitKey = table.concat({ raceSlug, sexSlug, classSlug }, "_"),
+        portraitSlug = table.concat({ raceSlug, sexSlug, classSlug }, "-"),
+        capturedAt = Collector.Utils.Now(),
+    }
+
     character.profile = {
         level = UnitLevel("player"),
         classID = classID,
@@ -31,7 +55,7 @@ local function captureProfile(character)
         raceFile = raceFile,
         faction = faction,
         localizedFaction = localizedFaction,
-        sex = UnitSex("player"),
+        sex = sexID,
         specializationID = specializationID,
         specializationName = specializationName,
         specializationRole = specializationRole,

@@ -2,12 +2,13 @@
 ## Title: Azer Companion Collector
 ## Notes: Collecteur modulaire de données pour Azer Companion.
 ## Author: DH Studio
-## Version: 2.0.0-alpha13.2
+## Version: 2.3.0-alpha1
 ## SavedVariables: AzerCompanionDB
 
 Core.lua
 Utils.lua
 Modules/Character.lua
+Modules/Media.lua
 Modules/Achievements.lua
 Modules/Quests.lua
 Export.lua

@@ -270,14 +270,21 @@
           </div>
         </header>
         <div class="quests-summary">
-          <div class="quest-kpi"><strong id="questsActiveCount">0</strong><span>Quêtes actives</span></div>
-          <div class="quest-kpi"><strong id="questsObjectivesCount">0</strong><span>Objectifs à terminer</span></div>
-          <div class="quest-kpi"><strong id="questsCompletedCount">0</strong><span>Titres de quêtes uniques terminés</span></div>
-          <div class="quest-kpi"><strong id="questsAccountSharedCount">0</strong><span>Quêtes partagées du compte</span></div>
+          <div class="quest-kpi"><strong id="questsActiveCount">0</strong><span id="questsActiveLabel">Quêtes actives</span></div>
+          <div class="quest-kpi"><strong id="questsObjectivesCount">0</strong><span id="questsObjectivesLabel">Objectifs à terminer</span></div>
+          <div class="quest-kpi"><strong id="questsCompletedCount">0</strong><span id="questsCompletedLabel">Titres uniques personnels</span></div>
+          <div class="quest-kpi"><strong id="questsAccountSharedCount">0</strong><span id="questsAccountSharedLabel">Titres partagés du compte</span></div>
         </div>
         <div id="questsGrid" class="quests-grid"></div>
+
+        <div id="questDetailsBackdrop" class="quest-details-backdrop" hidden></div>
+        <aside id="questDetailsPanel" class="quest-details-panel" aria-hidden="true" aria-labelledby="questDetailsTitle">
+          <button id="questDetailsClose" class="quest-details-close" type="button" aria-label="Fermer les détails de la quête">×</button>
+          <div id="questDetailsContent" class="quest-details-content"></div>
+        </aside>
+
         <section class="quest-completed-list">
-          <h3>Historique personnel des quêtes terminées</h3>
+          <h3 id="questsCompletedHeading">Historique personnel des quêtes terminées</h3>
           <div id="questsCompletedList" class="quest-history"></div>
         </section>
       </section>

@@ -620,3 +620,56 @@
 .character-gender-icon-female {
   color: #ed83bd;
 }
+
+/* ==========================================================
+   PORTRAIT ENGINE PRO - SOURCE DU PORTRAIT
+   ========================================================== */
+.character-portrait-source {
+  position: absolute;
+  z-index: 12;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(4, 12, 24, 0.78);
+  color: rgba(240, 247, 255, 0.82);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.character-card:hover .character-portrait-source,
+.character-card:focus-within .character-portrait-source,
+.character-portrait-source.is-azer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.character-portrait-source span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #59d98e;
+  box-shadow: 0 0 8px rgba(89, 217, 142, 0.8);
+}
+
+.character-portrait-source.is-azer {
+  border-color: rgba(215, 177, 88, 0.38);
+  color: #f1d58b;
+}
+
+.character-portrait-source.is-azer span {
+  background: #d8ad4f;
+  box-shadow: 0 0 8px rgba(216, 173, 79, 0.8);
+}

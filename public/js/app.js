@@ -349,6 +349,8 @@ function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
         ((mediaSource.avatarUrl || mediaSource.portraitUrl || mediaSource.fullBodyUrl)
           ? characterKey
           : null),
+      portraitSource: mediaSource.portraitSource || character.portraitSource || null,
+      isFallbackPortrait: Boolean(mediaSource.isFallbackPortrait || character.isFallbackPortrait),
     };
 
     mergedCharacters.set(characterKey, normalizeCharacter(mergedCharacter));
@@ -702,16 +704,16 @@ function getMediaAsset(character, key) {
 }
 
 function getCharacterFallbackPortrait(character) {
+  const classId = Math.min(13, Math.max(1, Number(character?.classId) || 1));
   const faction = String(
-    character.factionName || character.faction || "ALLIANCE",
+    character?.factionName || character?.faction || "ALLIANCE",
   ).toUpperCase();
+  const factionOffset = faction === "HORDE" ? 13 : 0;
+  const portraitIndex = classId + factionOffset;
 
-  // Ne jamais montrer le portrait fictif d'un autre personnage.
-  // Tant que Blizzard n'a pas produit l'avatar réel, on affiche uniquement
-  // l'emblème officiel de la faction.
-  return faction === "HORDE"
-    ? "/assets/ui/factions/horde.png"
-    : "/assets/ui/factions/alliance.png";
+  // Portrait Azer par classe et faction. Il évite tout médaillon vide sans
+  // prétendre être le véritable visage du personnage.
+  return `/assets/characters/showcase/avatars/showcase-${String(portraitIndex).padStart(2, "0")}.webp`;
 }
 
 function getCharacterPortraitImage(character) {
@@ -725,7 +727,7 @@ function getCharacterPortraitImage(character) {
       missingPortraitWarnings.add(characterKey);
       console.info(
         `Portrait Blizzard indisponible pour ${character?.name}-${character?.realm}; ` +
-          `image de faction utilisée temporairement.`,
+          `portrait Azer de classe utilisé temporairement.`,
       );
     }
 
@@ -806,6 +808,8 @@ function normalizeCharacter(character) {
     genderName:
       character.genderName || character.gender?.name || character.gender || "",
     isShowcase: Boolean(character.isShowcase),
+    portraitSource: character.portraitSource || (character.isFallbackPortrait ? "azer-fallback" : "blizzard"),
+    isFallbackPortrait: Boolean(character.isFallbackPortrait || character.portraitSource === "azer-fallback"),
     image: getCharacterImage(character),
   };
 }
@@ -860,6 +864,12 @@ function createCharacterCard(character) {
         <div class="character-active-label">
           <span aria-hidden="true"></span>
           Sélectionné
+        </div>
+
+        <div class="character-portrait-source ${character.isFallbackPortrait ? "is-azer" : "is-blizzard"}"
+             title="${character.isFallbackPortrait ? "Portrait Azer temporaire" : "Portrait Blizzard"}">
+          <span aria-hidden="true"></span>
+          ${character.isFallbackPortrait ? "Portrait Azer" : "Blizzard"}
         </div>
 
         <div class="character-card-front-content">
@@ -2134,6 +2144,9 @@ const questsState = {
   selectedKey: "",
   historyPage: 1,
   historyPageSize: 40,
+  detailIndex: new Map(),
+  database: null,
+  databasePromise: null,
 };
 
 function escapeHtml(value) {
@@ -2161,10 +2174,39 @@ function formatQuestDate(timestamp) {
 }
 
 function getSelectedQuestCharacter() {
+  if (questsState.selectedKey === "__account__") {
+    return questsState.payload?.account || null;
+  }
+
   const characters = questsState.payload?.characters || [];
   return characters.find((character) => questCharacterKey(character) === questsState.selectedKey)
     || characters[0]
+    || questsState.payload?.account
     || null;
+}
+
+function findLastConnectedQuestCharacter() {
+  const characters = questsState.payload?.characters || [];
+  const lastCharacter = getLastCollectorCharacter();
+  if (!lastCharacter || !characters.length) return null;
+
+  const lastName = normalizeCollectorIdentity(lastCharacter.name);
+  const lastRealm = normalizeCollectorIdentity(lastCharacter.realm);
+
+  return characters.find((character) =>
+    normalizeCollectorIdentity(character?.name) === lastName
+      && normalizeCollectorIdentity(character?.realm) === lastRealm,
+  ) || characters.find((character) =>
+    normalizeCollectorIdentity(character?.name) === lastName,
+  ) || null;
+}
+
+function selectLastConnectedQuestCharacter() {
+  const character = findLastConnectedQuestCharacter();
+  if (!character) return false;
+  questsState.selectedKey = questCharacterKey(character);
+  questsState.historyPage = 1;
+  return true;
 }
 
 function renderQuestCharacterOptions() {
@@ -2175,15 +2217,30 @@ function renderQuestCharacterOptions() {
     String(a.name || "").localeCompare(String(b.name || ""), "fr", { sensitivity: "base" }),
   );
 
-  select.innerHTML = characters
+  const characterOptions = characters
     .map((character) => {
       const key = questCharacterKey(character);
       return `<option value="${escapeHtml(key)}">${escapeHtml(character.name)} — ${escapeHtml(character.realm)}</option>`;
     })
     .join("");
 
+  const accountOption = questsState.payload?.account
+    ? '<option value="__account__">Compte — Bande de guerre</option>'
+    : "";
+
+  select.innerHTML = characterOptions + accountOption;
+
   if (!questsState.selectedKey && characters[0]) {
     questsState.selectedKey = questCharacterKey(characters[0]);
+  } else if (!questsState.selectedKey && questsState.payload?.account) {
+    questsState.selectedKey = "__account__";
+  }
+
+  const validValues = new Set([...select.options].map((option) => option.value));
+  if (!validValues.has(questsState.selectedKey)) {
+    questsState.selectedKey = characters[0]
+      ? questCharacterKey(characters[0])
+      : questsState.payload?.account ? "__account__" : "";
   }
   select.value = questsState.selectedKey;
 }
@@ -2232,6 +2289,333 @@ function groupQuestHistoryByTitle(quests = []) {
     .sort((a, b) => a.title.localeCompare(b.title, "fr", { sensitivity: "base" }));
 }
 
+function getQuestTypeLabel(quest, isAccountView = false) {
+  if (isAccountView || quest?.scope === "account" || quest?.isAccountQuest) return "Bande de guerre";
+  if (quest?.isPetBattleQuest) return "Combat de mascottes";
+  if (quest?.isWorldQuest) return "Quête mondiale";
+  if (quest?.campaignID) return "Campagne";
+  if (quest?.isCalling) return "Appel";
+  return "Quête personnelle";
+}
+
+function closeQuestDetails() {
+  const panel = document.getElementById("questDetailsPanel");
+  const backdrop = document.getElementById("questDetailsBackdrop");
+  if (!panel || !backdrop) return;
+  panel.classList.remove("is-open");
+  panel.setAttribute("aria-hidden", "true");
+  backdrop.hidden = true;
+  document.body.classList.remove("quest-details-open");
+}
+
+
+async function loadQuestDatabase() {
+  if (questsState.database) return questsState.database;
+  if (questsState.databasePromise) return questsState.databasePromise;
+
+  questsState.databasePromise = fetch("/data/quests/quest-database.json", {
+    headers: { Accept: "application/json" },
+    cache: "no-cache",
+  })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Quest Database indisponible (${response.status})`);
+      return response.json();
+    })
+    .then((payload) => {
+      questsState.database = payload?.quests && typeof payload.quests === "object" ? payload.quests : {};
+      return questsState.database;
+    })
+    .catch((error) => {
+      console.warn("Quest Database non chargée :", error.message);
+      questsState.database = {};
+      return questsState.database;
+    });
+
+  return questsState.databasePromise;
+}
+
+function firstUsefulValue(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "");
+}
+
+function mergeQuestKnowledge(liveQuest = {}, databaseQuest = {}) {
+  const liveRewards = liveQuest.rewards && typeof liveQuest.rewards === "object" ? liveQuest.rewards : {};
+  const databaseRewards = databaseQuest.rewards && typeof databaseQuest.rewards === "object" ? databaseQuest.rewards : {};
+
+  return {
+    ...databaseQuest,
+    ...liveQuest,
+    title: firstUsefulValue(liveQuest.title, databaseQuest.title),
+    description: firstUsefulValue(liveQuest.description, liveQuest.questDescription, liveQuest.logDescription, databaseQuest.description),
+    objectiveText: firstUsefulValue(liveQuest.objectiveText, liveQuest.objectivesText, databaseQuest.objectiveText),
+    completionText: firstUsefulValue(liveQuest.completionText, databaseQuest.completionText),
+    mapName: firstUsefulValue(liveQuest.mapName, databaseQuest.mapName),
+    rewards: {
+      ...databaseRewards,
+      ...liveRewards,
+      experience: Number(liveRewards.experience || databaseRewards.experience || 0),
+      money: Number(liveRewards.money || databaseRewards.money || 0),
+      items: Array.isArray(liveRewards.items) && liveRewards.items.length ? liveRewards.items : (Array.isArray(databaseRewards.items) ? databaseRewards.items : []),
+      choices: Array.isArray(liveRewards.choices) && liveRewards.choices.length ? liveRewards.choices : (Array.isArray(databaseRewards.choices) ? databaseRewards.choices : []),
+      currencies: Array.isArray(liveRewards.currencies) && liveRewards.currencies.length ? liveRewards.currencies : (Array.isArray(databaseRewards.currencies) ? databaseRewards.currencies : []),
+    },
+    knowledgeSource: databaseQuest.source || "",
+  };
+}
+
+function formatQuestMoney(totalCopper) {
+  const total = Math.max(0, Number(totalCopper || 0));
+  const gold = Math.floor(total / 10000);
+  const silver = Math.floor((total % 10000) / 100);
+  const copper = total % 100;
+  const parts = [];
+  if (gold) parts.push(`<span class="quest-money-part"><span class="quest-money-icon gold">●</span>${gold}</span>`);
+  if (silver) parts.push(`<span class="quest-money-part"><span class="quest-money-icon silver">●</span>${silver}</span>`);
+  if (copper || !parts.length) parts.push(`<span class="quest-money-part"><span class="quest-money-icon copper">●</span>${copper}</span>`);
+  return parts.join("");
+}
+
+function questRewardTypeLabel(item = {}) {
+  if (item.typeLabel) return String(item.typeLabel);
+  if (item.currencyID) return "Monnaie";
+  if (item.isQuestItem || item.questItem) return "Objet de quête";
+  if (item.itemLevel) return `Niveau d’objet : ${Number(item.itemLevel)}`;
+  return "Objet";
+}
+
+function renderQuestRewardItem(item, options = {}) {
+  const quality = Math.max(0, Math.min(7, Number(item?.quality || 0)));
+  const quantity = Math.max(1, Number(item?.quantity || 1));
+  const name = item?.name || (item?.itemID ? `Objet #${item.itemID}` : "Objet de récompense");
+  const texture = item?.iconUrl || item?.texture;
+  const icon = typeof texture === "string" && /^(https?:|\/)/i.test(texture)
+    ? `<img src="${escapeHtml(texture)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+    : `<span class="quest-reward-icon-fallback">◆</span>`;
+  const typeLabel = questRewardTypeLabel(item);
+  const choiceClass = options.isChoice ? " is-choice" : "";
+
+  return `<article class="quest-reward-item quality-${quality}${choiceClass}">
+    <span class="quest-reward-icon">${icon}${quantity > 1 ? `<em>${quantity}</em>` : ""}</span>
+    <span class="quest-reward-item-copy">
+      <strong>${escapeHtml(name)}</strong>
+      <small>${escapeHtml(typeLabel)}</small>
+      ${item?.binding ? `<small>${escapeHtml(item.binding)}</small>` : ""}
+    </span>
+  </article>`;
+}
+
+function renderQuestRewards(rewards = {}) {
+  const experience = Math.max(0, Number(rewards.experience || 0));
+  const money = Math.max(0, Number(rewards.money || 0));
+  const items = Array.isArray(rewards.items) ? rewards.items : [];
+  const choices = Array.isArray(rewards.choices) ? rewards.choices : [];
+  const currencies = Array.isArray(rewards.currencies) ? rewards.currencies : [];
+  const spell = rewards.spell && typeof rewards.spell === "object" ? rewards.spell : null;
+  const artifactXP = Math.max(0, Number(rewards.artifactXP || 0));
+  const summary = [];
+  const groups = [];
+
+  if (experience > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">✦</span><span><strong>${experience.toLocaleString("fr-CA")} XP</strong><small>Expérience</small></span></div>`);
+  if (money > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol coins">●</span><span><strong class="quest-money">${formatQuestMoney(money)}</strong><small>Argent</small></span></div>`);
+  if (artifactXP > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">◆</span><span><strong>${artifactXP.toLocaleString("fr-CA")}</strong><small>Puissance prodigieuse</small></span></div>`);
+
+  if (items.length) groups.push(`<div class="quest-reward-group"><h5>Récompenses garanties</h5><div class="quest-reward-items">${items.map((item) => renderQuestRewardItem(item)).join("")}</div></div>`);
+  if (choices.length) groups.push(`<div class="quest-reward-group"><h5>Choisis une récompense</h5><div class="quest-reward-choice-grid">${choices.map((item) => renderQuestRewardItem(item, { isChoice: true })).join("")}</div></div>`);
+  if (currencies.length) groups.push(`<div class="quest-reward-group"><h5>Monnaies</h5><div class="quest-reward-items">${currencies.map((currency) => renderQuestRewardItem({ ...currency, itemID: currency.currencyID })).join("")}</div></div>`);
+  if (spell?.name) groups.push(`<div class="quest-reward-group"><h5>Apprentissage</h5><div class="quest-reward-items"><div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">✧</span><span><strong>${escapeHtml(spell.name)}</strong><small>Sort ou technique appris</small></span></div></div></div>`);
+
+  if (!summary.length && !groups.length) return '<p class="quest-details-muted">Aucune récompense détaillée fournie par WoW pour cette quête.</p>';
+  return `<div class="quest-rewards-premium">${summary.length ? `<div class="quest-reward-summary">${summary.join("")}</div>` : ""}${groups.join("")}</div>`;
+}
+
+function cleanQuestObjectiveText(value, total = 0) {
+  let text = String(value || "Objectif");
+  const usePlural = Number(total) !== 1;
+
+  text = text
+    .replace(/\|c[0-9a-fA-F]{8}/g, "")
+    .replace(/\|r/g, "")
+    .replace(/(?:\||[lI])4([^:;]+):([^;]+);/g, (_, singular, plural) =>
+      usePlural ? plural : singular,
+    )
+    .replace(/(?:\||[lI])[Kk](\d+)/g, "$1")
+    .replace(/\{[^}]+\}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  text = text
+    .replace(/\s*[:\-–]\s*\d+\s*\/\s*\d+(?=\s|$)/g, "")
+    .replace(/\s+\d+\s*\/\s*\d+(?=\s|$)/g, "")
+    .replace(/\s*[:\-–;,]+\s*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return text || "Objectif";
+}
+
+function parseQuestObjectiveProgress(objective = {}) {
+  const rawText = String(objective.text || "Objectif");
+  let current = Number(firstUsefulValue(objective.current, objective.fulfilled, objective.numFulfilled));
+  let total = Number(firstUsefulValue(objective.total, objective.required, objective.numRequired));
+  const progressMatch = rawText.match(/(\d+)\s*\/\s*(\d+)/);
+
+  if ((!Number.isFinite(current) || !Number.isFinite(total) || total <= 0) && progressMatch) {
+    current = Number(progressMatch[1]);
+    total = Number(progressMatch[2]);
+  }
+
+  if (!Number.isFinite(current)) current = objective.finished ? 1 : 0;
+  if (!Number.isFinite(total) || total < 0) total = 0;
+
+  return {
+    text: cleanQuestObjectiveText(rawText, total),
+    current,
+    total,
+  };
+}
+
+function renderQuestObjective(objective = {}) {
+  const progress = parseQuestObjectiveProgress(objective);
+  const done = Boolean(objective.finished || (progress.total > 0 && progress.current >= progress.total));
+  const ratio = progress.total > 0
+    ? Math.min(100, Math.max(0, (progress.current / progress.total) * 100))
+    : (done ? 100 : 0);
+
+  return `<li class="quest-details-objective ${done ? "done" : ""}">
+    <span class="quest-objective-check" aria-hidden="true">${done ? "✓" : ""}</span>
+    <span class="quest-objective-body">
+      <strong>${escapeHtml(progress.text)}</strong>
+      ${progress.total > 0 ? `<span class="quest-objective-progress" aria-hidden="true"><i style="width:${ratio}%"></i></span><small>${progress.current} / ${progress.total}</small>` : ""}
+    </span>
+  </li>`;
+}
+
+function renderQuestTravel(quest, location) {
+  const coordinates = quest.coordinates || quest.coords || quest.position || null;
+  const x = Number(firstUsefulValue(coordinates?.x, quest.x, quest.mapX));
+  const y = Number(firstUsefulValue(coordinates?.y, quest.y, quest.mapY));
+  const hasCoordinates = Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0;
+  const giver = firstUsefulValue(quest.giverName, quest.questGiver, quest.startNpcName, quest.npcName);
+  const turnIn = firstUsefulValue(quest.turnInName, quest.endNpcName, quest.completionNpcName);
+
+  return `<section class="quest-details-section quest-travel-section">
+    <h4>Où aller</h4>
+    <div class="quest-travel-card">
+      <div><span>Zone</span><strong>${escapeHtml(location)}</strong></div>
+      ${giver ? `<div><span>Donneur de quête</span><strong>${escapeHtml(giver)}</strong></div>` : ""}
+      ${turnIn ? `<div><span>Remise de quête</span><strong>${escapeHtml(turnIn)}</strong></div>` : ""}
+      <div><span>Coordonnées</span><strong>${hasCoordinates ? `${x.toFixed(1)}, ${y.toFixed(1)}` : "Non disponibles"}</strong></div>
+      <button class="quest-map-button" type="button" ${hasCoordinates ? `data-quest-coordinates="${x.toFixed(1)},${y.toFixed(1)}"` : "disabled"}>${hasCoordinates ? "Copier les coordonnées" : "Carte interactive — prochainement"}</button>
+    </div>
+  </section>`;
+}
+
+function renderQuestBlizzardData({ ids, typeLabel, level, location, quest }) {
+  const category = firstUsefulValue(quest.category, quest.questCategory, "Normale");
+  const expansion = firstUsefulValue(quest.expansionName, quest.expansion);
+  const faction = firstUsefulValue(quest.factionName, quest.faction);
+  const knownLocation = location && location !== "Zone non précisée";
+  const rows = [
+    `<div><dt>Quest ID</dt><dd>${escapeHtml(ids.join(", "))}</dd></div>`,
+    `<div><dt>Type</dt><dd>${escapeHtml(typeLabel)}</dd></div>`,
+    `<div><dt>Niveau</dt><dd>${level > 0 ? level : "Adaptatif"}</dd></div>`,
+    `<div><dt>Catégorie</dt><dd>${escapeHtml(String(category))}</dd></div>`,
+    expansion ? `<div><dt>Extension</dt><dd>${escapeHtml(String(expansion))}</dd></div>` : "",
+    faction ? `<div><dt>Faction</dt><dd>${escapeHtml(String(faction))}</dd></div>` : "",
+    knownLocation ? `<div class="wide"><dt>Zone</dt><dd>${escapeHtml(location)}</dd></div>` : "",
+  ].filter(Boolean).join("");
+
+  return `<section class="quest-details-section quest-details-technical">
+    <h4>Informations Blizzard</h4>
+    <dl class="quest-data-grid">${rows}</dl>
+  </section>`;
+}
+
+async function openQuestDetails(detailKey) {
+  const detail = questsState.detailIndex.get(detailKey);
+  const panel = document.getElementById("questDetailsPanel");
+  const backdrop = document.getElementById("questDetailsBackdrop");
+  const content = document.getElementById("questDetailsContent");
+  if (!detail || !panel || !backdrop || !content) return;
+
+  const liveQuest = detail.quest || {};
+  const ids = Array.isArray(detail.ids) ? detail.ids : [Number(liveQuest.id || 0)].filter(Boolean);
+  const database = await loadQuestDatabase();
+  const databaseQuest = ids.map((id) => database[String(id)]).find(Boolean) || {};
+  const quest = mergeQuestKnowledge(liveQuest, databaseQuest);
+  const objectives = Array.isArray(quest.objectives) ? quest.objectives : [];
+  const location = quest.mapName || detail.mapName || "Zone non précisée";
+  const typeLabel = getQuestTypeLabel(quest, detail.isAccountView);
+  const level = Number(quest.level || 0);
+  const suggestedGroup = Number(quest.suggestedGroup || 0);
+  const description = quest.description || quest.questDescription || quest.logDescription || "";
+  const objectiveText = quest.objectiveText || quest.objectivesText || "";
+  const completionText = quest.completionText || "";
+
+  content.innerHTML = `
+    <h3 id="questDetailsTitle" class="quest-details-title">${escapeHtml(detail.title || quest.title || `Quête #${ids[0] || 0}`)}</h3>
+    <div class="quest-details-meta">
+      ${ids.length ? `<span class="quest-details-chip">${ids.length > 1 ? `${ids.length} variantes` : `#${ids[0]}`}</span>` : ""}
+      <span class="quest-details-chip">${escapeHtml(location)}</span>
+      <span class="quest-details-chip">${escapeHtml(typeLabel)}</span>
+      ${level > 0 ? `<span class="quest-details-chip">Niveau ${level}</span>` : ""}
+      ${suggestedGroup > 0 ? `<span class="quest-details-chip">Groupe conseillé : ${suggestedGroup}</span>` : ""}
+      ${quest.isComplete ? '<span class="quest-details-chip">Terminée dans le journal</span>' : ""}
+      ${quest.knowledgeSource ? '<span class="quest-details-chip quest-details-chip-source">Base Azer Companion</span>' : ""}
+    </div>
+
+    <section class="quest-details-section">
+      <h4>Description</h4>
+      ${description ? `<p class="quest-details-copy">${escapeHtml(description)}</p>` : '<p class="quest-details-muted">WoW ne fournit pas de description pour cette entrée.</p>'}
+      ${completionText ? `<p class="quest-details-copy quest-completion-copy">${escapeHtml(completionText)}</p>` : ""}
+    </section>
+
+    <section class="quest-details-section">
+      <h4>Objectifs</h4>
+      ${objectiveText ? `<p class="quest-details-copy quest-objective-summary">${escapeHtml(objectiveText)}</p>` : ""}
+      ${objectives.length ? `<ul class="quest-details-objectives">${objectives.map(renderQuestObjective).join("")}</ul>` : '<p class="quest-details-muted">Aucun objectif détaillé disponible.</p>'}
+    </section>
+
+    <section class="quest-details-section">
+      <h4>Récompenses</h4>
+      ${renderQuestRewards(quest.rewards || {})}
+    </section>
+
+    ${renderQuestTravel(quest, location)}
+    ${ids.length ? renderQuestBlizzardData({ ids, typeLabel, level, location, quest }) : ""}
+  `;
+
+  content.querySelector("[data-quest-coordinates]")?.addEventListener("click", async (event) => {
+    const value = event.currentTarget.dataset.questCoordinates;
+    try {
+      await navigator.clipboard.writeText(value);
+      event.currentTarget.textContent = "Coordonnées copiées ✓";
+    } catch {
+      event.currentTarget.textContent = value;
+    }
+  });
+
+  backdrop.hidden = false;
+  panel.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => panel.classList.add("is-open"));
+  document.body.classList.add("quest-details-open");
+  document.getElementById("questDetailsClose")?.focus({ preventScroll: true });
+}
+
+function bindQuestDetailsTriggers(root) {
+  if (!root) return;
+  root.querySelectorAll("[data-quest-detail-key]").forEach((element) => {
+    const open = () => openQuestDetails(element.dataset.questDetailKey);
+    element.addEventListener("click", open);
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    });
+  });
+}
+
 function renderQuestsView() {
   const grid = document.getElementById("questsGrid");
   const completedList = document.getElementById("questsCompletedList");
@@ -2239,6 +2623,8 @@ function renderQuestsView() {
 
   renderQuestCharacterOptions();
   const character = getSelectedQuestCharacter();
+  const isAccountView = questsState.selectedKey === "__account__";
+  questsState.detailIndex = new Map();
   const active = [...(character?.active || [])];
   const observed = [...(character?.completedObserved || [])].sort(
     (a, b) => Number(b.completedAt || 0) - Number(a.completedAt || 0),
@@ -2260,9 +2646,25 @@ function renderQuestsView() {
   document.getElementById("questsActiveCount").textContent = String(active.length);
   document.getElementById("questsObjectivesCount").textContent = String(remainingObjectives);
   document.getElementById("questsCompletedCount").textContent = String(groupedHistory.length);
-  const accountShared = [...(character?.completedAccountShared || [])];
+  const accountShared = [...(questsState.payload?.account?.completedHistory || [])];
   const accountSharedCount = document.getElementById("questsAccountSharedCount");
-  if (accountSharedCount) accountSharedCount.textContent = String(accountShared.length);
+  if (accountSharedCount) accountSharedCount.textContent = String(groupQuestHistoryByTitle(accountShared).length);
+
+  const completedHeading = document.getElementById("questsCompletedHeading");
+  if (completedHeading) {
+    completedHeading.textContent = isAccountView
+      ? "Quêtes terminées du compte — Bande de guerre"
+      : "Historique personnel des quêtes terminées";
+  }
+
+  const activeLabel = document.getElementById("questsActiveLabel");
+  const objectivesLabel = document.getElementById("questsObjectivesLabel");
+  const completedLabel = document.getElementById("questsCompletedLabel");
+  const accountLabel = document.getElementById("questsAccountSharedLabel");
+  if (activeLabel) activeLabel.textContent = isAccountView ? "Quêtes actives du compte" : "Quêtes actives";
+  if (objectivesLabel) objectivesLabel.textContent = isAccountView ? "Objectifs du compte" : "Objectifs à terminer";
+  if (completedLabel) completedLabel.textContent = isAccountView ? "Titres uniques du compte" : "Titres uniques personnels";
+  if (accountLabel) accountLabel.textContent = "Titres partagés du compte";
 
   if (!character) {
     grid.innerHTML = '<div class="quest-empty"><strong>Aucune donnée de quête</strong><br><small>Lance /azer scan dans WoW, puis /reload.</small></div>';
@@ -2273,15 +2675,18 @@ function renderQuestsView() {
   grid.innerHTML = active.length
     ? active
         .sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""), "fr"))
-        .map((quest) => {
+        .map((quest, index) => {
           const objectives = quest.objectives || [];
           const location = quest.mapName || "Zone non précisée";
+          const detailKey = `active:${Number(quest.id || 0)}:${index}`;
+          questsState.detailIndex.set(detailKey, { quest, title: quest.title || `Quête #${quest.id}`, ids: [Number(quest.id || 0)].filter(Boolean), mapName: location, isAccountView });
           return `
-            <article class="quest-card ${quest.isComplete ? "is-complete" : ""}">
+            <article class="quest-card ${quest.isComplete ? "is-complete" : ""}" data-quest-detail-key="${escapeHtml(detailKey)}" tabindex="0" role="button" aria-label="Voir les détails de ${escapeHtml(quest.title || `Quête ${quest.id}`)}">
               <h3>${escapeHtml(quest.title || `Quête ${quest.id}`)}</h3>
               <div class="quest-card-meta">
                 <span>#${Number(quest.id || 0)}</span>
                 <span>${escapeHtml(location)}</span>
+                ${isAccountView ? "<span>Bande de guerre</span>" : ""}
                 ${quest.isWorldQuest ? "<span>Quête mondiale</span>" : ""}
                 ${quest.campaignID ? "<span>Campagne</span>" : ""}
               </div>
@@ -2293,7 +2698,9 @@ function renderQuestsView() {
             </article>`;
         })
         .join("")
-    : '<div class="quest-empty"><strong>Aucune quête active pour ce personnage</strong><br><small>Les quêtes apparaîtront après un /azer scan.</small></div>';
+    : isAccountView
+      ? '<div class="quest-empty"><strong>Aucune quête active partagée détectée</strong><br><small>Les quêtes de compte apparaîtront ici après les scans des personnages.</small></div>'
+      : '<div class="quest-empty"><strong>Aucune quête personnelle active pour ce personnage</strong><br><small>Les quêtes de Bande de guerre sont visibles dans la vue Compte.</small></div>';
 
   const totalPages = Math.max(1, Math.ceil(groupedHistory.length / questsState.historyPageSize));
   questsState.historyPage = Math.min(Math.max(1, questsState.historyPage), totalPages);
@@ -2301,27 +2708,35 @@ function renderQuestsView() {
   const pageItems = groupedHistory.slice(firstIndex, firstIndex + questsState.historyPageSize);
 
   const historyHtml = pageItems.length
-    ? pageItems.map((group) => {
+    ? pageItems.map((group, index) => {
         const idsLabel = group.ids.map((id) => `#${id}`).join(", ");
         const variantLabel = group.variantCount > 1
           ? `${group.variantCount} variantes`
           : idsLabel || "1 quête";
+        const detailKey = `history:${questsState.historyPage}:${index}:${group.ids[0] || 0}`;
+        questsState.detailIndex.set(detailKey, { quest: group.quests[0] || {}, title: group.title, ids: group.ids, mapName: group.mapName, isAccountView });
         return `
-          <div class="quest-history-item" title="${escapeHtml(idsLabel)}">
+          <div class="quest-history-item" data-quest-detail-key="${escapeHtml(detailKey)}" tabindex="0" role="button" title="${escapeHtml(idsLabel)}">
             <strong>${escapeHtml(group.title)}</strong>
             <span>${escapeHtml(group.mapName || character.realm)} · ${escapeHtml(variantLabel)}</span>
           </div>`;
       }).join("")
-    : '<div class="quest-empty">Aucune quête personnelle terminée détectée pour ce personnage. Les quêtes partagées du compte sont comptées séparément.</div>';
+    : isAccountView
+      ? '<div class="quest-empty">Aucune quête partagée du compte n’a encore été détectée.</div>'
+      : '<div class="quest-empty">Aucune quête personnelle terminée détectée pour ce personnage. Les quêtes partagées sont disponibles dans « Compte — Bande de guerre ».</div>';
 
-  const observedHtml = observed.length
+  const observedHtml = !isAccountView && observed.length
     ? `<div class="quest-observed-block">
         <h4>Dernières quêtes observées par le Collector</h4>
-        ${observed.slice(0, 10).map((quest) => `
-          <div class="quest-history-item is-observed">
+        ${observed.slice(0, 10).map((quest, index) => {
+          const detailKey = `observed:${Number(quest.id || 0)}:${index}`;
+          questsState.detailIndex.set(detailKey, { quest, title: quest.title || `Quête #${quest.id}`, ids: [Number(quest.id || 0)].filter(Boolean), mapName: quest.mapName || "", isAccountView: false });
+          return `
+          <div class="quest-history-item is-observed" data-quest-detail-key="${escapeHtml(detailKey)}" tabindex="0" role="button">
             <strong>${escapeHtml(quest.title || `Quête #${quest.id}`)}</strong>
             <span>${formatQuestDate(quest.completedAt)}</span>
-          </div>`).join("")}
+          </div>`;
+        }).join("")}
       </div>`
     : "";
 
@@ -2336,6 +2751,8 @@ function renderQuestsView() {
       : "";
 
   completedList.innerHTML = historyHtml + paginationHtml + observedHtml;
+  bindQuestDetailsTriggers(grid);
+  bindQuestDetailsTriggers(completedList);
   completedList.querySelectorAll("[data-quest-page]").forEach((button) => {
     button.addEventListener("click", () => {
       const nextPage = Number(button.dataset.questPage || 1);
@@ -2371,10 +2788,11 @@ async function loadQuests(force = false) {
   }
 }
 
-function openQuestsView() {
+async function openQuestsView() {
   showView("quests");
   revealSidebar();
-  loadQuests();
+  await loadQuests();
+  if (selectLastConnectedQuestCharacter()) renderQuestsView();
 }
 
 views.quests = document.getElementById("questsView");
@@ -2390,4 +2808,10 @@ document.getElementById("questsCharacterSelect")?.addEventListener("change", (ev
   questsState.selectedKey = event.target.value;
   questsState.historyPage = 1;
   renderQuestsView();
+});
+
+document.getElementById("questDetailsClose")?.addEventListener("click", closeQuestDetails);
+document.getElementById("questDetailsBackdrop")?.addEventListener("click", closeQuestDetails);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeQuestDetails();
 });

@@ -21,6 +21,9 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
   const mediaErrors = characters.filter(
     (character) => character?.mediaStatus === "error",
   ).length;
+  const mediaWaiting = characters.filter(
+    (character) => character?.mediaStatus === "waiting",
+  ).length;
 
   return {
     connected: true,
@@ -30,7 +33,7 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
     journal: buildSessionJournal(collectorCharacters, 12),
     achievements: buildRecentAchievements(collectorAchievements, 3),
     sync: {
-      version: "1.0.2",
+      version: "1.1.0-test1",
       startedAt,
       completedAt,
       durationMs: Math.max(0, completedAt - startedAt),
@@ -39,6 +42,7 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
         characterCount: characters.length,
         mediaAvailable,
         mediaPending,
+        mediaWaiting,
         mediaErrors,
       },
       collector: summarizeCollector(collector),

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "characters": {
+    "silvermoon::octaviia": {
+      "key": "silvermoon::octaviia",
+      "id": 185237374,
+      "name": "Octaviia",
+      "realm": "silvermoon",
+      "level": 6,
+      "status": "waiting",
+      "attempts": 2,
+      "lastCheckedAt": 1785877733262,
+      "nextCheckAt": 1785878333262,
+      "profileStatus": 404,
+      "mediaStatus": 404,
+      "reason": "Profil ou média Blizzard encore non publié."
+    }
+  },
+  "updatedAt": "2026-08-04T21:08:53.262Z"
+}

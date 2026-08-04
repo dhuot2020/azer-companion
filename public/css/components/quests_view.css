@@ -34,3 +34,494 @@
 .quest-observed-block { margin-top:24px; padding-top:18px; border-top:1px solid rgba(209,170,74,.22); }
 .quest-observed-block h4 { margin:0 0 12px; color:#f1d99a; font-family:"Cinzel",serif; }
 .quest-history-item.is-observed { border-color:rgba(103,185,109,.25); }
+
+/* ==========================================================
+   Quest Details Engine - panneau latéral
+   ========================================================== */
+.quest-card,
+.quest-history-item[data-quest-detail-key] {
+  cursor: pointer;
+}
+.quest-card { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.quest-card:hover,
+.quest-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(209,170,74,.55);
+  box-shadow: 0 16px 34px rgba(0,0,0,.28);
+  outline: none;
+}
+.quest-history-item[data-quest-detail-key] { transition: border-color .18s ease, background .18s ease; }
+.quest-history-item[data-quest-detail-key]:hover,
+.quest-history-item[data-quest-detail-key]:focus-visible {
+  border-color: rgba(209,170,74,.45);
+  background: rgba(13,31,43,.92);
+  outline: none;
+}
+.quest-details-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 980;
+  background: rgba(0,7,13,.68);
+  backdrop-filter: blur(3px);
+}
+.quest-details-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 990;
+  width: min(520px, 94vw);
+  height: 100vh;
+  overflow-y: auto;
+  transform: translateX(105%);
+  transition: transform .28s ease;
+  border-left: 1px solid rgba(209,170,74,.48);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(27,73,102,.24), transparent 34%),
+    linear-gradient(180deg, #0b1c29 0%, #06111a 55%, #030a10 100%);
+  box-shadow: -20px 0 55px rgba(0,0,0,.48);
+}
+.quest-details-panel.is-open { transform: translateX(0); }
+.quest-details-close {
+  position: sticky;
+  top: 16px;
+  float: right;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  margin: 16px 16px 0 0;
+  border: 1px solid rgba(209,170,74,.55);
+  border-radius: 50%;
+  background: rgba(5,17,28,.92);
+  color: #f3d58a;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.quest-details-content { padding: 64px 28px 42px; }
+.quest-details-eyebrow {
+  margin: 0 0 8px;
+  color: #58b8df;
+  font: 700 11px "Orbitron", sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.quest-details-title {
+  margin: 0;
+  color: #f3d58a;
+  font: 700 clamp(25px, 4vw, 38px) "Cinzel Decorative", serif;
+  line-height: 1.12;
+}
+.quest-details-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 24px;
+}
+.quest-details-chip {
+  padding: 6px 9px;
+  border: 1px solid rgba(105,160,194,.28);
+  border-radius: 999px;
+  background: rgba(9,27,39,.85);
+  color: #b8c9d4;
+  font-size: 12px;
+}
+.quest-details-section {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(209,170,74,.2);
+}
+.quest-details-section h4 {
+  margin: 0 0 12px;
+  color: #f1d99a;
+  font: 700 16px "Cinzel", serif;
+}
+.quest-details-copy { margin: 0; color: #c9d3da; line-height: 1.65; }
+.quest-details-objectives { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.quest-details-objective {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: rgba(8,25,36,.78);
+  border: 1px solid rgba(103,152,181,.18);
+  color: #d2dce2;
+}
+.quest-details-objective::before { content: "◇"; color: #d7aa42; }
+.quest-details-objective.done { opacity: .64; text-decoration: line-through; }
+.quest-details-objective.done::before { content: "◆"; color: #67b96d; }
+.quest-details-placeholder {
+  padding: 14px;
+  border: 1px dashed rgba(209,170,74,.28);
+  border-radius: 10px;
+  color: #8fa3b2;
+  line-height: 1.5;
+}
+.quest-details-ids { color: #8fa3b2; font-size: 12px; line-height: 1.6; word-break: break-word; }
+body.quest-details-open { overflow: hidden; }
+@media (max-width: 620px) {
+  .quest-details-content { padding-left: 20px; padding-right: 20px; }
+}
+
+/* Alpha 13.8 - détails réels et récompenses */
+.quest-details-muted {
+  margin: 0;
+  color: rgba(221, 231, 239, .68);
+  line-height: 1.65;
+}
+
+.quest-objective-summary {
+  margin-bottom: 14px;
+  color: rgba(246, 220, 164, .88);
+}
+
+.quest-rewards-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.quest-reward-stat,
+.quest-reward-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid rgba(106, 156, 184, .22);
+  border-radius: 10px;
+  background: rgba(7, 22, 32, .72);
+}
+
+.quest-reward-symbol,
+.quest-reward-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  border: 1px solid rgba(222, 177, 66, .42);
+  background: rgba(4, 14, 22, .92);
+  overflow: hidden;
+}
+
+.quest-reward-symbol.xp { color: #7fc8ff; font-size: 25px; }
+.quest-reward-symbol.coins { color: #f6c95f; font-size: 22px; }
+.quest-reward-icon img { width: 100%; height: 100%; object-fit: cover; }
+.quest-reward-icon-fallback { color: #e4bc59; font-size: 19px; }
+
+.quest-reward-stat strong,
+.quest-reward-item strong {
+  display: block;
+  color: #f4ddb0;
+  font-size: 15px;
+}
+
+.quest-reward-stat small,
+.quest-reward-item small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(194, 216, 229, .62);
+}
+
+.quest-reward-group h5 {
+  margin: 4px 0 8px;
+  color: #dfbd69;
+  font-family: Cinzel, Georgia, serif;
+  font-size: 13px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.quest-money { display: flex !important; flex-wrap: wrap; gap: 8px; }
+.quest-money-part { display: inline-flex; align-items: center; gap: 4px; }
+.quest-money-icon { font-size: 13px; }
+.quest-money-icon.gold { color: #ffd24f; }
+.quest-money-icon.silver { color: #d7e0e7; }
+.quest-money-icon.copper { color: #c77d45; }
+
+.quest-reward-item.quality-2 strong { color: #4dff4d; }
+.quest-reward-item.quality-3 strong { color: #4da6ff; }
+.quest-reward-item.quality-4 strong { color: #b36bff; }
+.quest-reward-item.quality-5 strong { color: #ff8c1a; }
+
+.quest-details-technical { opacity: .72; }
+
+.quest-details-chip-source {
+  border-color: rgba(84, 190, 255, 0.48);
+  color: #7fd8ff;
+}
+
+/* Sprint 1.1.1 - Quest Details Premium */
+.quest-details-panel {
+  width: min(580px, 96vw);
+}
+
+.quest-details-objective {
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  padding: 13px 14px;
+}
+.quest-details-objective::before { content: none; }
+.quest-objective-check {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(221, 177, 65, .7);
+  border-radius: 5px;
+  color: #8fe09a;
+  font-weight: 800;
+  line-height: 1;
+}
+.quest-details-objective.done { opacity: .78; text-decoration: none; }
+.quest-details-objective.done .quest-objective-check {
+  border-color: rgba(103, 185, 109, .8);
+  background: rgba(76, 151, 84, .18);
+}
+.quest-objective-body { min-width: 0; }
+.quest-objective-body strong {
+  display: block;
+  color: #dbe5eb;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.quest-details-objective.done .quest-objective-body strong { color: #8fb89a; }
+.quest-objective-body small {
+  display: block;
+  margin-top: 5px;
+  color: rgba(211, 225, 234, .68);
+  font-size: 12px;
+}
+.quest-objective-progress {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+}
+.quest-objective-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b98c27, #f0cf72);
+}
+
+.quest-rewards-premium { display: grid; gap: 18px; }
+.quest-reward-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgba(106, 156, 184, .24);
+  border-radius: 12px;
+  background: rgba(7, 22, 32, .75);
+}
+.quest-reward-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 66px;
+  padding: 11px 13px;
+}
+.quest-reward-summary > .quest-reward-summary-item + .quest-reward-summary-item {
+  border-left: 1px solid rgba(106, 156, 184, .18);
+}
+.quest-reward-summary-item strong { display: block; color: #f4ddb0; font-size: 15px; }
+.quest-reward-summary-item small { display: block; margin-top: 2px; color: rgba(194,216,229,.62); }
+.quest-reward-items { display: grid; gap: 10px; }
+.quest-reward-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.quest-reward-item { min-height: 74px; padding: 10px; }
+.quest-reward-item.is-choice { align-items: flex-start; }
+.quest-reward-icon {
+  position: relative;
+  flex-basis: 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.32);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.quest-reward-item:hover .quest-reward-icon {
+  transform: scale(1.07);
+  box-shadow: 0 9px 22px rgba(0,0,0,.42);
+}
+.quest-reward-icon em {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  color: white;
+  font: 800 11px Arial, sans-serif;
+  text-shadow: 0 1px 3px #000, 0 0 3px #000;
+}
+.quest-reward-item-copy { min-width: 0; }
+.quest-reward-item-copy strong { line-height: 1.28; }
+.quest-reward-item.quality-0 .quest-reward-icon { border-color: #9d9d9d; }
+.quest-reward-item.quality-1 .quest-reward-icon { border-color: #ffffff; }
+.quest-reward-item.quality-2 .quest-reward-icon { border-color: #1eff00; }
+.quest-reward-item.quality-3 .quest-reward-icon { border-color: #0070dd; }
+.quest-reward-item.quality-4 .quest-reward-icon { border-color: #a335ee; }
+.quest-reward-item.quality-5 .quest-reward-icon { border-color: #ff8000; }
+
+.quest-travel-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgba(209, 170, 74, .24);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(19, 45, 60, .78), rgba(5, 18, 27, .88));
+}
+.quest-travel-card > div { min-width: 0; }
+.quest-travel-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: #7893a4;
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.quest-travel-card strong { color: #dbe6ed; font-size: 14px; line-height: 1.35; }
+.quest-map-button {
+  grid-column: 1 / -1;
+  min-height: 40px;
+  border: 1px solid rgba(218, 177, 72, .55);
+  border-radius: 8px;
+  background: rgba(209, 170, 74, .09);
+  color: #efd58c;
+  font: 700 12px "Orbitron", sans-serif;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.quest-map-button:hover:not(:disabled) { background: rgba(209, 170, 74, .16); }
+.quest-map-button:disabled { opacity: .45; cursor: default; }
+
+.quest-details-technical { opacity: 1; }
+.quest-data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(105,160,194,.18);
+  border-radius: 10px;
+  background: rgba(105,160,194,.18);
+}
+.quest-data-grid > div { padding: 10px 12px; background: #071722; }
+.quest-data-grid > div.wide { grid-column: 1 / -1; }
+.quest-data-grid dt { color: #7893a4; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.quest-data-grid dd { margin: 4px 0 0; color: #cddae2; font-size: 13px; }
+
+@media (max-width: 520px) {
+  .quest-reward-summary,
+  .quest-reward-choice-grid,
+  .quest-travel-card,
+  .quest-data-grid { grid-template-columns: 1fr; }
+  .quest-reward-summary > .quest-reward-summary-item + .quest-reward-summary-item {
+    border-left: 0;
+    border-top: 1px solid rgba(106, 156, 184, .18);
+  }
+  .quest-data-grid > div.wide { grid-column: auto; }
+}
+
+/* Sprint 1.1.2 - Quest Engine */
+.quest-details-objectives {
+  width: 100%;
+}
+
+.quest-details-objective {
+  width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 15px 16px;
+}
+
+.quest-objective-check {
+  margin-top: 1px;
+}
+
+.quest-objective-body {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.quest-objective-body strong {
+  width: 100%;
+  max-width: none;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.quest-objective-progress {
+  width: 100%;
+  height: 8px;
+  margin-top: 11px;
+  border: 1px solid rgba(218, 177, 66, .18);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .42);
+}
+
+.quest-objective-progress i {
+  box-shadow: 0 0 8px rgba(230, 188, 72, .42);
+}
+
+.quest-objective-body small {
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quest-map-button:disabled {
+  min-height: 44px;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Sprint 1.1.2 hotfix - objectifs pleine largeur */
+.quest-details-objective {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: 12px;
+}
+
+.quest-details-objective::before {
+  display: none;
+  content: none;
+}
+
+.quest-objective-check {
+  flex: 0 0 20px;
+  width: 20px;
+  min-width: 20px;
+}
+
+.quest-objective-body {
+  display: block;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.quest-objective-body strong,
+.quest-objective-body small,
+.quest-objective-progress {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.quest-objective-body strong {
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+}

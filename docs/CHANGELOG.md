@@ -1,3 +1,18 @@
+
+## Collector 2.1.0-alpha1
+
+- Sélection moderne et restaurée de la quête avant lecture des détails.
+- Capture renforcée de la description, du résumé et du texte de complétion.
+- Capture XP, argent, objets garantis, choix, monnaies et sort appris.
+- Compatibilité avec les signatures modernes et anciennes des API du journal.
+
+## Sprint 1.1 - Alpha 13.6
+
+- Séparation des quêtes actives personnelles et Bande de guerre.
+- Détection des quêtes actives de compte explicites ou présentes sur plusieurs personnages.
+- Electria peut maintenant servir de personnage témoin : aucune quête personnelle n’est affichée si elle n’a rien accepté.
+- La vue Compte affiche les quêtes actives partagées et leurs objectifs.
+- Migration automatique des anciennes données `active` vers `activeRaw`.
 # Alpha 13.3 — Quêtes personnelles vs compte
 
 - Sépare les quêtes terminées propres au personnage des quêtes partagées au niveau du compte.
@@ -95,3 +110,51 @@
 - Compteur réel de quêtes terminées connues.
 - Pagination de l'historique dans l'interface Web.
 - Séparation entre historique importé et nouvelles quêtes observées.
+
+## Sprint 1.1 - Alpha 13.5 - Quetes Compte / Personnage
+
+- Ajout de `Compte - Bande de guerre` au bas du selecteur des quetes.
+- Separation des quetes partagees du compte et de l'historique personnel.
+- Regroupement des quetes explicitement marquees compte par WoW.
+- Detection prudente des anciennes quetes partagees presentes sur plusieurs personnages.
+- Protection des quetes reellement observees par le Collector afin de les conserver dans l'historique personnel.
+- Compteurs et titres adaptes selon la vue Compte ou Personnage.
+- Migration compatible avec les SavedVariables existantes.
+
+## Sprint 1.1 - Alpha 13.7 - Quest Details Engine
+
+- Ajout d'un panneau latéral de détails au clic sur une quête active.
+- Détails accessibles aussi depuis l'historique et les quêtes observées.
+- Affichage du type, de la zone, du niveau, du groupe conseillé, des objectifs et des QuestID.
+- Navigation clavier (Entrée/Espace) et fermeture avec Échap.
+- Structure prête pour brancher descriptions et récompenses complètes à l'étape suivante.
+
+## Sprint 1.1 - Alpha 13.8 - Description et recompenses
+
+- Suppression du libelle technique `Quest Details Engine` dans le panneau joueur.
+- Collecte de la description et du texte general des objectifs pour les quetes actives.
+- Collecte de l'experience, de l'argent, des objets garantis et des objets au choix.
+- Affichage visuel des recompenses avec symboles XP, monnaies et qualite des objets.
+- Messages discrets lorsque WoW ne fournit pas une description ou une recompense detaillee.
+
+## Sprint 1.1 - Alpha 13.9 - Quest Database Engine
+
+- Ajout d'une base locale `public/data/quests/quest-database.json` indexée par QuestID.
+- Enrichissement automatique des quêtes lorsque le Collector ne fournit pas la description, la zone ou les récompenses.
+- Les données vivantes du Collector restent prioritaires pour la progression et les objectifs.
+- Ajout d'un indicateur discret `Base Azer Companion` dans le panneau de détails.
+- Première fiche enrichie : `Se présenter au comptoir` (#76105), à partir des informations validées en jeu.
+
+## Sprint 1.1 - Alpha 13.9 - Quest Database Engine
+
+- Ajout d'une base locale `public/data/quests/quest-database.json` indexée par QuestID.
+- Enrichissement automatique des quêtes lorsque le Collector ne fournit pas la description, la zone ou les récompenses.
+- Les données vivantes du Collector restent prioritaires pour la progression et les objectifs.
+- Ajout d'un indicateur discret `Base Azer Companion` dans le panneau de détails.
+- Première fiche enrichie : `Se présenter au comptoir` (#76105), à partir des informations validées en jeu.
+
+## Sprint 1.1 - Alpha 13.10.1
+- Correction de la regression qui vidait le journal actif.
+- Scan en deux passes : instantane du journal, puis enrichissement.
+- Ajout d'un secours avec GetQuestLogTitle pour les clients ou GetInfo est incomplet.
+- Conservation du nettoyage des anciennes quetes terminees.

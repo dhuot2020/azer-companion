@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "updatedAt": "2026-08-02",
+  "quests": {
+    "76105": {
+      "id": 76105,
+      "title": "Se présenter au comptoir",
+      "mapName": "Île de Haut-Soleil",
+      "category": "system",
+      "description": "Retournez au comptoir pour récupérer vos deniers dans la cache de collecte.",
+      "objectiveText": "Emprunter le portail de la Flèche de Solfurie vers Orgrimmar (optionnel), puis retourner au comptoir.",
+      "rewards": {
+        "experience": 25,
+        "money": 5,
+        "items": [],
+        "choices": [],
+        "currencies": []
+      },
+      "source": "Azer Companion Quest Database"
+    },
+    "8335": {
+      "id": 8335,
+      "title": "Felendren le Banni",
+      "mapName": "Île de Haut-Soleil",
+      "category": "personal",
+      "source": "Azer Companion Quest Database"
+    }
+  }
+}
