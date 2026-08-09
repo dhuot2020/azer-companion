@@ -1,6 +1,6 @@
 const registry = require("./registry");
 
-const ASE_VERSION = "2.0.1";
+const ASE_VERSION = "2.1.0";
 
 function registerEngine(name, engine) {
   return registry.register(name, engine);

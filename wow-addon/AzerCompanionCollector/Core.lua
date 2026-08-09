@@ -3,7 +3,7 @@ Collector = Collector or {}
 _G.AzerCompanionCollector = Collector
 
 Collector.addonName = addonName
-Collector.schemaVersion = 7
+Collector.schemaVersion = 9
 Collector.modules = Collector.modules or {}
 Collector.moduleOrder = Collector.moduleOrder or {}
 Collector.scanState = Collector.scanState or {
@@ -289,6 +289,7 @@ end)
 for _, eventName in ipairs({
     "ADDON_LOADED", "PLAYER_LOGIN", "PLAYER_LOGOUT", "PLAYER_ENTERING_WORLD",
     "PLAYER_LEVEL_UP", "PLAYER_SPECIALIZATION_CHANGED", "PLAYER_EQUIPMENT_CHANGED",
+    "GET_ITEM_INFO_RECEIVED", "ITEM_DATA_LOAD_RESULT",
     "SKILL_LINES_CHANGED", "PLAYER_MONEY", "ACHIEVEMENT_EARNED", "QUEST_LOG_UPDATE",
     "QUEST_TURNED_IN", "QUEST_DATA_LOAD_RESULT", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA",
 }) do

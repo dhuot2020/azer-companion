@@ -436,123 +436,153 @@
           </div>
         </header>
 
-        <div class="character-profile-content">
-          <article class="character-profile-hero">
-            <span
-              id="profileCharacterClassIcon"
-              class="character-corner-icon character-corner-icon-top"
-              aria-hidden="true"
-            ></span>
-
-            <span
-              id="profileCharacterFactionIcon"
-              class="character-corner-icon character-corner-icon-bottom character-corner-faction"
-              aria-hidden="true"
-            ></span>
-
-            <span
-              class="character-border-comet character-border-comet-one"
-              aria-hidden="true"
-            ></span>
-            <span
-              class="character-border-comet character-border-comet-two"
-              aria-hidden="true"
-            ></span>
-
-            <div
-              class="character-profile-image-switch"
-              aria-label="Type d’image du personnage"
-            >
-              <button
-                type="button"
-                class="profile-image-mode-button is-active"
-                data-profile-image-mode="portrait"
-                aria-pressed="true"
-              >
-                Portrait
-              </button>
-              <button
-                type="button"
-                class="profile-image-mode-button"
-                data-profile-image-mode="full-body"
-                aria-pressed="false"
-              >
-                Plein corps
-              </button>
-            </div>
-
-            <div class="character-profile-portrait">
-              <div class="character-profile-image-window">
-                <img id="profileCharacterImage" alt="" />
-              </div>
-            </div>
-          </article>
-
+        <div class="character-profile-content character-profile-content-armory">
           <div class="character-profile-details">
             <section
               class="character-profile-grid"
               aria-label="Résumé du personnage"
             >
-              <article>
-                <span>Niveau</span>
-                <strong id="profileCharacterLevel">—</strong>
+              <article class="profile-fact profile-fact-level">
+                <span class="profile-fact-icon profile-level-medallion" id="profileCharacterLevelIcon" aria-hidden="true">—</span>
+                <span class="profile-fact-copy"><small>Niveau</small><strong id="profileCharacterLevel">—</strong></span>
               </article>
 
-              <article>
-                <span>Classe</span>
-                <strong id="profileCharacterClass">—</strong>
+              <article class="profile-fact profile-fact-class">
+                <span class="profile-fact-icon profile-wow-icon" id="profileCharacterClassFactIcon" aria-hidden="true"></span>
+                <span class="profile-fact-copy"><small>Classe</small><strong id="profileCharacterClass">—</strong></span>
               </article>
 
-              <article>
-                <span>Race</span>
-                <strong id="profileCharacterRace">—</strong>
+              <article class="profile-fact profile-fact-race">
+                <span class="profile-fact-icon profile-race-medallion" id="profileCharacterRaceIcon" aria-hidden="true"></span>
+                <span class="profile-fact-copy"><small>Race</small><strong id="profileCharacterRace">—</strong></span>
               </article>
 
-              <article>
-                <span>Royaume</span>
-                <strong id="profileCharacterRealm">—</strong>
+              <article class="profile-fact profile-fact-faction">
+                <span class="profile-fact-icon profile-wow-icon" id="profileCharacterFactionFactIcon" aria-hidden="true"></span>
+                <span class="profile-fact-copy"><small>Faction</small><strong id="profileCharacterFactionDetail">—</strong></span>
               </article>
 
-              <article>
-                <span>Faction</span>
-                <strong id="profileCharacterFactionDetail">—</strong>
+              <article class="profile-fact profile-fact-realm">
+                <span class="profile-fact-icon profile-wow-icon" id="profileCharacterRealmIcon" aria-hidden="true"></span>
+                <span class="profile-fact-copy"><small>Royaume</small><strong id="profileCharacterRealm">—</strong></span>
               </article>
 
-              <article>
-                <span>Localisation</span>
-                <strong
-                  id="profileCharacterLocation"
-                  class="character-profile-location"
-                >
-                  Non fournie par Battle.net
-                </strong>
+              <article class="profile-fact profile-fact-location">
+                <span class="profile-fact-icon profile-wow-icon" id="profileCharacterLocationIcon" aria-hidden="true"></span>
+                <span class="profile-fact-copy"><small>Localisation</small><strong id="profileCharacterLocation" class="character-profile-location">Non fournie par Battle.net</strong></span>
               </article>
             </section>
 
+            <section class="hero-equipment-profile" aria-labelledby="heroEquipmentTitle">
+              <header class="hero-equipment-header">
+                <div>
+                  <span class="hero-equipment-kicker">ARMURERIE DU HÉROS</span>
+                  <h3 id="heroEquipmentTitle">Équipement</h3>
+                </div>
+                <div class="hero-equipment-score">
+                  <span>Niveau d’objet</span>
+                  <strong id="heroEquipmentItemLevel">—</strong>
+                  <small id="heroEquipmentCount">0 pièce équipée</small>
+                </div>
+              </header>
+
+              <div class="hero-equipment-layout">
+                <div id="heroEquipmentLeft" class="hero-equipment-column hero-equipment-column-left" aria-label="Équipement gauche"></div>
+
+                <article class="character-profile-hero hero-equipment-center" aria-label="Apparence du héros">
+                  <div class="character-profile-portrait is-full-body">
+                    <div class="character-profile-image-window">
+                      <img id="profileCharacterImage" alt="" />
+                    </div>
+                  </div>
+
+                  <span class="character-profile-image-hint">Molette : zoom · Glisser : déplacer · Double-clic : réinitialiser</span>
+                </article>
+
+                <div id="heroEquipmentRight" class="hero-equipment-column hero-equipment-column-right" aria-label="Équipement droit"></div>
+                <div id="heroEquipmentWeapons" class="hero-equipment-weapons" aria-label="Armes"></div>
+              </div>
+
+              <div id="heroEquipmentTooltip" class="hero-equipment-tooltip" role="tooltip" hidden></div>
+              <span id="heroEquipmentStatus" class="sr-only">Chargement de l’équipement...</span>
+              <strong id="heroEquipmentCharacterName" class="sr-only">Héros</strong>
+            </section>
+
             <section class="character-profile-sections">
-              <article>
-                <span>⚒</span>
-                <div>
-                  <h3>Métiers</h3>
-                  <p id="profileCharacterProfessions">
-                    Chargement des métiers...
-                  </p>
+              <article class="profile-progress-card profile-professions-card">
+                <header class="profile-progress-header">
+                  <span class="profile-progress-icon" aria-hidden="true">⚒</span>
+                  <div>
+                    <span class="profile-progress-kicker">PROGRESSION</span>
+                    <h3>Métiers</h3>
+                  </div>
+                </header>
+                <div
+                  id="profileCharacterProfessions"
+                  class="profile-professions-list"
+                  aria-live="polite"
+                >
+                  <p class="profile-progress-empty">Chargement des métiers...</p>
                 </div>
               </article>
 
-              <article>
-                <span>🏆</span>
-                <div>
-                  <h3>Hauts faits</h3>
-                  <p>Le résumé des hauts faits sera ajouté ici.</p>
+              <article class="profile-progress-card profile-achievements-card">
+                <header class="profile-progress-header">
+                  <span class="profile-progress-icon" aria-hidden="true">🏆</span>
+                  <div>
+                    <span class="profile-progress-kicker">HAUTS FAITS</span>
+                    <h3>Héritage</h3>
+                  </div>
+                </header>
+                <div class="profile-progress-metrics" aria-label="Résumé des hauts faits">
+                  <div>
+                    <strong id="profileAchievementCount">—</strong>
+                    <span>obtenus</span>
+                  </div>
+                  <div>
+                    <strong id="profileAchievementPoints">—</strong>
+                    <span>points</span>
+                  </div>
+                </div>
+                <div id="profileAchievementRecent" class="profile-recent-list" aria-live="polite">
+                  <p class="profile-progress-empty">Chargement des hauts faits...</p>
                 </div>
               </article>
 
-              <article>
-                <span>🐴</span>
-                <div>
-                  <h3>Collections</h3>
-                  <p>Montures, mascottes et objets de collection.</p>
+              <article class="profile-progress-card profile-collections-card">
+                <header class="profile-progress-header">
+                  <span class="profile-progress-icon" aria-hidden="true">🐴</span>
+                  <div>
+                    <span class="profile-progress-kicker">COMPTE</span>
+                    <h3>Collections</h3>
+                  </div>
+                </header>
+                <div class="profile-collection-grid" aria-label="Résumé des collections">
+                  <div class="profile-collection-stat">
+                    <span aria-hidden="true">♞</span>
+                    <div><strong id="profileMountCount">—</strong><small>Montures</small></div>
+                  </div>
+                  <div class="profile-collection-stat">
+                    <span aria-hidden="true">✦</span>
+                    <div><strong id="profilePetCount">—</strong><small>Mascottes</small></div>
+                  </div>
+                </div>
+                <p id="profileCollectionStatus" class="profile-collection-status" aria-live="polite">
+                  Chargement des collections...
+                </p>
+                <div class="profile-collection-tabs" role="tablist" aria-label="Type de collection">
+                  <button class="is-active" type="button" role="tab" aria-selected="true" aria-controls="profileCollectionList" data-profile-collection-tab="mounts">Montures</button>
+                  <button type="button" role="tab" aria-selected="false" aria-controls="profileCollectionList" data-profile-collection-tab="pets">Mascottes</button>
+                </div>
+                <div id="profileCollectionList" class="profile-collection-list" aria-live="polite"></div>
+                <nav id="profileCollectionPagination" class="profile-collection-pagination" aria-label="Pages de la collection" hidden></nav>
+                <div id="profileCollectionTooltip" class="profile-collection-tooltip" role="tooltip" hidden></div>
+                <div id="profileCollectionModal" class="profile-collection-modal" hidden>
+                  <button class="profile-collection-modal-backdrop" type="button" aria-label="Fermer la fiche"></button>
+                  <section class="profile-collection-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="profileCollectionModalTitle">
+                    <button id="profileCollectionModalClose" class="profile-collection-modal-close" type="button" aria-label="Fermer">×</button>
+                    <div id="profileCollectionModalBody"></div>
+                  </section>
                 </div>
               </article>
             </section>

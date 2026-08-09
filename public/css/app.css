@@ -13,9 +13,10 @@
 @import url("./overrides/v05.css");
 @import url("./responsive/hero.css");
 
-@import url("./components/characters_view.css?v=20260729-4");
+@import url("./components/characters_view.css?v=20260808-12");
 @import url("./components/character_cards.css");
 @import url("./responsive/characters.css");
+@import url("./components/character_profile.css?v=20260808-7");
 @import url("./components/battlenet.css");
 @import url("./components/buttons.css");
 

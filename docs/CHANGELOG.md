@@ -158,3 +158,12 @@
 - Scan en deux passes : instantane du journal, puis enrichissement.
 - Ajout d'un secours avec GetQuestLogTitle pour les clients ou GetInfo est incomplet.
 - Conservation du nettoyage des anciennes quetes terminees.
+
+## 2026-08-04 - Hero Armory V2.2 Final
+- Le plein corps devient l'affichage par defaut de la fiche du heros.
+- Le mode Portrait applique maintenant un vrai cadrage rapproche visage et buste.
+- Le cadre historique du heros, ses medaillons et ses cometes sont reutilises au centre de l'armurerie.
+- Les informations du haut sont compactees pour donner davantage d'espace au personnage.
+- Les emplacements d'equipement sont affiches comme des icones autour du heros.
+- Les details des objets apparaissent uniquement au survol ou au focus de leur icone.
+- Ajout d'un resolveur d'icones d'objets via l'API Blizzard.

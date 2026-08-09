@@ -1,0 +1,12 @@
+AZER COMPANION - HERO PROFILE V10
+
+Modifications :
+- cadre du personnage completement simplifie : moins de lignes, coins arrondis, un seul contour interieur;
+- suppression de tous les medaillons/elements qui chevauchent le cadre;
+- suppression du cadre propre a la fenetre image pour eviter l'effet "cadre dans cadre";
+- colonne droite decalee pour retrouver le meme espace visuel que la gauche;
+- textes de la colonne droite rapproches de leurs icones;
+- taille du portrait et taille du personnage conservees;
+- tooltip des items reste uniquement au survol.
+
+Installation : remplacer les fichiers du projet par ceux de cette archive puis redemarrer Node et faire Ctrl+F5.

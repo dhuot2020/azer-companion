@@ -402,6 +402,12 @@ function normalizeCharacter(character, storageKey = "") {
       portraitSlug: String(character.appearance?.portraitSlug || ""),
       capturedAt: toFiniteNumber(character.appearance?.capturedAt),
     },
+    equipment: character.equipment && typeof character.equipment === "object"
+      ? character.equipment
+      : { schemaVersion: 1, slots: {}, equippedCount: 0 },
+    hero: character.hero && typeof character.hero === "object"
+      ? character.hero
+      : null,
     media: {
       unitGUID: String(character.media?.unitGUID || ""),
       displayID: toFiniteNumber(character.media?.displayID),

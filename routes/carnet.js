@@ -56,6 +56,8 @@ function savePersistentCharacterMediaCache() {
 
 loadPersistentCharacterMediaCache();
 const questRewardMediaCache = new Map();
+const collectionMediaCache = new Map();
+const collectionDetailCache = new Map();
 
 function getCachedQuestRewardMedia(kind, id) {
   const key = `${kind}:${id}`;
@@ -523,6 +525,168 @@ async function fetchCharacterProfessions(realm, name, accessToken) {
   return normalizeCharacterProfessions(await response.json());
 }
 
+async function fetchProfileResource(
+  pathname,
+  accessToken,
+  label,
+  query = BLIZZARD_PROFILE_QUERY,
+) {
+  const separator = pathname.includes("?") ? "&" : "?";
+  const response = await fetch(
+    `${BLIZZARD_API_ORIGIN}${pathname}${separator}${query}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+
+  if (!response.ok) {
+    const error = new Error(`${label} indisponible (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+function normalizeCharacterAchievements(data = {}) {
+  const completed = (data.achievements || [])
+    .map((entry) => ({
+      id: Number(entry.achievement?.id || entry.id || 0),
+      name: String(entry.achievement?.name || entry.name || "Haut fait obtenu"),
+      completedAt: Number(entry.completed_timestamp || entry.completedAt || 0),
+    }))
+    .filter((entry) => entry.id && entry.completedAt > 0)
+    .sort((first, second) => second.completedAt - first.completedAt);
+
+  return {
+    totalQuantity: Number(data.total_quantity || completed.length),
+    totalPoints: Number(data.total_points || 0),
+    recent: completed.slice(0, 3),
+  };
+}
+
+async function fetchCharacterAchievements(realm, name, accessToken) {
+  const realmSlug = encodeURIComponent(String(realm || "").trim().toLowerCase());
+  const characterName = encodeURIComponent(String(name || "").trim().toLowerCase());
+  const data = await fetchProfileResource(
+    `/profile/wow/character/${realmSlug}/${characterName}/achievements`,
+    accessToken,
+    `Hauts faits Blizzard pour ${name} sur ${realm}`,
+  );
+  return normalizeCharacterAchievements(data);
+}
+
+async function fetchAccountCollections(accessToken) {
+  const [mountsResult, petsResult] = await Promise.allSettled([
+    fetchProfileResource(
+      "/profile/user/wow/collections/mounts",
+      accessToken,
+      "Collection de montures Blizzard",
+    ),
+    fetchProfileResource(
+      "/profile/user/wow/collections/pets",
+      accessToken,
+      "Collection de mascottes Blizzard",
+    ),
+  ]);
+
+  const mounts = mountsResult.status === "fulfilled"
+    ? mountsResult.value.mounts || []
+    : [];
+  const pets = petsResult.status === "fulfilled"
+    ? petsResult.value.pets || []
+    : [];
+  const uniqueSpecies = new Set(
+    pets.map((pet) => Number(pet.species?.id || pet.species_id || 0)).filter(Boolean),
+  );
+
+  return {
+    mounts: {
+      count: mounts.length,
+      favorites: mounts.filter((mount) => mount.is_favorite === true).length,
+      available: mountsResult.status === "fulfilled",
+      items: mounts
+        .map((entry) => ({
+          id: Number(entry.mount?.id || entry.id || 0),
+          name: String(entry.mount?.name || entry.name || "Monture"),
+          favorite: entry.is_favorite === true,
+        }))
+        .filter((entry) => entry.id)
+        .sort((first, second) =>
+          Number(second.favorite) - Number(first.favorite) ||
+          first.name.localeCompare(second.name, "fr"),
+        ),
+    },
+    pets: {
+      count: pets.length,
+      uniqueSpecies: uniqueSpecies.size,
+      maxLevel: pets.filter((pet) => Number(pet.level || 0) >= 25).length,
+      available: petsResult.status === "fulfilled",
+      items: pets
+        .map((entry) => ({
+          id: Number(entry.species?.id || entry.species_id || 0),
+          name: String(entry.custom_name || entry.species?.name || "Mascotte"),
+          speciesName: String(entry.species?.name || "Mascotte"),
+          level: Number(entry.level || 0),
+          quality: String(entry.quality?.name || entry.quality?.type || ""),
+          favorite: entry.is_favorite === true,
+          displayId: Number(entry.creature_display?.id || 0),
+          health: Number(entry.stats?.health || 0),
+          power: Number(entry.stats?.power || 0),
+          speed: Number(entry.stats?.speed || 0),
+        }))
+        .filter((entry) => entry.id)
+        .sort((first, second) =>
+          Number(second.favorite) - Number(first.favorite) ||
+          second.level - first.level ||
+          first.name.localeCompare(second.name, "fr"),
+        ),
+    },
+  };
+}
+
+async function fetchCollectionDetail(kind, id, accessToken) {
+  const cacheKey = `${kind}:${id}`;
+  if (collectionDetailCache.has(cacheKey)) return collectionDetailCache.get(cacheKey);
+  const detailPath = kind === "mount" ? `/data/wow/mount/${id}` : `/data/wow/pet/${id}`;
+  const detail = await fetchProfileResource(
+    detailPath,
+    accessToken,
+    `Détails de ${kind === "mount" ? "monture" : "mascotte"}`,
+    `namespace=static-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`,
+  );
+  collectionDetailCache.set(cacheKey, detail);
+  return detail;
+}
+
+async function fetchCollectionMedia(kind, id, displayId, accessToken) {
+  const cacheKey = `${kind}:${id}:${displayId || 0}`;
+  if (collectionMediaCache.has(cacheKey)) return collectionMediaCache.get(cacheKey);
+
+  let creatureDisplayId = Number(displayId || 0);
+  if (!creatureDisplayId) {
+    const detail = await fetchCollectionDetail(kind, id, accessToken);
+    creatureDisplayId = Number(
+      detail.creature_displays?.[0]?.id || detail.creature_display?.id || 0,
+    );
+  }
+
+  if (!creatureDisplayId) return null;
+  const response = await fetch(
+    `${BLIZZARD_API_ORIGIN}/data/wow/media/creature-display/${creatureDisplayId}` +
+      `?namespace=static-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  if (!response.ok) return null;
+  const media = await response.json();
+  const preferredKeys = ["zoom-raw", "zoom", "avatar", "icon"];
+  const asset = preferredKeys
+    .map((key) => (media.assets || []).find(
+      (entry) => String(entry.key || "").toLowerCase() === key,
+    )?.value)
+    .find(Boolean) || null;
+  if (asset) collectionMediaCache.set(cacheKey, asset);
+  return asset;
+}
+
 router.get("/", (req, res) => {
   res.render("carnet", {
     page_title: "Carnet d'aventure",
@@ -733,6 +897,35 @@ router.get("/api/characters/:realm/:name/professions", async (req, res) => {
   }
 });
 
+router.get("/api/characters/:realm/:name/progression", async (req, res) => {
+  if (!req.session.blizzard_access_token) {
+    return res.status(401).json({ connected: false });
+  }
+
+  const accessToken = req.session.blizzard_access_token;
+  const [professionsResult, achievementsResult, collectionsResult] =
+    await Promise.allSettled([
+      fetchCharacterProfessions(req.params.realm, req.params.name, accessToken),
+      fetchCharacterAchievements(req.params.realm, req.params.name, accessToken),
+      fetchAccountCollections(accessToken),
+    ]);
+
+  return res.json({
+    connected: true,
+    professions:
+      professionsResult.status === "fulfilled" ? professionsResult.value : [],
+    achievements:
+      achievementsResult.status === "fulfilled" ? achievementsResult.value : null,
+    collections:
+      collectionsResult.status === "fulfilled" ? collectionsResult.value : null,
+    available: {
+      professions: professionsResult.status === "fulfilled",
+      achievements: achievementsResult.status === "fulfilled",
+      collections: collectionsResult.status === "fulfilled",
+    },
+  });
+});
+
 router.get("/api/portraits/diagnostics", async (req, res) => {
   if (!req.session.blizzard_access_token) {
     return res.status(401).json({ connected: false, error: "Compte Battle.net non connecté." });
@@ -783,6 +976,114 @@ router.get("/api/ase/status", (req, res) => {
   res.json({
     ok: true,
     ...getAseStatus(),
+  });
+});
+
+router.get("/api/ase/events", (req, res) => {
+  const eventEngine = require("../core/engine/event/register");
+  const types = String(req.query.types || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const events = eventEngine.listEvents({
+    limit: req.query.limit,
+    characterKey: req.query.characterKey,
+    types,
+  });
+  res.json({
+    ok: true,
+    count: events.length,
+    events,
+  });
+});
+
+router.get("/api/ase/item-icon/:itemId", async (req, res) => {
+  const itemId = Number(req.params.itemId || 0);
+  const accessToken = req.session.blizzard_access_token;
+
+  if (!itemId || !accessToken) {
+    return res.status(404).end();
+  }
+
+  const iconUrl = await fetchQuestRewardMedia("item", itemId, accessToken);
+  if (!iconUrl) {
+    return res.status(404).end();
+  }
+
+  res.set("Cache-Control", "private, max-age=86400");
+  return res.redirect(302, iconUrl);
+});
+
+router.get("/api/ase/collection-detail/:kind/:id", async (req, res) => {
+  const kind = req.params.kind === "pet" ? "pet" : "mount";
+  const id = Number(req.params.id || 0);
+  const accessToken = req.session.blizzard_access_token;
+  if (!id || !accessToken) return res.status(404).json({ available: false });
+
+  try {
+    const detail = await fetchCollectionDetail(kind, id, accessToken);
+    return res.json({
+      available: true,
+      id,
+      name: String(detail.name || ""),
+      description: String(detail.description || ""),
+      source: String(detail.source?.name || detail.source || detail.source_type?.name || ""),
+      type: String(
+        kind === "pet"
+          ? detail.battle_pet_type?.name || "Mascotte de combat"
+          : detail.source_type?.name || "Monture",
+      ),
+      capturable: detail.is_capturable === true,
+      tradable: detail.is_tradable === true,
+    });
+  } catch (error) {
+    return res.status(error.status || 404).json({ available: false });
+  }
+});
+
+router.get("/api/ase/collection-media/:kind/:id", async (req, res) => {
+  const kind = req.params.kind === "pet" ? "pet" : "mount";
+  const id = Number(req.params.id || 0);
+  const displayId = Number(req.query.displayId || 0);
+  const accessToken = req.session.blizzard_access_token;
+  if (!id || !accessToken) return res.status(404).end();
+
+  try {
+    const mediaUrl = await fetchCollectionMedia(kind, id, displayId, accessToken);
+    if (!mediaUrl) return res.status(404).end();
+    const mediaResponse = await fetch(mediaUrl);
+    if (!mediaResponse.ok) return res.status(404).end();
+    const contentType = mediaResponse.headers.get("content-type") || "image/png";
+    const imageBuffer = Buffer.from(await mediaResponse.arrayBuffer());
+    res.set("Content-Type", contentType);
+    res.set("Cache-Control", "private, max-age=604800");
+    return res.send(imageBuffer);
+  } catch (_error) {
+    return res.status(404).end();
+  }
+});
+
+router.get("/api/ase/heroes", async (req, res) => {
+  try {
+    const syncResult = await synchronizeAccount(req);
+    const heroes = Array.isArray(syncResult.heroes) ? syncResult.heroes : [];
+    const requestedKey = String(req.query.characterKey || "").trim().toLowerCase();
+    const filtered = requestedKey
+      ? heroes.filter((hero) => String(hero.key || "").toLowerCase() === requestedKey)
+      : heroes;
+    res.json({ ok: true, count: filtered.length, heroes: filtered, summary: syncResult.ase?.hero || null });
+  } catch (error) {
+    res.status(error.status || 500).json({ ok: false, error: error.message });
+  }
+});
+
+router.get("/api/ase/debug", (req, res) => {
+  const eventEngine = require("../core/engine/event/register");
+  res.json({
+    ok: true,
+    ...eventEngine.getDebug({
+      characterKey: req.query.characterKey,
+    }),
   });
 });
 

@@ -73,7 +73,17 @@ function buildCharacterRecord(character, collectorCharacter = null) {
         portraitSlug: normalizeText(appearance.portraitSlug || collectorMedia.portraitSlug),
       },
       progression: {
-        level: finiteNumber(character.level || collectorCharacter?.level),
+        level: Math.max(
+          finiteNumber(character.level),
+          finiteNumber(collectorCharacter?.level),
+        ),
+        battleNetLevel: finiteNumber(character.level),
+        collectorLevel: finiteNumber(collectorCharacter?.level),
+        levelSource:
+          finiteNumber(collectorCharacter?.level) >= finiteNumber(character.level) &&
+          finiteNumber(collectorCharacter?.level) > 0
+            ? "collector"
+            : "battle-net",
         money: finiteNumber(collectorCharacter?.money),
       },
       location: collectorCharacter?.location || null,
@@ -99,6 +109,8 @@ function buildCharacterRecord(character, collectorCharacter = null) {
           guid: collectorCharacter.guid || "",
           lastSeenAt,
           appearance,
+          equipment: collectorCharacter.equipment || null,
+          hero: collectorCharacter.hero || null,
           media: collectorMedia,
           location: collectorCharacter.location || null,
         }

@@ -5,6 +5,8 @@ const { summarizeAchievements } = require("./achievementSync");
 const { summarizeCollector } = require("./collectorSync");
 const { ASE_VERSION, getStatus } = require("../ase");
 const characterEngine = require("../engine/character/register");
+const eventEngine = require("../engine/event/register");
+const heroEngine = require("../engine/hero/register");
 
 function buildSyncResult({ characters = [], collector = {}, startedAt }) {
   const collectorCharacters = Array.isArray(collector.characters)
@@ -19,6 +21,14 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
     collectorCharacters,
   });
   const normalizedCharacters = characterResult.characters;
+  const heroResult = heroEngine.buildHeroes(normalizedCharacters);
+  const sessionJournal = buildSessionJournal(collectorCharacters, 100);
+  const eventResult = eventEngine.buildEvents({
+    characters: normalizedCharacters,
+    collectorCharacters,
+    achievements: collectorAchievements,
+    journal: sessionJournal,
+  });
   const completedAt = Date.now();
   const mediaAvailable = normalizedCharacters.filter(
     (character) => character?.mediaStatus === "available",
@@ -36,16 +46,23 @@ function buildSyncResult({ characters = [], collector = {}, startedAt }) {
   return {
     connected: true,
     count: normalizedCharacters.length,
-    characters: normalizedCharacters,
+    characters: normalizedCharacters.map((character, index) => ({
+      ...character,
+      hero: heroResult.heroes[index],
+    })),
+    heroes: heroResult.heroes,
     dashboard: buildDashboardSummary(normalizedCharacters, collectorCharacters),
-    journal: buildSessionJournal(collectorCharacters, 12),
+    journal: eventResult.events.slice(0, 20),
+    sessionJournal: sessionJournal.slice(0, 20),
     achievements: buildRecentAchievements(collectorAchievements, 3),
     ase: {
       ...getStatus(),
       character: characterResult.summary,
+      event: eventResult.summary,
+      hero: heroResult.summary,
     },
     sync: {
-      version: `2.0.1-ase-${ASE_VERSION}`,
+      version: `3.0.0-alpha2-ase-${ASE_VERSION}`,
       startedAt,
       completedAt,
       durationMs: Math.max(0, completedAt - startedAt),

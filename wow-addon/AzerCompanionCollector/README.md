@@ -19,6 +19,7 @@ Puis redémarrer WoW ou utiliser `/reload`.
 ## Données couvertes dans cette première étape
 
 - Profil du personnage, spécialisation, niveau d'objet, argent, position et métiers.
+- Équipement détaillé : statistiques, armure, effets natifs du tooltip, niveau requis, durabilité et prix de vente.
 - Catalogue complet des hauts faits visible par l'API WoW, avec complétion, date et attribution au personnage lorsque WoW fournit `wasEarnedByMe`.
 - Quêtes actives et leurs objectifs.
 - Nouvelles quêtes terminées observées à partir de l'installation de cette version.

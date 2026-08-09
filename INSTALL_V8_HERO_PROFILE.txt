@@ -1,0 +1,17 @@
+AZER COMPANION - HERO PROFILE V8
+
+1. Remplacer les fichiers du projet par ceux de cette archive.
+2. Remplacer aussi le dossier WoW AddOn AzerCompanionCollector.
+3. Dans WoW: /reload puis /azer scan
+4. Synchroniser Azer Companion.
+5. Redemarrer Node.js et faire Ctrl+F5 dans le navigateur.
+
+V8:
+- colonnes d'equipement eloignees du cadre selon les reperes de la capture;
+- suppression de l'effet ovale/comete en haut du portrait;
+- suppression du texte d'aide en bas du portrait;
+- personnage plus present dans le cadre sans agrandir le cadre;
+- nouvelle cle de cadrage fullBodyV6;
+- tooltip reconstruit style WoW/Wowhead;
+- preservation des couleurs des lignes C_TooltipInfo dans le Collector;
+- fallback detaille si le tooltip natif n'est pas encore disponible.

@@ -227,7 +227,98 @@ const missingPortraitWarnings = new Set();
 let collectorCharacters = new Map();
 let currentFactionFilter = "all";
 let profiledCharacter = null;
-let profileImageMode = "portrait";
+let profileImageMode = "full-body";
+let profileCollectionData = null;
+let activeProfileCollectionTab = "mounts";
+let profileCollectionPage = 1;
+let activeProfileCollectionTooltipKey = "";
+let profileCollectionModalTrigger = null;
+let activeProfileCollectionModalKey = "";
+const profileCollectionDetails = new Map();
+const PROFILE_COLLECTION_PAGE_SIZE = 20;
+
+const PROFILE_IMAGE_DEFAULT_VIEW = {
+  // Le rendu Blizzard "main" contient beaucoup d'espace vide autour du modèle.
+  // 1.72 donne un cadrage plein corps proche de l'armurerie WoW tout en gardant
+  // la tête et les pieds visibles dans notre cadre 5:7.
+  "full-body": { zoom: 2.28, x: 0, y: 2 },
+  // Le portrait utilise maintenant le média Blizzard dédié (inset/bust).
+  // À 100 %, l'image remplit déjà le cadre grâce à object-fit: cover.
+  portrait: { zoom: 1, x: 0, y: 0 },
+};
+
+let profileImageDragState = null;
+
+function getProfileImageViewStorageKey(character, mode) {
+  const key = character ? getCharacterKey(character) : "unknown";
+  // v2 uniquement pour le portrait : on ignore les anciens zooms (ex. 600 %)
+  // qui avaient été enregistrés lorsque le portrait utilisait le main-raw.
+  const storageMode = mode === "portrait" ? "portraitV2" : mode === "full-body" ? "fullBodyV9" : mode;
+  return `azer.profileImageView.${key}.${storageMode}`;
+}
+
+function getProfileImageView(character, mode = profileImageMode) {
+  const fallback = PROFILE_IMAGE_DEFAULT_VIEW[mode] || PROFILE_IMAGE_DEFAULT_VIEW["full-body"];
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(getProfileImageViewStorageKey(character, mode)) || "null");
+    if (saved && Number.isFinite(saved.zoom) && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+      return {
+        zoom: Math.min(6, Math.max(0.65, saved.zoom)),
+        x: Math.min(80, Math.max(-80, saved.x)),
+        y: Math.min(80, Math.max(-80, saved.y)),
+      };
+    }
+  } catch (_error) {
+    // Une préférence de cadrage invalide ne doit jamais bloquer la fiche.
+  }
+
+  return { ...fallback };
+}
+
+function saveProfileImageView(character, mode, view) {
+  if (!character) return;
+  localStorage.setItem(
+    getProfileImageViewStorageKey(character, mode),
+    JSON.stringify(view),
+  );
+}
+
+function applyProfileImageView() {
+  const profileImage = document.getElementById("profileCharacterImage");
+  const resetButton = document.querySelector('[data-profile-zoom="reset"]');
+  if (!profileImage || !profiledCharacter) return;
+
+  const view = getProfileImageView(profiledCharacter, profileImageMode);
+  profileImage.style.setProperty("--profile-image-zoom", String(view.zoom));
+  profileImage.style.setProperty("--profile-image-x", `${view.x}%`);
+  profileImage.style.setProperty("--profile-image-y", `${view.y}%`);
+
+  if (resetButton) {
+    resetButton.textContent = `${Math.round(view.zoom * 100)}%`;
+  }
+}
+
+function updateProfileImageView(patch) {
+  if (!profiledCharacter) return;
+
+  const current = getProfileImageView(profiledCharacter, profileImageMode);
+  const next = {
+    zoom: Math.min(6, Math.max(0.65, patch.zoom ?? current.zoom)),
+    x: Math.min(80, Math.max(-80, patch.x ?? current.x)),
+    y: Math.min(80, Math.max(-80, patch.y ?? current.y)),
+  };
+
+  saveProfileImageView(profiledCharacter, profileImageMode, next);
+  applyProfileImageView();
+}
+
+function resetProfileImageView() {
+  if (!profiledCharacter) return;
+  const defaults = { ...(PROFILE_IMAGE_DEFAULT_VIEW[profileImageMode] || PROFILE_IMAGE_DEFAULT_VIEW["full-body"]) };
+  saveProfileImageView(profiledCharacter, profileImageMode, defaults);
+  applyProfileImageView();
+}
 const selectedCharacterStorageKey = "azerCompanion.selectedCharacter";
 const charactersRosterStorageKey = "azerCompanion.charactersRoster.v1";
 let currentCharacterKey = readSelectedCharacterKey();
@@ -657,6 +748,54 @@ function getFactionIconMarkup(factionName) {
   `;
 }
 
+function getWowClassIconUrl(iconName) {
+  const slugs = {
+    warrior: "warrior", paladin: "paladin", hunter: "hunter", rogue: "rogue", priest: "priest",
+    "death-knight": "deathknight", shaman: "shaman", mage: "mage", warlock: "warlock", monk: "monk",
+    druid: "druid", "demon-hunter": "demonhunter", evoker: "evoker",
+  };
+  const slug = slugs[iconName] || "warrior";
+  return `https://wow.zamimg.com/images/wow/icons/medium/classicon_${slug}.jpg`;
+}
+
+
+function getWowIconUrl(iconName, size = "large") {
+  const clean = String(iconName || "inv_misc_questionmark").toLowerCase();
+  return `https://wow.zamimg.com/images/wow/icons/${size}/${clean}.jpg`;
+}
+
+function getWowRaceIconUrl(raceName = "") {
+  const race = String(raceName).toLowerCase();
+  const icons = {
+    "orc": "achievement_character_orc_male",
+    "elfe de sang": "achievement_character_bloodelf_female",
+    "humain": "achievement_character_human_male",
+    "nain": "achievement_character_dwarf_male",
+    "elfe de la nuit": "achievement_character_nightelf_female",
+    "mort-vivant": "achievement_character_undead_male",
+    "tauren": "achievement_character_tauren_male",
+    "gnome": "achievement_character_gnome_male",
+    "troll": "achievement_character_troll_male",
+    "gobelin": "achievement_character_goblin_male",
+    "draeneï": "achievement_character_draenei_male",
+    "worgen": "achievement_character_worgen_male",
+    "pandaren": "achievement_character_pandaren_male",
+  };
+  return getWowIconUrl(icons[race] || "inv_misc_questionmark");
+}
+
+function getWowRealmIconUrl(realmName = "") {
+  const realm = String(realmName).toLowerCase();
+  if (realm.includes("silvermoon")) return getWowIconUrl("spell_arcane_teleportsilvermoon");
+  return getWowIconUrl("inv_misc_map_01");
+}
+
+function getWowLevelIconUrl(level = 1) {
+  const value = Number(level) || 1;
+  const tier = value >= 80 ? 80 : value >= 70 ? 70 : value >= 60 ? 60 : value >= 50 ? 50 : value >= 40 ? 40 : value >= 30 ? 30 : value >= 20 ? 20 : 10;
+  return getWowIconUrl(`achievement_level_${tier}`);
+}
+
 // ======================================================
 // Informations de race
 // ======================================================
@@ -735,13 +874,15 @@ function getCharacterPortraitImage(character) {
   }
 
   return (
+    // Pour la grande fiche du héros, on privilégie le portrait Blizzard
+    // le plus grand (inset/bust) avant le petit avatar carré.
+    getMediaAsset(character, "inset") ||
+    character.media?.bust_url ||
+    character.portraitUrl ||
     getMediaAsset(character, "avatar") ||
     character.avatarUrl ||
     character.avatar ||
     character.media?.avatar ||
-    getMediaAsset(character, "inset") ||
-    character.media?.bust_url ||
-    character.portraitUrl ||
     getCharacterFallbackPortrait(character)
   );
 }
@@ -1764,114 +1905,657 @@ function openCharactersView() {
   }, 180);
 }
 
-function formatCharacterProfessions(professions) {
-  if (!professions.length) {
-    return "Aucun métier n’a été renvoyé par Battle.net.";
-  }
-
-  return professions
-    .map((profession) => {
-      const learnedTiers = profession.tiers.filter(
-        (tier) => tier.skillPoints > 0 || tier.maxSkillPoints > 0,
-      );
-      const tierText = learnedTiers.length
-        ? learnedTiers
-            .map(
-              (tier) =>
-                `${tier.name} : ${tier.skillPoints}/${tier.maxSkillPoints}`,
-            )
-            .join(" · ")
-        : "niveau non disponible";
-      const typeLabel = profession.type === "secondary" ? "Secondaire — " : "";
-
-      return `${typeLabel}${profession.name} — ${tierText}`;
-    })
-    .join("\n");
+function formatProfileNumber(value) {
+  return new Intl.NumberFormat("fr-CA").format(Number(value || 0));
 }
 
-async function loadCharacterProfessions(character) {
-  const professionsElement = document.getElementById(
-    "profileCharacterProfessions",
+function getProfileCollectorCharacter(character) {
+  return collectorCharacters.get(getCollectorCharacterKey(character)) || null;
+}
+
+function getProfessionIconUrl(professionName) {
+  const name = String(professionName || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const icons = [
+    [/depecage|skinning/, "inv_misc_pelt_bear_03"],
+    [/travail du cuir|leatherworking/, "trade_leatherworking"],
+    [/alchimie|alchemy/, "trade_alchemy"],
+    [/forge|blacksmith/, "trade_blacksmithing"],
+    [/enchantement|enchanting/, "trade_engraving"],
+    [/ingenierie|engineering/, "trade_engineering"],
+    [/herboristerie|herbalism/, "spell_nature_naturetouchgrow"],
+    [/calligraphie|inscription/, "inv_inscription_tradeskill01"],
+    [/joaillerie|jewelcrafting/, "inv_misc_gem_01"],
+    [/minage|mining/, "trade_mining"],
+    [/couture|tailoring/, "trade_tailoring"],
+    [/cuisine|cooking/, "inv_misc_food_15"],
+    [/peche|fishing/, "trade_fishing"],
+    [/archeologie|archaeology/, "trade_archaeology"],
+  ];
+  const match = icons.find(([pattern]) => pattern.test(name));
+  return getWowIconUrl(match?.[1] || "inv_misc_questionmark", "medium");
+}
+
+function normalizeProfileProfessions(professions = []) {
+  return professions.map((profession) => ({
+    name: String(profession.name || "Métier"),
+    type: profession.type || profession.category || "secondary",
+    tiers: Array.isArray(profession.tiers)
+      ? profession.tiers
+      : [{
+          name: "Progression actuelle",
+          skillPoints: Number(profession.skillLevel || 0),
+          maxSkillPoints: Number(profession.maxSkillLevel || 0),
+        }],
+  }));
+}
+
+function renderProfileProfessions(professions = [], message = "") {
+  const container = document.getElementById("profileCharacterProfessions");
+  if (!container) return;
+
+  const normalized = normalizeProfileProfessions(professions);
+  if (!normalized.length) {
+    container.innerHTML = `<p class="profile-progress-empty">${escapeHtml(message || "Aucun métier enregistré pour ce personnage.")}</p>`;
+    return;
+  }
+
+  container.innerHTML = normalized.map((profession) => {
+    const tiers = profession.tiers.filter((tier) =>
+      Number(tier.skillPoints || 0) > 0 || Number(tier.maxSkillPoints || 0) > 0,
+    );
+    const renderTier = (tier) => {
+      const current = Number(tier.skillPoints || 0);
+      const maximum = Number(tier.maxSkillPoints || 0);
+      const progress = maximum > 0
+        ? Math.min(100, Math.max(0, (current / maximum) * 100))
+        : 0;
+      return `<div class="profile-profession-tier">
+        <div><span>${escapeHtml(tier.name || "Progression")}</span><strong>${current}/${maximum || "—"}</strong></div>
+        <span class="profile-profession-track" aria-hidden="true"><i style="width:${progress.toFixed(1)}%"></i></span>
+      </div>`;
+    };
+    const visibleTiers = tiers.slice(0, 2);
+    const hiddenTiers = tiers.slice(2);
+
+    return `<section class="profile-profession-entry">
+      <header>
+        <span class="profile-profession-name">
+          <img src="${getProfessionIconUrl(profession.name)}" alt="" loading="lazy">
+          <strong>${escapeHtml(profession.name)}</strong>
+        </span>
+        <small>${profession.type === "primary" ? "Principal" : "Secondaire"}</small>
+      </header>
+      ${visibleTiers.length
+        ? visibleTiers.map(renderTier).join("")
+        : '<p class="profile-progress-empty">Niveau non disponible</p>'}
+      ${hiddenTiers.length ? `<details class="profile-profession-more">
+        <summary>+${hiddenTiers.length} progression${hiddenTiers.length > 1 ? "s" : ""}</summary>
+        ${hiddenTiers.map(renderTier).join("")}
+      </details>` : ""}
+    </section>`;
+  }).join("");
+}
+
+function getCollectorAchievementSummary(character) {
+  const achievements = (getProfileCollectorCharacter(character)?.achievements || [])
+    .filter((achievement) => achievement?.completed === true)
+    .sort((first, second) =>
+      Number(second.completedAt || second.observedEarnedAt || 0) -
+      Number(first.completedAt || first.observedEarnedAt || 0),
+    );
+
+  if (!achievements.length) return null;
+  return {
+    totalQuantity: achievements.length,
+    totalPoints: achievements.reduce(
+      (total, achievement) => total + Number(achievement.points || 0),
+      0,
+    ),
+    recent: achievements.slice(0, 3).map((achievement) => ({
+      name: achievement.name,
+      completedAt: Number(achievement.completedAt || achievement.observedEarnedAt || 0),
+    })),
+  };
+}
+
+function renderProfileAchievements(summary, message = "") {
+  const count = document.getElementById("profileAchievementCount");
+  const points = document.getElementById("profileAchievementPoints");
+  const recent = document.getElementById("profileAchievementRecent");
+  if (!count || !points || !recent) return;
+
+  count.textContent = summary ? formatProfileNumber(summary.totalQuantity) : "—";
+  points.textContent = summary ? formatProfileNumber(summary.totalPoints) : "—";
+
+  const achievements = summary?.recent || [];
+  recent.innerHTML = achievements.length
+    ? achievements.map((achievement) => {
+        const completedAt = Number(achievement.completedAt || 0);
+        const completedAtMs = completedAt > 0 && completedAt < 1e12
+          ? completedAt * 1000
+          : completedAt;
+        const date = completedAt
+          ? new Intl.DateTimeFormat("fr-CA", { day: "numeric", month: "short", year: "numeric" })
+              .format(new Date(completedAtMs))
+          : "Date inconnue";
+        return `<div class="profile-recent-achievement">
+          <span aria-hidden="true">◆</span>
+          <div><strong>${escapeHtml(achievement.name || "Haut fait obtenu")}</strong><small>${escapeHtml(date)}</small></div>
+        </div>`;
+      }).join("")
+    : `<p class="profile-progress-empty">${escapeHtml(message || "Aucun haut fait attribué à ce personnage.")}</p>`;
+}
+
+function getCollectionQualityClass(quality) {
+  const value = String(quality || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (/legendaire|legendary/.test(value)) return "is-legendary";
+  if (/epique|epic/.test(value)) return "is-epic";
+  if (/rare/.test(value)) return "is-rare";
+  if (/inhabituel|uncommon/.test(value)) return "is-uncommon";
+  return "is-common";
+}
+
+function getProfileCollectionMediaUrl(kind, item) {
+  const params = new URLSearchParams({ render: "transparent-v3" });
+  if (kind === "pet" && item.displayId) {
+    params.set("displayId", item.displayId);
+  }
+  return `/api/ase/collection-media/${kind}/${encodeURIComponent(item.id)}?${params}`;
+}
+
+function removeProfileCollectionImageBackground(image) {
+  if (!image?.naturalWidth || image.dataset.backgroundProcessed === "true") return;
+  image.dataset.backgroundProcessed = "true";
+  const canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return;
+
+  try {
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    const samples = [];
+    const stepX = Math.max(1, Math.floor(canvas.width / 24));
+    const stepY = Math.max(1, Math.floor(canvas.height / 24));
+    for (let x = 0; x < canvas.width; x += stepX) {
+      samples.push((x * 4), ((canvas.height - 1) * canvas.width + x) * 4);
+    }
+    for (let y = 0; y < canvas.height; y += stepY) {
+      samples.push((y * canvas.width) * 4, (y * canvas.width + canvas.width - 1) * 4);
+    }
+
+    const opaqueSamples = samples.filter((index) => pixels.data[index + 3] > 220);
+    if (opaqueSamples.length < samples.length * .75) {
+      image.classList.remove("is-processing");
+      return;
+    }
+    const background = opaqueSamples.reduce((total, index) => {
+      total[0] += pixels.data[index];
+      total[1] += pixels.data[index + 1];
+      total[2] += pixels.data[index + 2];
+      return total;
+    }, [0, 0, 0]).map((value) => value / opaqueSamples.length);
+    const variation = Math.sqrt(opaqueSamples.reduce((total, index) => {
+      return total + ((pixels.data[index] - background[0]) ** 2) +
+        ((pixels.data[index + 1] - background[1]) ** 2) +
+        ((pixels.data[index + 2] - background[2]) ** 2);
+    }, 0) / opaqueSamples.length);
+    const luminance = background[0] * .2126 + background[1] * .7152 + background[2] * .0722;
+    if (variation > 24 || luminance > 95) {
+      image.classList.remove("is-processing");
+      return;
+    }
+
+    for (let index = 0; index < pixels.data.length; index += 4) {
+      const distance = Math.sqrt(
+        ((pixels.data[index] - background[0]) ** 2) +
+        ((pixels.data[index + 1] - background[1]) ** 2) +
+        ((pixels.data[index + 2] - background[2]) ** 2),
+      );
+      if (distance <= 18) {
+        pixels.data[index + 3] = 0;
+      } else if (distance < 52) {
+        pixels.data[index + 3] = Math.round(
+          pixels.data[index + 3] * ((distance - 18) / 34),
+        );
+      }
+    }
+    context.putImageData(pixels, 0, 0);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        image.classList.remove("is-processing");
+        return;
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      image.addEventListener("load", () => {
+        URL.revokeObjectURL(objectUrl);
+        image.classList.remove("is-processing");
+        image.classList.add("is-background-removed");
+      }, { once: true });
+      image.src = objectUrl;
+    }, "image/png");
+  } catch (_error) {
+    image.classList.remove("is-processing");
+  }
+}
+
+function prepareProfileCollectionImage(image) {
+  if (!image) return;
+  image.classList.add("is-processing");
+  if (image.complete && image.naturalWidth) {
+    removeProfileCollectionImageBackground(image);
+  } else {
+    image.addEventListener("load", () => removeProfileCollectionImageBackground(image), { once: true });
+  }
+}
+
+function positionProfileCollectionTooltip(event) {
+  const tooltip = document.getElementById("profileCollectionTooltip");
+  if (!tooltip || tooltip.hidden) return;
+  const anchor = event.currentTarget?.getBoundingClientRect?.();
+  const pointerX = Number(event.clientX) || (anchor ? anchor.right : 0);
+  const pointerY = Number(event.clientY) || (anchor ? anchor.top : 0);
+  const gap = 14;
+  const width = tooltip.offsetWidth;
+  const height = tooltip.offsetHeight;
+  let left = pointerX + gap;
+  let top = pointerY + gap;
+  if (left + width > window.innerWidth - 10) left = pointerX - width - gap;
+  if (top + height > window.innerHeight - 10) top = window.innerHeight - height - 10;
+  tooltip.style.left = `${Math.max(10, left)}px`;
+  tooltip.style.top = `${Math.max(10, top)}px`;
+}
+
+function getProfileCollectionTooltipMarkup(kind, item, detail = null) {
+  const isMount = kind === "mount";
+  const quality = !isMount && item.quality
+    ? `<span class="profile-collection-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
+    : "";
+  const stats = !isMount && (item.health || item.power || item.speed)
+    ? `<div class="profile-tooltip-stats">
+        <span>♥ ${formatProfileNumber(item.health)} Vie</span>
+        <span>⚔ ${formatProfileNumber(item.power)} Puissance</span>
+        <span>➤ ${formatProfileNumber(item.speed)} Vitesse</span>
+      </div>`
+    : "";
+  const type = detail?.type || (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
+  const source = detail?.source ? `<p><strong>Source :</strong> ${escapeHtml(detail.source)}</p>` : "";
+  const description = detail?.description
+    ? `<p class="profile-tooltip-description">${escapeHtml(detail.description)}</p>`
+    : "";
+
+  return `<div class="profile-tooltip-title">
+      <img src="${getProfileCollectionMediaUrl(kind, item)}" alt="">
+      <div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(type)}</small></div>
+      ${item.favorite ? '<span title="Favorite">★</span>' : ""}
+    </div>
+    ${!isMount && item.level ? `<span class="profile-tooltip-level">Niveau <strong>${item.level}</strong></span>` : ""}
+    ${quality}${stats}
+    <p class="profile-tooltip-collected">Collecté${item.favorite ? " · Favori" : ""}</p>
+    ${source}${description}
+    <small class="profile-tooltip-id">Identifiant : ${item.id}</small>`;
+}
+
+function bindProfileCollectionTooltipImageFallback(tooltip) {
+  const image = tooltip.querySelector("img");
+  prepareProfileCollectionImage(image);
+  image?.addEventListener("error", (event) => {
+    event.currentTarget.hidden = true;
+  }, { once: true });
+}
+
+async function loadProfileCollectionDetail(kind, item) {
+  const key = `${kind}:${item.id}`;
+  if (profileCollectionDetails.has(key)) return profileCollectionDetails.get(key);
+  const response = await fetch(`/api/ase/collection-detail/${kind}/${encodeURIComponent(item.id)}`);
+  if (!response.ok) return null;
+  const detail = await response.json();
+  profileCollectionDetails.set(key, detail);
+  return detail;
+}
+
+async function showProfileCollectionTooltip(event, kind, item) {
+  const tooltip = document.getElementById("profileCollectionTooltip");
+  if (!tooltip) return;
+  const key = `${kind}:${item.id}`;
+  activeProfileCollectionTooltipKey = key;
+  tooltip.innerHTML = getProfileCollectionTooltipMarkup(kind, item, profileCollectionDetails.get(key));
+  bindProfileCollectionTooltipImageFallback(tooltip);
+  tooltip.hidden = false;
+  positionProfileCollectionTooltip(event);
+
+  if (profileCollectionDetails.has(key)) return;
+  try {
+    const detail = await loadProfileCollectionDetail(kind, item);
+    if (!detail) return;
+    if (activeProfileCollectionTooltipKey !== key || tooltip.hidden) return;
+    tooltip.innerHTML = getProfileCollectionTooltipMarkup(kind, item, detail);
+    bindProfileCollectionTooltipImageFallback(tooltip);
+    positionProfileCollectionTooltip(event);
+  } catch (_error) {
+    // Les informations déjà présentes restent affichées si Blizzard est indisponible.
+  }
+}
+
+function hideProfileCollectionTooltip() {
+  const tooltip = document.getElementById("profileCollectionTooltip");
+  activeProfileCollectionTooltipKey = "";
+  if (tooltip) tooltip.hidden = true;
+}
+
+function getProfileCollectionModalMarkup(kind, item, detail = null) {
+  const isMount = kind === "mount";
+  const type = detail?.type || (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
+  const stats = !isMount && (item.health || item.power || item.speed)
+    ? `<div class="profile-modal-stats">
+        <span><b>♥</b><strong>${formatProfileNumber(item.health)}</strong><small>Vie</small></span>
+        <span><b>⚔</b><strong>${formatProfileNumber(item.power)}</strong><small>Puissance</small></span>
+        <span><b>➤</b><strong>${formatProfileNumber(item.speed)}</strong><small>Vitesse</small></span>
+      </div>`
+    : "";
+  const quality = !isMount && item.quality
+    ? `<span class="profile-modal-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
+    : "";
+  const source = detail?.source
+    ? `<div class="profile-modal-data"><small>Source</small><strong>${escapeHtml(detail.source)}</strong></div>`
+    : `<div class="profile-modal-data"><small>Source</small><strong>Information non fournie</strong></div>`;
+  const description = detail?.description
+    ? escapeHtml(detail.description)
+    : "Les informations complémentaires seront affichées dès qu’elles seront disponibles auprès de Battle.net.";
+
+  return `<header class="profile-modal-header">
+      <img class="profile-modal-icon" src="${getProfileCollectionMediaUrl(kind, item)}" alt="">
+      <div>
+        <span>${escapeHtml(type)}</span>
+        <h3 id="profileCollectionModalTitle">${escapeHtml(item.name)}</h3>
+        <p>Collecté${item.favorite ? " · Dans vos favoris" : ""}</p>
+      </div>
+      ${item.favorite ? '<span class="profile-modal-favorite" title="Favori">★</span>' : ""}
+    </header>
+    <div class="profile-modal-information">
+      ${source}
+      ${!isMount && item.level ? `<div class="profile-modal-data"><small>Niveau</small><strong>${item.level}</strong></div>` : ""}
+      ${quality}
+      <p class="profile-modal-description">${description}</p>
+      ${stats}
+    </div>
+    <div class="profile-modal-showcase">
+      <span class="profile-modal-ornament profile-modal-ornament-left" aria-hidden="true"></span>
+      <img src="${getProfileCollectionMediaUrl(kind, item)}" alt="${escapeHtml(item.name)}">
+      <span class="profile-modal-ornament profile-modal-ornament-right" aria-hidden="true"></span>
+      <small>${isMount ? "Monture de la collection" : "Mascotte de combat"} · #${item.id}</small>
+    </div>`;
+}
+
+function bindProfileCollectionModalImages(modal) {
+  modal.querySelectorAll("img").forEach((image) => {
+    prepareProfileCollectionImage(image);
+    image.addEventListener("error", () => {
+      image.hidden = true;
+      image.parentElement?.classList.add("is-image-missing");
+    }, { once: true });
+  });
+}
+
+async function openProfileCollectionModal(trigger, kind, item) {
+  const modal = document.getElementById("profileCollectionModal");
+  const body = document.getElementById("profileCollectionModalBody");
+  if (!modal || !body) return;
+  hideProfileCollectionTooltip();
+  profileCollectionModalTrigger = trigger;
+  const key = `${kind}:${item.id}`;
+  activeProfileCollectionModalKey = key;
+  body.innerHTML = getProfileCollectionModalMarkup(kind, item, profileCollectionDetails.get(key));
+  bindProfileCollectionModalImages(body);
+  modal.hidden = false;
+  document.body.classList.add("is-collection-modal-open");
+  document.getElementById("profileCollectionModalClose")?.focus({ preventScroll: true });
+
+  try {
+    const detail = await loadProfileCollectionDetail(kind, item);
+    if (!detail || modal.hidden || activeProfileCollectionModalKey !== key) return;
+    body.innerHTML = getProfileCollectionModalMarkup(kind, item, detail);
+    bindProfileCollectionModalImages(body);
+  } catch (_error) {
+    // La fiche locale reste utilisable si les détails Blizzard ne répondent pas.
+  }
+}
+
+function closeProfileCollectionModal() {
+  const modal = document.getElementById("profileCollectionModal");
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  activeProfileCollectionModalKey = "";
+  document.body.classList.remove("is-collection-modal-open");
+  profileCollectionModalTrigger?.focus({ preventScroll: true });
+  profileCollectionModalTrigger = null;
+}
+
+function getProfilePaginationPages(currentPage, totalPages) {
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  return [...pages].filter((page) => page > 0 && page <= totalPages).sort((a, b) => a - b);
+}
+
+function renderProfileCollectionPagination(totalItems) {
+  const pagination = document.getElementById("profileCollectionPagination");
+  if (!pagination) return;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PROFILE_COLLECTION_PAGE_SIZE));
+  profileCollectionPage = Math.min(totalPages, Math.max(1, profileCollectionPage));
+  if (totalItems <= PROFILE_COLLECTION_PAGE_SIZE) {
+    pagination.hidden = true;
+    pagination.innerHTML = "";
+    return;
+  }
+  const pages = getProfilePaginationPages(profileCollectionPage, totalPages);
+  let previousPage = 0;
+  const pageButtons = pages.map((page) => {
+    const separator = previousPage && page - previousPage > 1
+      ? '<span class="profile-pagination-gap" aria-hidden="true">…</span>'
+      : "";
+    previousPage = page;
+    return `${separator}<button type="button" data-profile-collection-page="${page}" class="${page === profileCollectionPage ? "is-active" : ""}" ${page === profileCollectionPage ? 'aria-current="page"' : ""}>${page}</button>`;
+  }).join("");
+  pagination.hidden = false;
+  pagination.innerHTML = `<div class="profile-pagination-heading">
+      <span>Navigation</span>
+      <strong>Page ${profileCollectionPage} <i>/</i> ${totalPages}</strong>
+      <small>${formatProfileNumber(totalItems)} objets dans la collection</small>
+    </div>
+    <div class="profile-pagination-controls">
+      <button class="profile-pagination-arrow" type="button" data-profile-collection-page="${profileCollectionPage - 1}" aria-label="Page précédente" ${profileCollectionPage === 1 ? "disabled" : ""}><span>‹</span></button>
+      <div class="profile-pagination-pages">${pageButtons}</div>
+      <button class="profile-pagination-arrow" type="button" data-profile-collection-page="${profileCollectionPage + 1}" aria-label="Page suivante" ${profileCollectionPage === totalPages ? "disabled" : ""}><span>›</span></button>
+    </div>`;
+}
+
+function renderProfileCollectionList() {
+  const list = document.getElementById("profileCollectionList");
+  const pagination = document.getElementById("profileCollectionPagination");
+  if (!list || !pagination) return;
+
+  const collection = profileCollectionData?.[activeProfileCollectionTab];
+  const items = Array.isArray(collection?.items) ? collection.items : [];
+  document.querySelectorAll("[data-profile-collection-tab]").forEach((button) => {
+    const selected = button.dataset.profileCollectionTab === activeProfileCollectionTab;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+
+  if (!collection?.available || !items.length) {
+    const label = activeProfileCollectionTab === "mounts" ? "monture" : "mascotte";
+    list.innerHTML = `<p class="profile-progress-empty">${collection?.available ? `Aucune ${label} trouvée.` : "Cette collection est indisponible."}</p>`;
+    pagination.hidden = true;
+    hideProfileCollectionTooltip();
+    return;
+  }
+
+  const kind = activeProfileCollectionTab === "mounts" ? "mount" : "pet";
+  const start = (profileCollectionPage - 1) * PROFILE_COLLECTION_PAGE_SIZE;
+  const visibleItems = items.slice(start, start + PROFILE_COLLECTION_PAGE_SIZE);
+  list.innerHTML = visibleItems.map((item) => `<button
+      class="profile-collection-tile ${item.favorite ? "is-favorite" : ""}"
+      type="button"
+      aria-label="${escapeHtml(item.name)}"
+      data-profile-collection-index="${items.indexOf(item)}"
+    >
+      <span class="profile-collection-thumb">
+        <img src="${getProfileCollectionMediaUrl(kind, item)}" alt="" loading="lazy">
+        <span aria-hidden="true">${kind === "mount" ? "♞" : "✦"}</span>
+      </span>
+      ${item.favorite ? '<span class="profile-tile-favorite" aria-hidden="true">★</span>' : ""}
+      ${kind === "pet" && item.level ? `<span class="profile-tile-level">${item.level}</span>` : ""}
+    </button>`).join("");
+
+  list.querySelectorAll(".profile-collection-tile").forEach((tile) => {
+    const item = items[Number(tile.dataset.profileCollectionIndex)];
+    tile.addEventListener("mouseenter", (event) => showProfileCollectionTooltip(event, kind, item));
+    tile.addEventListener("mousemove", positionProfileCollectionTooltip);
+    tile.addEventListener("mouseleave", hideProfileCollectionTooltip);
+    tile.addEventListener("focus", (event) => showProfileCollectionTooltip(event, kind, item));
+    tile.addEventListener("blur", hideProfileCollectionTooltip);
+    tile.addEventListener("click", () => openProfileCollectionModal(tile, kind, item));
+    const image = tile.querySelector("img");
+    prepareProfileCollectionImage(image);
+    image?.addEventListener("error", (event) => {
+      event.currentTarget.hidden = true;
+      event.currentTarget.parentElement?.classList.add("is-fallback");
+    }, { once: true });
+  });
+  renderProfileCollectionPagination(items.length);
+}
+
+function renderProfileCollections(collections, message = "") {
+  const mountCount = document.getElementById("profileMountCount");
+  const petCount = document.getElementById("profilePetCount");
+  const status = document.getElementById("profileCollectionStatus");
+  if (!mountCount || !petCount || !status) return;
+
+  profileCollectionData = collections;
+  activeProfileCollectionTab = "mounts";
+  profileCollectionPage = 1;
+
+  mountCount.textContent = collections?.mounts?.available
+    ? formatProfileNumber(collections.mounts.count)
+    : "—";
+  petCount.textContent = collections?.pets?.available
+    ? formatProfileNumber(collections.pets.uniqueSpecies || collections.pets.count)
+    : "—";
+
+  const details = [];
+  if (collections?.mounts?.available && collections.mounts.favorites > 0) {
+    details.push(`${formatProfileNumber(collections.mounts.favorites)} favorites`);
+  }
+  if (collections?.pets?.available && collections.pets.maxLevel > 0) {
+    details.push(`${formatProfileNumber(collections.pets.maxLevel)} mascottes niveau 25`);
+  }
+  status.textContent = details.join(" · ") || message ||
+    (collections ? "Collections Battle.net synchronisées" : "Collections indisponibles");
+  renderProfileCollectionList();
+}
+
+async function loadCharacterProgression(character) {
+  const requestedCharacterKey = getCharacterKey(character);
+  const collectorCharacter = getProfileCollectorCharacter(character);
+  const collectorProfessions = collectorCharacter?.professions || [];
+  const collectorAchievements = getCollectorAchievementSummary(character);
+
+  renderProfileProfessions(
+    collectorProfessions,
+    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des métiers...",
+  );
+  renderProfileAchievements(
+    collectorAchievements,
+    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des hauts faits...",
+  );
+  renderProfileCollections(
+    null,
+    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des collections...",
   );
 
-  if (!professionsElement) {
-    return;
-  }
-
-  if (character.isShowcase) {
-    professionsElement.textContent =
-      "Aperçu de démonstration : aucune donnée Battle.net.";
-    return;
-  }
-
-  const requestedCharacterKey = getCharacterKey(character);
-  professionsElement.textContent = "Chargement des métiers...";
+  if (character.isShowcase) return;
 
   try {
     const realm = encodeURIComponent(character.realm);
     const name = encodeURIComponent(character.name);
     const response = await fetch(
-      `/api/characters/${realm}/${name}/professions`,
+      `/api/characters/${realm}/${name}/progression`,
+      { headers: { Accept: "application/json" } },
     );
 
+    if (!profiledCharacter || getCharacterKey(profiledCharacter) !== requestedCharacterKey) return;
+
     if (response.status === 401) {
-      professionsElement.textContent =
-        "Reconnecte Battle.net pour actualiser les métiers.";
+      if (!collectorProfessions.length) {
+        renderProfileProfessions([], "Reconnecte Battle.net pour actualiser les métiers.");
+      }
+      if (!collectorAchievements) {
+        renderProfileAchievements(null, "Lance /azer scan pour importer les hauts faits.");
+      }
+      renderProfileCollections(null, "Reconnecte Battle.net pour charger les collections.");
       return;
     }
-
-    if (!response.ok) {
-      throw new Error("Métiers indisponibles.");
-    }
+    if (!response.ok) throw new Error("Progression indisponible.");
 
     const data = await response.json();
-
-    if (
-      !profiledCharacter ||
-      getCharacterKey(profiledCharacter) !== requestedCharacterKey
-    ) {
-      return;
+    if (data.available?.professions) {
+      renderProfileProfessions(data.professions || []);
+    } else if (!collectorProfessions.length) {
+      renderProfileProfessions([], "Les métiers sont indisponibles.");
     }
-
-    professionsElement.textContent = formatCharacterProfessions(
-      data.professions || [],
+    renderProfileAchievements(
+      data.achievements || collectorAchievements,
+      "Aucun haut fait terminé trouvé.",
+    );
+    renderProfileCollections(
+      data.collections,
+      data.available?.collections
+        ? "Collections Battle.net synchronisées"
+        : "Collections temporairement indisponibles.",
     );
   } catch (error) {
     console.warn(error.message || error);
-
-    if (
-      profiledCharacter &&
-      getCharacterKey(profiledCharacter) === requestedCharacterKey
-    ) {
-      professionsElement.textContent =
-        "Les métiers sont indisponibles pour ce personnage.";
-    }
+    if (!profiledCharacter || getCharacterKey(profiledCharacter) !== requestedCharacterKey) return;
+    if (!collectorProfessions.length) renderProfileProfessions([], "Les métiers sont indisponibles.");
+    if (!collectorAchievements) renderProfileAchievements(null, "Les hauts faits sont indisponibles.");
+    renderProfileCollections(null, "Les collections sont indisponibles.");
   }
 }
 
-function renderCharacterProfileImage(character, requestedMode = "portrait") {
+function renderCharacterProfileImage(character, requestedMode = "full-body") {
   const profileImage = document.getElementById("profileCharacterImage");
   const portraitContainer = document.querySelector(
     ".character-profile-portrait",
   );
   const fullBodyImage = getCharacterFullBodyImage(character);
-  const portraitImage = character.image;
+  const portraitImage = getCharacterPortraitImage(character);
   const canShowFullBody = Boolean(fullBodyImage);
 
   profileImageMode =
     requestedMode === "full-body" && canShowFullBody ? "full-body" : "portrait";
-  const usesFullBodyForPortrait =
-    profileImageMode === "portrait" && canShowFullBody;
+
+  // Les deux modes utilisent maintenant deux médias Blizzard distincts :
+  // - plein corps : main/main-raw
+  // - portrait    : inset/bust/portrait (avatar seulement en dernier recours)
+  const usesFullBodyForPortrait = false;
 
   if (profileImage) {
     profileImage.src =
-      profileImageMode === "full-body" || usesFullBodyForPortrait
+      profileImageMode === "full-body"
         ? fullBodyImage
         : portraitImage;
     profileImage.alt =
       profileImageMode === "full-body"
         ? `Vue en pied de ${character.name}`
         : `Portrait de ${character.name}`;
+    profileImage.draggable = false;
   }
 
   portraitContainer?.classList.toggle(
@@ -1897,6 +2581,321 @@ function renderCharacterProfileImage(character, requestedMode = "portrait") {
         : "Vue en pied indisponible chez Blizzard";
     }
   });
+
+  applyProfileImageView();
+}
+
+
+
+const HERO_EQUIPMENT_SLOT_LAYOUT = {
+  left: ["head", "neck", "shoulder", "back", "chest", "shirt", "tabard", "wrist"],
+  right: ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"],
+  weapons: ["mainHand", "offHand"],
+};
+
+const HERO_EQUIPMENT_SLOT_LABELS = {
+  head: "Tête", neck: "Cou", shoulder: "Épaules", back: "Dos",
+  chest: "Torse", shirt: "Chemise", tabard: "Tabard", wrist: "Poignets",
+  hands: "Mains", waist: "Taille", legs: "Jambes", feet: "Pieds",
+  finger1: "Anneau 1", finger2: "Anneau 2", trinket1: "Bijou 1", trinket2: "Bijou 2",
+  mainHand: "Main droite", offHand: "Main gauche",
+};
+
+const HERO_EQUIPMENT_SLOT_GLYPHS = {
+  head: "♕", neck: "◇", shoulder: "◢", back: "⌁", chest: "♜", shirt: "▱",
+  tabard: "⚑", wrist: "▰", hands: "✦", waist: "═", legs: "Ⅱ", feet: "⌄",
+  finger1: "○", finger2: "○", trinket1: "✧", trinket2: "✧", mainHand: "⚔", offHand: "🛡",
+};
+
+const HERO_ITEM_QUALITY_CLASS = {
+  0: "poor", 1: "common", 2: "uncommon", 3: "rare", 4: "epic", 5: "legendary",
+};
+
+function getHeroEquipmentKey(character) {
+  return `${String(character.realm || "").toLowerCase()}::${String(character.name || "").toLowerCase()}`;
+}
+
+function getHeroEquipmentIconUrl(item) {
+  const direct = item?.iconUrl || item?.textureUrl;
+  if (typeof direct === "string" && /^(https?:|\/)/i.test(direct)) return direct;
+  const itemId = Number(item?.itemId || 0);
+  return itemId ? `/api/ase/item-icon/${itemId}` : "";
+}
+
+function cleanWowTooltipText(value) {
+  return String(value || "")
+    .replace(/\|c[0-9a-fA-F]{8}/g, "")
+    .replace(/\|r/g, "")
+    .replace(/\|T[^|]+\|t/g, "")
+    .trim();
+}
+
+function formatHeroEquipmentTooltip(slotName, item) {
+  if (!item?.equipped) {
+    return `<span>${escapeHtml(HERO_EQUIPMENT_SLOT_LABELS[slotName] || slotName)}</span><strong>Emplacement vide</strong>`;
+  }
+
+  const qualityClass = HERO_ITEM_QUALITY_CLASS[item?.quality] || "common";
+  const nativeLines = Array.isArray(item.tooltipLines)
+    ? item.tooltipLines
+        .map((line) => ({
+          left: cleanWowTooltipText(line?.leftText),
+          right: cleanWowTooltipText(line?.rightText),
+          leftColor: line?.leftColor || null,
+          rightColor: line?.rightColor || null,
+        }))
+        .filter((line) => line.left || line.right)
+    : [];
+
+  const colorStyle = (color) => {
+    if (!color || typeof color !== "object") return "";
+    const r = Number(color.r), g = Number(color.g), b = Number(color.b);
+    if (![r,g,b].every(Number.isFinite)) return "";
+    const rr = Math.round(Math.max(0, Math.min(1, r)) * 255);
+    const gg = Math.round(Math.max(0, Math.min(1, g)) * 255);
+    const bb = Math.round(Math.max(0, Math.min(1, b)) * 255);
+    return ` style="color:rgb(${rr},${gg},${bb})"`;
+  };
+
+  const statNames = {
+    ITEM_MOD_STAMINA_SHORT: "Stamina",
+    ITEM_MOD_STRENGTH_SHORT: "Strength",
+    ITEM_MOD_AGILITY_SHORT: "Agility",
+    ITEM_MOD_INTELLECT_SHORT: "Intellect",
+    ITEM_MOD_AGILITY_INTELLECT_SHORT: "[Agility or Intellect]",
+    ITEM_MOD_AGILITY_STRENGTH_INTELLECT_SHORT: "[Agility, Strength or Intellect]",
+    ITEM_MOD_CRIT_RATING_SHORT: "Critical Strike",
+    ITEM_MOD_HASTE_RATING_SHORT: "Haste",
+    ITEM_MOD_MASTERY_RATING_SHORT: "Mastery",
+    ITEM_MOD_VERSATILITY: "Versatility",
+    ITEM_MOD_VERSATILITY_SHORT: "Versatility",
+    ITEM_MOD_LIFESTEAL_SHORT: "Leech",
+    ITEM_MOD_CR_LIFESTEAL_SHORT: "Leech",
+    ITEM_MOD_AVOIDANCE_SHORT: "Avoidance",
+    ITEM_MOD_CR_AVOIDANCE_SHORT: "Avoidance",
+    ITEM_MOD_SPEED_SHORT: "Speed",
+    ITEM_MOD_CR_SPEED_SHORT: "Speed",
+    ITEM_MOD_BLOCK_RATING_SHORT: "Block",
+    ITEM_MOD_DODGE_RATING_SHORT: "Dodge",
+    ITEM_MOD_PARRY_RATING_SHORT: "Parry",
+    ITEM_MOD_ARMOR_SHORT: "Armor",
+  };
+  const secondaryStats = new Set([
+    "ITEM_MOD_CRIT_RATING_SHORT", "ITEM_MOD_HASTE_RATING_SHORT",
+    "ITEM_MOD_MASTERY_RATING_SHORT", "ITEM_MOD_VERSATILITY",
+    "ITEM_MOD_VERSATILITY_SHORT", "ITEM_MOD_LIFESTEAL_SHORT",
+    "ITEM_MOD_CR_LIFESTEAL_SHORT", "ITEM_MOD_AVOIDANCE_SHORT",
+    "ITEM_MOD_CR_AVOIDANCE_SHORT", "ITEM_MOD_SPEED_SHORT",
+    "ITEM_MOD_CR_SPEED_SHORT",
+  ]);
+  const bindLabels = { 1: "Binds when picked up", 2: "Binds when equipped", 3: "Binds when used", 4: "Quest Item" };
+  const stats = Object.entries(item.stats || {});
+  const armor = stats.find(([key]) => key === "ITEM_MOD_ARMOR_SHORT");
+  const primary = stats.filter(([key]) => key !== "ITEM_MOD_ARMOR_SHORT" && !secondaryStats.has(key));
+  const secondary = stats.filter(([key]) => secondaryStats.has(key));
+  const sell = Number(item.sellPrice || 0);
+  const gold = Math.floor(sell / 10000);
+  const silver = Math.floor((sell % 10000) / 100);
+  const copper = sell % 100;
+  const sellParts = [];
+  if (gold) sellParts.push(`${gold}g`);
+  if (silver) sellParts.push(`${silver}s`);
+  if (copper || !sellParts.length) sellParts.push(`${copper}c`);
+
+  const slotLabel = HERO_EQUIPMENT_SLOT_LABELS[slotName] || slotName;
+  const typeLabel = item.itemSubType || item.itemType || "";
+  const sourceName = cleanWowTooltipText(item.sourceName || item.droppedBy || "");
+  const dropChance = Number(item.dropChance || 0);
+
+  const formatStatName = (key) => {
+    if (statNames[key]) return statNames[key];
+    return String(key || "Stat")
+      .replace(/^ITEM_MOD_/, "")
+      .replace(/_(SHORT|RATING)$/g, "")
+      .toLowerCase()
+      .replace(/(^|_)\w/g, (match) => match.replace("_", " ").toUpperCase());
+  };
+
+  const row = (left, right = "", css = "") => !left && !right ? "" : `
+    <div class="wow-tooltip-line${css ? ` ${css}` : ""}"><span>${escapeHtml(left)}</span>${right ? `<span class="wow-tooltip-line-right">${escapeHtml(right)}</span>` : ""}</div>`;
+
+  const nativeRow = (line) => `
+    <div class="wow-tooltip-line"${colorStyle(line.leftColor)}>
+      <span>${escapeHtml(line.left)}</span>
+      ${line.right ? `<span class="wow-tooltip-line-right"${colorStyle(line.rightColor)}>${escapeHtml(line.right)}</span>` : ""}
+    </div>`;
+
+  const compact = (value) => String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\s,.\u00a0]/g, "");
+  const statValues = stats.map(([, value]) => Number(value)).filter(Number.isFinite);
+  const itemLevel = Number(item.itemLevel || 0);
+  const durabilityCurrent = Number(item.durabilityCurrent || 0);
+  const durabilityMax = Number(item.durabilityMax || 0);
+  const minLevel = Number(item.minLevel || 0);
+  const slotKey = compact(slotLabel);
+  const typeKey = compact(typeLabel);
+
+  // Les lignes natives contiennent aussi les effets, châsses et améliorations
+  // que GetItemStats ne connaît pas. On conserve ces lignes, mais on retire les
+  // doublons des champs structurés que l'on place dans l'ordre Wowhead.
+  const supplementalNativeLines = nativeLines.slice(1).filter((line) => {
+    const left = compact(line.left);
+    const right = compact(line.right);
+    const combined = `${left}${right}`;
+    if (!combined) return false;
+    if ((left.includes("itemlevel") || left.includes("niveaudobjet")) && (!itemLevel || left.includes(String(itemLevel)))) return false;
+    if (/bindswhen|liequand|lieal|objetdequete|questitem/.test(left)) return false;
+    if (left === slotKey && (!typeKey || right === typeKey)) return false;
+    if (/durability|durabilite/.test(left)) return false;
+    if (/requireslevel|niveaurequis/.test(left)) return false;
+    if (/sellprice|prixdevente/.test(left)) return false;
+    if (statValues.some((value) => combined.includes(`+${value}`))) return false;
+    return true;
+  });
+
+  const titleLine = nativeLines[0];
+  const title = titleLine?.left || item.itemName || "Objet équipé";
+  const footerRows = [
+    durabilityCurrent > 0
+      ? row(`Durability ${durabilityCurrent} / ${durabilityMax || durabilityCurrent}`)
+      : "",
+    minLevel > 0 ? row(`Requires Level ${minLevel}`) : "",
+    sell > 0 ? row(`Sell Price: ${sellParts.join(" ")}`) : "",
+  ].filter(Boolean);
+
+  return `
+    <strong class="quality-${qualityClass}"${colorStyle(titleLine?.leftColor)}>${escapeHtml(title)}</strong>
+    ${itemLevel > 0 ? row(`Item Level ${itemLevel}`, "", "is-item-level") : ""}
+    ${bindLabels[Number(item.bindType || 0)] ? row(bindLabels[Number(item.bindType || 0)]) : ""}
+    ${row(slotLabel, typeLabel)}
+    ${armor ? row(`${Number(armor[1]) || armor[1]} Armor`) : ""}
+    ${primary.map(([key,value]) => row(`+${Number(value) || value} ${formatStatName(key)}`)).join("")}
+    ${secondary.map(([key,value]) => row(`+${Number(value) || value} ${formatStatName(key)}`, "", "is-stat-secondary")).join("")}
+    ${supplementalNativeLines.map(nativeRow).join("")}
+    ${footerRows.length ? '<div class="wow-tooltip-spacer"></div>' : ""}
+    ${footerRows.join("")}
+    ${sourceName ? `<div class="wow-tooltip-spacer"></div>${row(`Dropped by: ${sourceName}`, "", "is-source")}` : ""}
+    ${dropChance > 0 ? row(`Drop Chance: ${dropChance.toFixed(2)}%`, "", "is-source") : ""}
+  `;
+}
+
+function positionHeroEquipmentTooltip(event) {
+  const tooltip = document.getElementById("heroEquipmentTooltip");
+  if (!tooltip || tooltip.hidden) return;
+  const margin = 16;
+  const rect = tooltip.getBoundingClientRect();
+  const targetRect = event.currentTarget?.getBoundingClientRect?.();
+  const hasPointerPosition = Number.isFinite(event.clientX) && Number.isFinite(event.clientY)
+    && (event.clientX !== 0 || event.clientY !== 0);
+  const anchorX = hasPointerPosition ? event.clientX : (targetRect?.right || margin);
+  const anchorY = hasPointerPosition ? event.clientY : (targetRect?.top || margin);
+  let left = anchorX + 18;
+  let top = anchorY + 18;
+  if (left + rect.width > window.innerWidth - margin) left = anchorX - rect.width - 18;
+  if (top + rect.height > window.innerHeight - margin) top = anchorY - rect.height - 18;
+  tooltip.style.left = `${Math.max(margin, left)}px`;
+  tooltip.style.top = `${Math.max(margin, top)}px`;
+}
+
+function showHeroEquipmentTooltip(event, slotName, item) {
+  const tooltip = document.getElementById("heroEquipmentTooltip");
+  if (!tooltip) return;
+  tooltip.innerHTML = formatHeroEquipmentTooltip(slotName, item);
+  tooltip.hidden = false;
+  positionHeroEquipmentTooltip(event);
+}
+
+function hideHeroEquipmentTooltip() {
+  const tooltip = document.getElementById("heroEquipmentTooltip");
+  if (tooltip) tooltip.hidden = true;
+}
+
+function createHeroEquipmentSlot(slotName, item) {
+  const equipped = Boolean(item?.equipped && item?.itemId);
+  const qualityClass = HERO_ITEM_QUALITY_CLASS[item?.quality] || "common";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `hero-equipment-slot is-${equipped ? "equipped" : "empty"} quality-${qualityClass}`;
+  button.dataset.slotName = slotName;
+  button.setAttribute("aria-describedby", "heroEquipmentTooltip");
+  button.setAttribute("aria-label", equipped ? `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} : ${item.itemName}` : `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} vide`);
+
+  const icon = document.createElement("span");
+  icon.className = "hero-equipment-slot-icon";
+  const iconUrl = equipped ? getHeroEquipmentIconUrl(item) : "";
+  if (iconUrl) {
+    const image = document.createElement("img");
+    image.src = iconUrl;
+    image.alt = "";
+    image.loading = "lazy";
+    image.addEventListener("error", () => {
+      image.remove();
+      icon.textContent = HERO_EQUIPMENT_SLOT_GLYPHS[slotName] || "◇";
+    }, { once: true });
+    icon.appendChild(image);
+  } else {
+    icon.textContent = HERO_EQUIPMENT_SLOT_GLYPHS[slotName] || "◇";
+  }
+
+  const label = document.createElement("span");
+  label.className = "hero-equipment-slot-label";
+  label.textContent = HERO_EQUIPMENT_SLOT_LABELS[slotName] || slotName;
+
+  button.append(icon, label);
+  // Le descriptif de l'objet est volontairement affiche uniquement au survol.
+  button.addEventListener("mouseenter", (event) => showHeroEquipmentTooltip(event, slotName, item));
+  button.addEventListener("mousemove", positionHeroEquipmentTooltip);
+  button.addEventListener("mouseleave", hideHeroEquipmentTooltip);
+  button.addEventListener("focus", (event) => showHeroEquipmentTooltip(event, slotName, item));
+  button.addEventListener("blur", hideHeroEquipmentTooltip);
+  return button;
+}
+
+function renderHeroEquipment(hero) {
+  const equipment = hero?.equipment || {};
+  const slots = equipment.slots || {};
+  const left = document.getElementById("heroEquipmentLeft");
+  const right = document.getElementById("heroEquipmentRight");
+  const weapons = document.getElementById("heroEquipmentWeapons");
+  const count = document.getElementById("heroEquipmentCount");
+  const itemLevel = document.getElementById("heroEquipmentItemLevel");
+  const status = document.getElementById("heroEquipmentStatus");
+  const heroName = document.getElementById("heroEquipmentCharacterName");
+  if (!left || !right || !weapons) return;
+
+  left.innerHTML = "";
+  right.innerHTML = "";
+  weapons.innerHTML = "";
+  HERO_EQUIPMENT_SLOT_LAYOUT.left.forEach((slotName) => left.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
+  HERO_EQUIPMENT_SLOT_LAYOUT.right.forEach((slotName) => right.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
+  HERO_EQUIPMENT_SLOT_LAYOUT.weapons.forEach((slotName) => weapons.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
+
+  const equippedCount = Number(equipment.equippedCount || 0);
+  if (count) count.textContent = `${equippedCount} pièce${equippedCount > 1 ? "s" : ""} équipée${equippedCount > 1 ? "s" : ""}`;
+  if (itemLevel) itemLevel.textContent = Number(equipment.calculatedItemLevel || equipment.equippedItemLevel || 0).toFixed(1);
+  if (status) status.textContent = equippedCount ? "Équipement synchronisé par le Collector" : "Aucun équipement capturé";
+  if (heroName) heroName.textContent = hero?.identity?.name || "Héros";
+}
+
+async function loadHeroEquipment(character) {
+  const status = document.getElementById("heroEquipmentStatus");
+  const key = getHeroEquipmentKey(character);
+  if (status) status.textContent = "Chargement de l’équipement...";
+  try {
+    const response = await fetch(`/api/ase/heroes?characterKey=${encodeURIComponent(key)}`, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`Hero API ${response.status}`);
+    const payload = await response.json();
+    if (!profiledCharacter || getHeroEquipmentKey(profiledCharacter) !== key) return;
+    const hero = Array.isArray(payload.heroes) ? payload.heroes[0] : null;
+    if (!hero) throw new Error("Fiche Hero introuvable");
+    renderHeroEquipment(hero);
+  } catch (error) {
+    console.warn("Hero Equipment:", error);
+    if (status) status.textContent = "Équipement indisponible. Lance /azer scan puis synchronise.";
+  }
 }
 
 function openCharacterProfile(character) {
@@ -1910,10 +2909,12 @@ function openCharacterProfile(character) {
     "profileCharacterFactionDetail",
   );
   const profileLevel = document.getElementById("profileCharacterLevel");
-  const profileClassIcon = document.getElementById("profileCharacterClassIcon");
-  const profileFactionIcon = document.getElementById(
-    "profileCharacterFactionIcon",
-  );
+  const profileLevelIcon = document.getElementById("profileCharacterLevelIcon");
+  const profileClassFactIcon = document.getElementById("profileCharacterClassFactIcon");
+  const profileRaceIcon = document.getElementById("profileCharacterRaceIcon");
+  const profileFactionFactIcon = document.getElementById("profileCharacterFactionFactIcon");
+  const profileRealmIcon = document.getElementById("profileCharacterRealmIcon");
+  const profileLocationIcon = document.getElementById("profileCharacterLocationIcon");
   const selectProfileCharacter = document.getElementById(
     "selectProfileCharacter",
   );
@@ -1929,7 +2930,8 @@ function openCharacterProfile(character) {
     character.classColor,
   );
 
-  renderCharacterProfileImage(character);
+  renderCharacterProfileImage(character, "full-body");
+  loadHeroEquipment(character);
 
   if (profileClass) {
     profileClass.textContent = character.className;
@@ -1942,17 +2944,30 @@ function openCharacterProfile(character) {
     profileFactionDetail.textContent = character.factionName;
   }
   if (profileLevel) profileLevel.textContent = character.level;
-
-  if (profileClassIcon) {
-    profileClassIcon.innerHTML = getClassIconSvg(character.classIcon);
+  if (profileLevelIcon) {
+    profileLevelIcon.innerHTML = `<img class="profile-wow-icon-image" src="${getWowLevelIconUrl(character.level)}" alt="" aria-hidden="true">`;
+    profileLevelIcon.title = `Niveau ${character.level}`;
   }
 
-  if (profileFactionIcon) {
-    const isHorde = character.factionName === "HORDE";
+  if (profileClassFactIcon) {
+    profileClassFactIcon.innerHTML = `<img class="profile-wow-icon-image" src="${getWowClassIconUrl(character.classIcon)}" alt="" aria-hidden="true">`;
+  }
 
-    profileFactionIcon.classList.toggle("is-horde", isHorde);
-    profileFactionIcon.classList.toggle("is-alliance", !isHorde);
-    profileFactionIcon.innerHTML = getFactionIconMarkup(character.factionName);
+  if (profileRaceIcon) {
+    profileRaceIcon.innerHTML = `<img class="profile-wow-icon-image" src="${getWowRaceIconUrl(character.raceName)}" alt="" aria-hidden="true">`;
+    profileRaceIcon.title = character.raceName || "Race";
+  }
+
+  if (profileFactionFactIcon) {
+    profileFactionFactIcon.innerHTML = getFactionIconMarkup(character.factionName);
+  }
+
+  if (profileRealmIcon) {
+    profileRealmIcon.innerHTML = `<img class="profile-wow-icon-image" src="${getWowRealmIconUrl(character.realm)}" alt="" aria-hidden="true">`;
+  }
+
+  if (profileLocationIcon) {
+    profileLocationIcon.innerHTML = `<img class="profile-wow-icon-image" src="${getWowIconUrl("inv_misc_map_01")}" alt="" aria-hidden="true">`;
   }
 
   if (selectProfileCharacter) {
@@ -1966,7 +2981,7 @@ function openCharacterProfile(character) {
   }
 
   showView("characterProfile");
-  loadCharacterProfessions(character);
+  loadCharacterProgression(character);
 }
 
 function openDashboardView() {
@@ -2020,6 +3035,32 @@ document.getElementById("backToCharacters")?.addEventListener("click", () => {
   revealSidebar();
 });
 
+document.querySelectorAll("[data-profile-collection-tab]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const tab = button.dataset.profileCollectionTab;
+    if (!['mounts', 'pets'].includes(tab)) return;
+    activeProfileCollectionTab = tab;
+    profileCollectionPage = 1;
+    hideProfileCollectionTooltip();
+    renderProfileCollectionList();
+  });
+});
+
+document.getElementById("profileCollectionPagination")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-profile-collection-page]");
+  if (!button || button.disabled) return;
+  profileCollectionPage = Number(button.dataset.profileCollectionPage || 1);
+  hideProfileCollectionTooltip();
+  renderProfileCollectionList();
+  document.getElementById("profileCollectionList")?.focus({ preventScroll: true });
+});
+
+document.getElementById("profileCollectionModalClose")?.addEventListener("click", closeProfileCollectionModal);
+document.querySelector(".profile-collection-modal-backdrop")?.addEventListener("click", closeProfileCollectionModal);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeProfileCollectionModal();
+});
+
 document
   .getElementById("selectProfileCharacter")
   ?.addEventListener("click", () => {
@@ -2038,6 +3079,78 @@ document.querySelectorAll("[data-profile-image-mode]").forEach((button) => {
     }
   });
 });
+
+
+document.querySelectorAll("[data-profile-zoom]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (!profiledCharacter) return;
+
+    const action = button.dataset.profileZoom;
+    if (action === "reset") {
+      resetProfileImageView();
+      return;
+    }
+
+    const current = getProfileImageView(profiledCharacter, profileImageMode);
+    const step = action === "in" ? 0.18 : -0.18;
+    updateProfileImageView({ zoom: current.zoom + step });
+  });
+});
+
+const profileImageWindow = document.querySelector(".character-profile-image-window");
+
+profileImageWindow?.addEventListener("wheel", (event) => {
+  if (!profiledCharacter) return;
+  event.preventDefault();
+
+  const current = getProfileImageView(profiledCharacter, profileImageMode);
+  const step = event.deltaY < 0 ? 0.14 : -0.14;
+  updateProfileImageView({ zoom: current.zoom + step });
+}, { passive: false });
+
+profileImageWindow?.addEventListener("dblclick", (event) => {
+  event.preventDefault();
+  resetProfileImageView();
+});
+
+profileImageWindow?.addEventListener("pointerdown", (event) => {
+  if (!profiledCharacter || event.button !== 0) return;
+
+  const current = getProfileImageView(profiledCharacter, profileImageMode);
+  profileImageDragState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    imageX: current.x,
+    imageY: current.y,
+  };
+
+  profileImageWindow.setPointerCapture?.(event.pointerId);
+  profileImageWindow.classList.add("is-dragging");
+});
+
+profileImageWindow?.addEventListener("pointermove", (event) => {
+  if (!profileImageDragState || profileImageDragState.pointerId !== event.pointerId) return;
+
+  const bounds = profileImageWindow.getBoundingClientRect();
+  const dx = ((event.clientX - profileImageDragState.startX) / Math.max(bounds.width, 1)) * 100;
+  const dy = ((event.clientY - profileImageDragState.startY) / Math.max(bounds.height, 1)) * 100;
+
+  updateProfileImageView({
+    x: profileImageDragState.imageX + dx,
+    y: profileImageDragState.imageY + dy,
+  });
+});
+
+function finishProfileImageDrag(event) {
+  if (!profileImageDragState || profileImageDragState.pointerId !== event.pointerId) return;
+  profileImageWindow?.releasePointerCapture?.(event.pointerId);
+  profileImageWindow?.classList.remove("is-dragging");
+  profileImageDragState = null;
+}
+
+profileImageWindow?.addEventListener("pointerup", finishProfileImageDrag);
+profileImageWindow?.addEventListener("pointercancel", finishProfileImageDrag);
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") {
