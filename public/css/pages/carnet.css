@@ -376,3 +376,20 @@
   margin: 7px 4px 0 36px;
 }
 
+
+.recent-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 126px;
+  padding-bottom: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+}
+
+.recent-items {
+  min-height: 82px;
+}
+
+.content-grid {
+  margin-top: -18px;
+}

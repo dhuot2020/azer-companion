@@ -1,17 +1,40 @@
-AzerCompanionV2/
-|-- index.js
-|-- package.json
-|-- package-lock.json
-|-- routes/
-|   `-- carnet.js
-|-- views/
-|   |-- carnet.ejs
-|   |-- components/
-|   `-- partials/
-|-- public/
-|   |-- assets/
-|   |-- css/
-|   `-- js/
-|-- docs/
-|-- README.md
-`-- CHANGELOG.md
+.
+./core
+./core/ase
+./core/engine
+./core/engine/character
+./core/engine/event
+./core/engine/hero
+./core/sync
+./data
+./data/cache
+./docs
+./public
+./public/assets
+./public/assets/characters
+./public/assets/factions
+./public/assets/maps
+./public/assets/ui
+./public/assets/wow
+./public/css
+./public/css/base
+./public/css/components
+./public/css/layout
+./public/css/pages
+./public/css/responsive
+./public/data
+./public/data/quests
+./public/js
+./public/js/components
+./routes
+./scripts
+./scripts/quests
+./services
+./test
+./views
+./views/components
+./views/components/compass
+./views/partials
+./wow-addon
+./wow-addon/AzerCompanionCollector
+./wow-addon/AzerCompanionCollector/Modules

@@ -357,6 +357,7 @@ local function captureActiveQuests(character)
     local active = {}
     local snapshot = {}
     local entries = 0
+    local currentHeaderName = nil
 
     if C_QuestLog and C_QuestLog.GetNumQuestLogEntries then
         entries = tonumber(C_QuestLog.GetNumQuestLogEntries()) or 0
@@ -372,6 +373,10 @@ local function captureActiveQuests(character)
         local questID
         local isHeader = info and info.isHeader
 
+        if info and isHeader then
+            currentHeaderName = normalizeQuestText(info.title or info.name) or currentHeaderName
+        end
+
         if info and not isHeader then
             questID = tonumber(info.questID)
         end
@@ -383,7 +388,9 @@ local function captureActiveQuests(character)
         -- Secours pour les clients/API où GetInfo ne retourne pas l'entrée complète.
         if (not info or not questID or questID <= 0) and GetQuestLogTitle then
             local title, level, suggestedGroup, legacyIsHeader, isCollapsed, isComplete, frequency, questLegacyID = safeCall(GetQuestLogTitle, index)
-            if not legacyIsHeader then
+            if legacyIsHeader then
+                currentHeaderName = normalizeQuestText(title) or currentHeaderName
+            else
                 questID = tonumber(questLegacyID) or questID
                 if questID and questID > 0 then
                     info = info or {}
@@ -401,6 +408,7 @@ local function captureActiveQuests(character)
                 index = index,
                 questID = questID,
                 info = info,
+                journalHeader = currentHeaderName,
             })
         end
     end
@@ -411,6 +419,8 @@ local function captureActiveQuests(character)
         local questID = entry.questID
         local info = entry.info or {}
         local mapID, mapName = getQuestMapInfo(questID)
+        local journalHeader = normalizeQuestText(entry.journalHeader)
+        if not mapName and journalHeader then mapName = journalHeader end
         local campaignID
 
         if C_CampaignInfo and C_CampaignInfo.GetCampaignID then
@@ -442,6 +452,7 @@ local function captureActiveQuests(character)
             scope = isShared and "account" or "character",
             mapID = mapID,
             mapName = mapName,
+            journalHeader = journalHeader,
             description = description,
             objectiveText = objectiveText,
             completionText = completionText,
@@ -550,16 +561,25 @@ local function recordCompletedQuest(character, questID, experienceReward, moneyR
     AzerCompanionDB.account.quests = AzerCompanionDB.account.quests or {}
     AzerCompanionDB.account.quests.completedObserved = AzerCompanionDB.account.quests.completedObserved or {}
 
+    local previousActive = getCharacterQuestRawActive(character)[questID]
     local mapID, mapName = getQuestMapInfo(questID)
+    if not mapID and previousActive then mapID = previousActive.mapID end
+    if not mapName and previousActive then mapName = previousActive.mapName or previousActive.journalHeader end
     local now = Collector.Utils.Now()
     local record = {
         id = questID,
-        title = getQuestTitle(questID),
+        title = getQuestTitle(questID) or (previousActive and previousActive.title),
         completedAt = now,
         experienceReward = experienceReward,
         moneyReward = moneyReward,
         mapID = mapID,
         mapName = mapName,
+        journalHeader = previousActive and previousActive.journalHeader or nil,
+        description = previousActive and previousActive.description or nil,
+        objectiveText = previousActive and previousActive.objectiveText or nil,
+        completionText = previousActive and previousActive.completionText or nil,
+        objectives = previousActive and previousActive.objectives or nil,
+        rewards = previousActive and previousActive.rewards or nil,
         characterGuid = character.guid,
         characterName = character.name,
         characterRealm = character.realm,

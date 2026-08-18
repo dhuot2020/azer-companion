@@ -77,13 +77,13 @@
 }
 
 .brand-label b {
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-primary);
   font-size: 8px;
   letter-spacing: 0.24em;
 }
 
 .brand-tagline b {
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-primary);
   font-size: 8px;
   letter-spacing: 0.2em;
 }
@@ -127,7 +127,7 @@
   width: max-content;
   max-width: 100%;
   margin: 0;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-primary);
   font-weight: 500;
   text-transform: uppercase;
   color: #e7b558;
@@ -265,7 +265,7 @@
 
 .nav-item b {
   min-width: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 16px;
   font-weight: 600;
   line-height: 1;
@@ -397,7 +397,7 @@
 .sidebar-live-title b {
   color: #efc66f;
 
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-primary);
   font-size: 8px;
   font-weight: 600;
 
@@ -533,7 +533,7 @@
   margin-bottom: 2px;
 
   color: #d8a84f;
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-primary);
   font-size: 7px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -919,7 +919,7 @@
 
   margin-top: -2px;
 
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 28px;
   font-weight: 400;
   line-height: 1;

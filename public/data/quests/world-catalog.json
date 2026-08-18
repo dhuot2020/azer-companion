@@ -1,0 +1,1697 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-08-09",
+  "locale": "fr-CA",
+  "description": "Structure mondiale Azer Companion. Les totaux de quêtes sont calculés à partir du catalogue de quêtes importé.",
+  "continents": [
+    {
+      "id": "continent-1",
+      "name": "Royaumes de l’Est",
+      "aliases": [
+        "Eastern Kingdoms",
+        "Royaumes de l'Est"
+      ],
+      "expansion": "Classic",
+      "order": 1,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-1-1",
+          "name": "Bois de la Pénombre",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 135,
+          "mapID": 47
+        },
+        {
+          "id": "region-1-2",
+          "name": "Bois des Chants éternels",
+          "aliases": [
+            "Eversong Woods"
+          ],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 107,
+          "mapID": 94
+        },
+        {
+          "id": "region-1-3",
+          "name": "Bois des Pins-Argentés",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 92,
+          "mapID": 21
+        },
+        {
+          "id": "region-1-4",
+          "name": "Cap Strangleronce",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 150,
+          "mapID": 210
+        },
+        {
+          "id": "region-1-5",
+          "name": "Carmines",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 91,
+          "mapID": 49
+        },
+        {
+          "id": "region-1-6",
+          "name": "Clairières de Tirisfal",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 134,
+          "mapID": 18
+        },
+        {
+          "id": "region-1-7",
+          "name": "Contreforts de Hautebrande",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 153,
+          "mapID": 25
+        },
+        {
+          "id": "region-1-8",
+          "name": "Dun Morogh",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 182,
+          "mapID": 27
+        },
+        {
+          "id": "region-1-9",
+          "name": "Forêt d’Elwynn",
+          "aliases": [],
+          "order": 9,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 145,
+          "mapID": 37
+        },
+        {
+          "id": "region-1-10",
+          "name": "Forêt des Pins-Argentés",
+          "aliases": [],
+          "order": 10,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 92,
+          "mapID": 21
+        },
+        {
+          "id": "region-1-11",
+          "name": "Gorge des Vents brûlants",
+          "aliases": [],
+          "order": 11,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 83,
+          "mapID": 32
+        },
+        {
+          "id": "region-1-12",
+          "name": "Hautes-terres Arathies",
+          "aliases": [],
+          "order": 12,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 107,
+          "mapID": 14
+        },
+        {
+          "id": "region-1-13",
+          "name": "Hinterlands",
+          "aliases": [],
+          "order": 13,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 116,
+          "mapID": 26
+        },
+        {
+          "id": "region-1-14",
+          "name": "Île de Haut-Soleil",
+          "aliases": [],
+          "order": 14,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 31,
+          "mapID": 122
+        },
+        {
+          "id": "region-1-15",
+          "name": "Loch Modan",
+          "aliases": [],
+          "order": 15,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 94,
+          "mapID": 48
+        },
+        {
+          "id": "region-1-16",
+          "name": "Maleterres de l’Est",
+          "aliases": [],
+          "order": 16,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 246,
+          "mapID": 23
+        },
+        {
+          "id": "region-1-17",
+          "name": "Maleterres de l’Ouest",
+          "aliases": [],
+          "order": 17,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 174,
+          "mapID": 22
+        },
+        {
+          "id": "region-1-18",
+          "name": "Marais des Chagrins",
+          "aliases": [],
+          "order": 18,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 93,
+          "mapID": 51
+        },
+        {
+          "id": "region-1-19",
+          "name": "Marche de l’Ouest",
+          "aliases": [],
+          "order": 19,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 80,
+          "mapID": 52
+        },
+        {
+          "id": "region-1-20",
+          "name": "Paluns",
+          "aliases": [],
+          "order": 20,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 95,
+          "mapID": 56
+        },
+        {
+          "id": "region-1-21",
+          "name": "Steppes Ardentes",
+          "aliases": [],
+          "order": 21,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 114,
+          "mapID": 36
+        },
+        {
+          "id": "region-1-22",
+          "name": "Terres Foudroyées",
+          "aliases": [],
+          "order": 22,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 99,
+          "mapID": 17
+        },
+        {
+          "id": "region-1-23",
+          "name": "Terres ingrates",
+          "aliases": [],
+          "order": 23,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 116,
+          "mapID": 15
+        },
+        {
+          "id": "region-1-24",
+          "name": "Tol Barad",
+          "aliases": [],
+          "order": 24,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 245
+        },
+        {
+          "id": "region-1-25",
+          "name": "Vallée de Strangleronce",
+          "aliases": [],
+          "order": 25,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 143,
+          "mapID": 50
+        },
+        {
+          "id": "region-1-26",
+          "name": "Vallée des Frigères",
+          "aliases": [],
+          "order": 26,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 29
+        },
+        {
+          "id": "region-1-27",
+          "name": "Zul’Aman",
+          "aliases": [],
+          "order": 27,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 333
+        },
+        {
+          "id": "region-1-28",
+          "name": "Hurlevent",
+          "aliases": [
+            "Stormwind City",
+            "Stormwind"
+          ],
+          "order": 28,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 220,
+          "source": "collector-header",
+          "mapID": 84
+        },
+        {
+          "id": "region-1-29",
+          "name": "Forgefer",
+          "aliases": [
+            "Ironforge"
+          ],
+          "order": 29,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 83,
+          "source": "collector-header",
+          "mapID": 87
+        },
+        {
+          "id": "region-1-30",
+          "name": "Fossoyeuse",
+          "aliases": [
+            "Undercity"
+          ],
+          "order": 30,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 70,
+          "source": "collector-header",
+          "mapID": 90
+        },
+        {
+          "id": "region-1-31",
+          "name": "Lune-d’Argent",
+          "aliases": [
+            "Silvermoon City",
+            "Silvermoon"
+          ],
+          "order": 31,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 30,
+          "source": "collector-header",
+          "mapID": 110
+        },
+        {
+          "id": "region-1-32",
+          "name": "Profondeurs de Rochenoire",
+          "aliases": [
+            "Blackrock Depths"
+          ],
+          "order": 32,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 242
+        },
+        {
+          "id": "region-1-33",
+          "name": "Pic Rochenoire",
+          "aliases": [
+            "Blackrock Spire"
+          ],
+          "order": 33,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 250
+        },
+        {
+          "id": "region-1-34",
+          "name": "Stratholme",
+          "aliases": [
+            "Stratholme"
+          ],
+          "order": 34,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 317
+        },
+        {
+          "id": "region-1-35",
+          "name": "Scholomance",
+          "aliases": [
+            "Scholomance"
+          ],
+          "order": 35,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 476
+        },
+        {
+          "id": "region-1-36",
+          "name": "Mortemines",
+          "aliases": [
+            "The Deadmines",
+            "Deadmines"
+          ],
+          "order": 36,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 291
+        },
+        {
+          "id": "region-1-37",
+          "name": "Donjon d’Ombrecroc",
+          "aliases": [
+            "Shadowfang Keep"
+          ],
+          "order": 37,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 310
+        },
+        {
+          "id": "region-1-38",
+          "name": "Monastère écarlate",
+          "aliases": [
+            "Scarlet Monastery"
+          ],
+          "order": 38,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 435
+        },
+        {
+          "id": "region-1-39",
+          "name": "Uldaman",
+          "aliases": [
+            "Uldaman"
+          ],
+          "order": 39,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 230
+        },
+        {
+          "id": "region-1-40",
+          "name": "Karazhan",
+          "aliases": [
+            "Karazhan"
+          ],
+          "order": 40,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 350
+        }
+      ],
+      "mapID": 13
+    },
+    {
+      "id": "continent-2",
+      "name": "Kalimdor",
+      "aliases": [],
+      "expansion": "Classic",
+      "order": 2,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-2-1",
+          "name": "Azshara",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 157,
+          "mapID": 76
+        },
+        {
+          "id": "region-2-2",
+          "name": "Berceau-de-l’Hiver",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 129,
+          "mapID": 83
+        },
+        {
+          "id": "region-2-3",
+          "name": "Cratère d’Un’Goro",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 122,
+          "mapID": 78
+        },
+        {
+          "id": "region-2-4",
+          "name": "Désolace",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 151,
+          "mapID": 66
+        },
+        {
+          "id": "region-2-5",
+          "name": "Durotar",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 231,
+          "mapID": 1
+        },
+        {
+          "id": "region-2-6",
+          "name": "Féralas",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 181,
+          "mapID": 69
+        },
+        {
+          "id": "region-2-7",
+          "name": "Gangrebois",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 163,
+          "mapID": 77
+        },
+        {
+          "id": "region-2-8",
+          "name": "Les Serres-Rocheuses",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 150,
+          "mapID": 65
+        },
+        {
+          "id": "region-2-9",
+          "name": "Marécage d’Âprefange",
+          "aliases": [],
+          "order": 9,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 224,
+          "mapID": 70
+        },
+        {
+          "id": "region-2-10",
+          "name": "Mille pointes",
+          "aliases": [],
+          "order": 10,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 185,
+          "mapID": 64
+        },
+        {
+          "id": "region-2-11",
+          "name": "Moonglade",
+          "aliases": [],
+          "order": 11,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 47,
+          "mapID": 80
+        },
+        {
+          "id": "region-2-12",
+          "name": "Mulgore",
+          "aliases": [],
+          "order": 12,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 102,
+          "mapID": 7
+        },
+        {
+          "id": "region-2-13",
+          "name": "Orneval",
+          "aliases": [],
+          "order": 13,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 206,
+          "mapID": 63
+        },
+        {
+          "id": "region-2-14",
+          "name": "Rivage obscur",
+          "aliases": [],
+          "order": 14,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 176,
+          "mapID": 62
+        },
+        {
+          "id": "region-2-15",
+          "name": "Silithus",
+          "aliases": [],
+          "order": 15,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 117,
+          "mapID": 81
+        },
+        {
+          "id": "region-2-16",
+          "name": "Sombrivage",
+          "aliases": [],
+          "order": 16,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 176,
+          "mapID": 62
+        },
+        {
+          "id": "region-2-17",
+          "name": "Tanaris",
+          "aliases": [],
+          "order": 17,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 153,
+          "mapID": 71
+        },
+        {
+          "id": "region-2-18",
+          "name": "Teldrassil",
+          "aliases": [],
+          "order": 18,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 107,
+          "mapID": 57
+        },
+        {
+          "id": "region-2-19",
+          "name": "Tarides du Nord",
+          "aliases": [],
+          "order": 19,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 217,
+          "catalogRawQuestRecords": 214,
+          "catalogValidation": "ATT user-observed quest total",
+          "mapID": 10
+        },
+        {
+          "id": "region-2-20",
+          "name": "Tarides du Sud",
+          "aliases": [],
+          "order": 20,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 141,
+          "mapID": 199
+        },
+        {
+          "id": "region-2-21",
+          "name": "Uldum",
+          "aliases": [],
+          "order": 21,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 122,
+          "mapID": 249
+        },
+        {
+          "id": "region-2-22",
+          "name": "Val d’Ammen",
+          "aliases": [],
+          "order": 22,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 38,
+          "mapID": 468
+        },
+        {
+          "id": "region-2-23",
+          "name": "Exodar",
+          "aliases": [],
+          "order": 23,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 18,
+          "mapID": 103
+        },
+        {
+          "id": "region-2-24",
+          "name": "Mont Hyjal",
+          "aliases": [],
+          "order": 24,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 154,
+          "mapID": 198
+        },
+        {
+          "id": "region-2-25",
+          "name": "Cavernes des Lamentations",
+          "aliases": [],
+          "order": 25,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 279
+        },
+        {
+          "id": "region-2-26",
+          "name": "Orgrimmar",
+          "aliases": [
+            "Orgrimmar"
+          ],
+          "order": 26,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 133,
+          "source": "collector-header",
+          "mapID": 85
+        },
+        {
+          "id": "region-2-27",
+          "name": "Gouffre de Ragefeu",
+          "aliases": [
+            "Ragefire Chasm"
+          ],
+          "order": 27,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 213
+        },
+        {
+          "id": "region-2-28",
+          "name": "Pitons-du-Tonnerre",
+          "aliases": [
+            "Thunder Bluff"
+          ],
+          "order": 28,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 47,
+          "source": "collector-header",
+          "mapID": 88
+        },
+        {
+          "id": "region-2-29",
+          "name": "Darnassus",
+          "aliases": [
+            "Darnassus"
+          ],
+          "order": 29,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 55,
+          "source": "collector-header",
+          "mapID": 89
+        },
+        {
+          "id": "region-2-30",
+          "name": "Gnomeregan",
+          "aliases": [
+            "Gnomeregan"
+          ],
+          "order": 30,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 226
+        },
+        {
+          "id": "region-2-31",
+          "name": "Hache-tripes",
+          "aliases": [
+            "Dire Maul"
+          ],
+          "order": 31,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 234
+        },
+        {
+          "id": "region-2-32",
+          "name": "Maraudon",
+          "aliases": [
+            "Maraudon"
+          ],
+          "order": 32,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 280
+        },
+        {
+          "id": "region-2-33",
+          "name": "Zul’Farrak",
+          "aliases": [
+            "Zul'Farrak",
+            "ZulFarrak"
+          ],
+          "order": 33,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 219
+        },
+        {
+          "id": "region-2-34",
+          "name": "Temple d’Atal’Hakkar",
+          "aliases": [
+            "Sunken Temple",
+            "Temple of Atal’Hakkar"
+          ],
+          "order": 34,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 220
+        },
+        {
+          "id": "region-2-35",
+          "name": "Ruines d’Ahn’Qiraj",
+          "aliases": [
+            "Ruins of Ahn’Qiraj",
+            "Ruins of AhnQiraj"
+          ],
+          "order": 35,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 247
+        },
+        {
+          "id": "region-2-36",
+          "name": "Temple d’Ahn’Qiraj",
+          "aliases": [
+            "Temple of Ahn’Qiraj",
+            "Ahn’Qiraj"
+          ],
+          "order": 36,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "source": "collector-header",
+          "mapID": 319
+        }
+      ],
+      "mapID": 12
+    },
+    {
+      "id": "continent-3",
+      "name": "Outreterre",
+      "aliases": [
+        "Outland"
+      ],
+      "expansion": "The Burning Crusade",
+      "order": 3,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-3-1",
+          "name": "Péninsule des Flammes infernales",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 168,
+          "mapID": 100
+        },
+        {
+          "id": "region-3-2",
+          "name": "Marécage de Zangar",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 107,
+          "mapID": 102
+        },
+        {
+          "id": "region-3-3",
+          "name": "Forêt de Terokkar",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 116,
+          "mapID": 108
+        },
+        {
+          "id": "region-3-4",
+          "name": "Nagrand",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 144,
+          "mapID": 107
+        },
+        {
+          "id": "region-3-5",
+          "name": "Les Tranchantes",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 156,
+          "mapID": 105
+        },
+        {
+          "id": "region-3-6",
+          "name": "Raz-de-Néant",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 159,
+          "mapID": 109
+        },
+        {
+          "id": "region-3-7",
+          "name": "Vallée d’Ombrelune",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 159,
+          "mapID": 104
+        },
+        {
+          "id": "region-3-8",
+          "name": "Shattrath",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 76,
+          "mapID": 111
+        }
+      ],
+      "mapID": 101
+    },
+    {
+      "id": "continent-4",
+      "name": "Norfendre",
+      "aliases": [
+        "Northrend"
+      ],
+      "expansion": "Wrath of the Lich King",
+      "order": 4,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-4-1",
+          "name": "Toundra Boréenne",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 252,
+          "mapID": 114
+        },
+        {
+          "id": "region-4-2",
+          "name": "Fjord Hurlant",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 227,
+          "mapID": 117
+        },
+        {
+          "id": "region-4-3",
+          "name": "Désolation des dragons",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 236,
+          "mapID": 115
+        },
+        {
+          "id": "region-4-4",
+          "name": "Les Grisonnes",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 166,
+          "mapID": 116
+        },
+        {
+          "id": "region-4-5",
+          "name": "Zul’Drak",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 135,
+          "mapID": 121
+        },
+        {
+          "id": "region-4-6",
+          "name": "Bassin de Sholazar",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 102,
+          "mapID": 119
+        },
+        {
+          "id": "region-4-7",
+          "name": "Les pics Foudroyés",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 154,
+          "mapID": 120
+        },
+        {
+          "id": "region-4-8",
+          "name": "La Couronne de glace",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 255,
+          "mapID": 118
+        },
+        {
+          "id": "region-4-9",
+          "name": "Forêt du Chant de cristal",
+          "aliases": [],
+          "order": 9,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 1,
+          "mapID": 127
+        },
+        {
+          "id": "region-4-10",
+          "name": "Joug-d’Hiver",
+          "aliases": [],
+          "order": 10,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 27,
+          "mapID": 123
+        },
+        {
+          "id": "region-4-11",
+          "name": "Dalaran",
+          "aliases": [],
+          "order": 11,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 71,
+          "mapID": 125
+        }
+      ],
+      "mapID": 113
+    },
+    {
+      "id": "continent-5",
+      "name": "Pandarie",
+      "aliases": [],
+      "expansion": "Mists of Pandaria",
+      "order": 5,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-5-1",
+          "name": "La forêt de Jade",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 205,
+          "mapID": 371
+        },
+        {
+          "id": "region-5-2",
+          "name": "Vallée des Quatre vents",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 112,
+          "mapID": 376
+        },
+        {
+          "id": "region-5-3",
+          "name": "Étendues sauvages de Krasarang",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 85,
+          "mapID": 418
+        },
+        {
+          "id": "region-5-4",
+          "name": "Sommet de Kun-Lai",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 163,
+          "mapID": 379
+        },
+        {
+          "id": "region-5-5",
+          "name": "Steppes de Tanglong",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 134,
+          "mapID": 388
+        },
+        {
+          "id": "region-5-6",
+          "name": "Terres de l’Angoisse",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 139,
+          "mapID": 422
+        },
+        {
+          "id": "region-5-7",
+          "name": "Val de l’Éternel printemps",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 23,
+          "mapID": 390
+        },
+        {
+          "id": "region-5-8",
+          "name": "Île du Tonnerre",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 171,
+          "mapID": 504
+        },
+        {
+          "id": "region-5-9",
+          "name": "Île des Géants",
+          "aliases": [],
+          "order": 9,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 5,
+          "mapID": 507
+        },
+        {
+          "id": "region-5-10",
+          "name": "Île du Temps figé",
+          "aliases": [],
+          "order": 10,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 37,
+          "mapID": 554
+        }
+      ],
+      "mapID": 424
+    },
+    {
+      "id": "continent-6",
+      "name": "Draenor",
+      "aliases": [],
+      "expansion": "Warlords of Draenor",
+      "order": 6,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-6-1",
+          "name": "Crête de Givrefeu",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 143,
+          "mapID": 525
+        },
+        {
+          "id": "region-6-2",
+          "name": "Vallée d’Ombrelune (Draenor)",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 123,
+          "mapID": 539
+        },
+        {
+          "id": "region-6-3",
+          "name": "Gorgrond",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 223,
+          "mapID": 543
+        },
+        {
+          "id": "region-6-4",
+          "name": "Talador",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 202,
+          "mapID": 535
+        },
+        {
+          "id": "region-6-5",
+          "name": "Flèches d’Arak",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 167,
+          "mapID": 542
+        },
+        {
+          "id": "region-6-6",
+          "name": "Nagrand (Draenor)",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 177,
+          "mapID": 550
+        },
+        {
+          "id": "region-6-7",
+          "name": "Jungle de Tanaan",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 94,
+          "mapID": 534
+        },
+        {
+          "id": "region-6-8",
+          "name": "A’shran",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 588
+        }
+      ],
+      "mapID": 572
+    },
+    {
+      "id": "continent-7",
+      "name": "Îles Brisées",
+      "aliases": [
+        "Broken Isles"
+      ],
+      "expansion": "Legion",
+      "order": 7,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-7-1",
+          "name": "Azsuna",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 282,
+          "mapID": 630
+        },
+        {
+          "id": "region-7-2",
+          "name": "Val’sharah",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 264,
+          "mapID": 641
+        },
+        {
+          "id": "region-7-3",
+          "name": "Haut-Roc",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 308,
+          "mapID": 650
+        },
+        {
+          "id": "region-7-4",
+          "name": "Tornheim",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 306,
+          "mapID": 634
+        },
+        {
+          "id": "region-7-5",
+          "name": "Suramar",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 464,
+          "mapID": 680
+        },
+        {
+          "id": "region-7-6",
+          "name": "Rivage Brisé",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 168,
+          "mapID": 646
+        },
+        {
+          "id": "region-7-7",
+          "name": "Argus",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 280,
+          "mapID": 905
+        },
+        {
+          "id": "region-7-8",
+          "name": "Krokuun",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 90,
+          "mapID": 830
+        },
+        {
+          "id": "region-7-9",
+          "name": "Étendues antoréennes",
+          "aliases": [],
+          "order": 9,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 55,
+          "mapID": 885
+        },
+        {
+          "id": "region-7-10",
+          "name": "Mac’Aree",
+          "aliases": [],
+          "order": 10,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 89,
+          "mapID": 882
+        },
+        {
+          "id": "region-7-11",
+          "name": "Dalaran (Îles Brisées)",
+          "aliases": [],
+          "order": 11,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 174,
+          "mapID": 627
+        }
+      ],
+      "mapID": 619
+    },
+    {
+      "id": "continent-8",
+      "name": "Kul Tiras",
+      "aliases": [],
+      "expansion": "Battle for Azeroth",
+      "order": 8,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-8-1",
+          "name": "Rade de Tiragarde",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 333,
+          "mapID": 895
+        },
+        {
+          "id": "region-8-2",
+          "name": "Drustvar",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 352,
+          "mapID": 896
+        },
+        {
+          "id": "region-8-3",
+          "name": "Vallée Chantorage",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 393,
+          "mapID": 942
+        },
+        {
+          "id": "region-8-4",
+          "name": "Boralus",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 164,
+          "mapID": 1161
+        },
+        {
+          "id": "region-8-5",
+          "name": "Mécagone",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 218,
+          "mapID": 1462
+        }
+      ],
+      "mapID": 876
+    },
+    {
+      "id": "continent-9",
+      "name": "Zandalar",
+      "aliases": [],
+      "expansion": "Battle for Azeroth",
+      "order": 9,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-9-1",
+          "name": "Zuldazar",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 359,
+          "mapID": 862
+        },
+        {
+          "id": "region-9-2",
+          "name": "Nazmir",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 307,
+          "mapID": 863
+        },
+        {
+          "id": "region-9-3",
+          "name": "Vol’dun",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 341,
+          "mapID": 864
+        },
+        {
+          "id": "region-9-4",
+          "name": "Dazar’alor",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 0,
+          "mapID": 1165
+        },
+        {
+          "id": "region-9-5",
+          "name": "Nazjatar",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 396,
+          "mapID": 1355
+        }
+      ],
+      "mapID": 875
+    },
+    {
+      "id": "continent-10",
+      "name": "Ombreterre",
+      "aliases": [
+        "Shadowlands"
+      ],
+      "expansion": "Shadowlands",
+      "order": 10,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-10-1",
+          "name": "Le Bastion",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 235,
+          "mapID": 1533
+        },
+        {
+          "id": "region-10-2",
+          "name": "Maldraxxus",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 166,
+          "mapID": 1536
+        },
+        {
+          "id": "region-10-3",
+          "name": "Sylvarden",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 177,
+          "mapID": 1565
+        },
+        {
+          "id": "region-10-4",
+          "name": "Revendreth",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 210,
+          "mapID": 1525
+        },
+        {
+          "id": "region-10-5",
+          "name": "L’Antre",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 170,
+          "mapID": 1543
+        },
+        {
+          "id": "region-10-6",
+          "name": "Oribos",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 118,
+          "mapID": 1670
+        },
+        {
+          "id": "region-10-7",
+          "name": "Korthia",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 244,
+          "mapID": 1961
+        },
+        {
+          "id": "region-10-8",
+          "name": "Zereth Mortis",
+          "aliases": [],
+          "order": 8,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 279,
+          "mapID": 1970
+        }
+      ],
+      "mapID": 1550
+    },
+    {
+      "id": "continent-11",
+      "name": "Îles aux Dragons",
+      "aliases": [
+        "Dragon Isles"
+      ],
+      "expansion": "Dragonflight",
+      "order": 11,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-11-1",
+          "name": "Rivages de l’Éveil",
+          "aliases": [],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 323,
+          "mapID": 2022
+        },
+        {
+          "id": "region-11-2",
+          "name": "Plaines d’Ohn’ahra",
+          "aliases": [],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 244,
+          "mapID": 2023
+        },
+        {
+          "id": "region-11-3",
+          "name": "Travée d’Azur",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 382,
+          "mapID": 2024
+        },
+        {
+          "id": "region-11-4",
+          "name": "Thaldraszus",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 284,
+          "mapID": 2025
+        },
+        {
+          "id": "region-11-5",
+          "name": "Confins Interdits",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 163,
+          "mapID": 2151
+        },
+        {
+          "id": "region-11-6",
+          "name": "Grotte de Zaralek",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 264,
+          "mapID": 2133
+        },
+        {
+          "id": "region-11-7",
+          "name": "Rêve d’émeraude",
+          "aliases": [],
+          "order": 7,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 204,
+          "mapID": 2200
+        }
+      ],
+      "mapID": 1978
+    },
+    {
+      "id": "continent-12",
+      "name": "Khaz Algar",
+      "aliases": [],
+      "expansion": "The War Within",
+      "order": 12,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-12-1",
+          "name": "Île de Dorn",
+          "aliases": [
+            "Isle of Dorn"
+          ],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 241,
+          "mapID": 2248
+        },
+        {
+          "id": "region-12-2",
+          "name": "Les abîmes Retentissants",
+          "aliases": [
+            "The Ringing Deeps",
+            "The Ringing Deep"
+          ],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 243,
+          "mapID": 2214
+        },
+        {
+          "id": "region-12-3",
+          "name": "Sainte-Chute",
+          "aliases": [
+            "Hallowfall"
+          ],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 315,
+          "mapID": 2215
+        },
+        {
+          "id": "region-12-4",
+          "name": "Azj-Kahet",
+          "aliases": [
+            "Azj-Kahet"
+          ],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 278,
+          "mapID": 2255
+        },
+        {
+          "id": "region-12-5",
+          "name": "Dornogal",
+          "aliases": [],
+          "order": 5,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 133,
+          "mapID": 2339
+        },
+        {
+          "id": "region-12-6",
+          "name": "Île des Sirènes",
+          "aliases": [],
+          "order": 6,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 69,
+          "mapID": 2369
+        }
+      ],
+      "mapID": 2274
+    },
+    {
+      "id": "continent-13",
+      "name": "Quel’Thalas",
+      "aliases": [
+        "Quel'Thalas"
+      ],
+      "expansion": "Midnight",
+      "order": 13,
+      "image": "/assets/home-hero-azeroth-sharp.jpg",
+      "regions": [
+        {
+          "id": "region-13-1",
+          "name": "Bois des Chants éternels (Midnight)",
+          "aliases": [
+            "Eversong Woods (Midnight)",
+            "Bois des Chants éternels - Midnight"
+          ],
+          "order": 1,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 211,
+          "mapID": 2395
+        },
+        {
+          "id": "region-13-2",
+          "name": "Zul’Aman (Midnight)",
+          "aliases": [
+            "Zul'Aman (Midnight)"
+          ],
+          "order": 2,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 201,
+          "mapID": 2437
+        },
+        {
+          "id": "region-13-3",
+          "name": "Harandar",
+          "aliases": [],
+          "order": 3,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 221,
+          "mapID": 2413
+        },
+        {
+          "id": "region-13-4",
+          "name": "Voidstorm",
+          "aliases": [],
+          "order": 4,
+          "image": "/assets/home-hero-azeroth-sharp.jpg",
+          "catalogQuestCount": 224,
+          "mapID": 2405
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "5.0",
+    "notes": "V5: current-location priority and expanded Classic city/dungeon quest-log headers."
+  }
+}

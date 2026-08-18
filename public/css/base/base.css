@@ -1,4 +1,5 @@
 :root {
+  --font-primary: "Aboreto", serif;
   --bg: #06111b;
   --bg-soft: #081725;
   --panel: rgba(4, 19, 31, 0.94);
@@ -28,7 +29,6 @@ body {
   background:
     radial-gradient(circle at 70% 20%, rgba(22, 70, 100, 0.2), transparent 30%),
     linear-gradient(180deg, #03101a, #061522 55%, #04101a);
-  font-family: Georgia, "Times New Roman", serif;
 }
 button,
 a {
@@ -36,4 +36,22 @@ a {
 }
 button {
   color: inherit;
+}
+
+
+/* Typography: one typeface across the complete product. */
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-primary);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

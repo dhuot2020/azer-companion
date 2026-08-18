@@ -3,17 +3,11 @@
 <div class="azer-shell">
   <aside class="side-menu" id="sideMenu">
     <div class="brand-block">
-      <div class="brand-main">
-        <img
-          class="brand-compass"
-          src="/assets/azer-compass.png"
-          alt="Rose des vents Azer Companion"
-        />
-
-        <div class="brand-copy">
+      <div class="brand-main brand-main-wordmark">
+        <div class="brand-copy brand-copy-wordmark">
           <div class="brand-title">AZER</div>
 
-          <div class="brand-divider">
+          <div class="brand-divider" aria-hidden="true">
             <span></span>
             <i></i>
             <span></span>
@@ -80,16 +74,6 @@
       </div>
       <strong id="sidebar-faction-name">ALLIANCE</strong>
     </section>
-
-    <button
-      class="character-switch"
-      id="character-switch-button"
-      type="button"
-      aria-controls="charactersView"
-    >
-      <span class="azer-nav-icon" aria-hidden="true"><svg><use href="#icon-heroes"></use></svg></span>
-      <span>Mes personnages</span>
-    </button>
 
     <section class="sidebar-account" aria-label="Dernier personnage joué">
       <div class="sidebar-account-avatar">
@@ -257,36 +241,134 @@
     </section>
 
     <section id="questsView" class="app-view quests-view" data-view="quests" aria-hidden="true">
-      <section class="quests-panel" aria-labelledby="quests-title">
-        <header class="quests-header">
-          <div>
-            <span class="characters-kicker">COLLECTOR 2.0</span>
-            <h2 id="quests-title">Journal des quêtes</h2>
-            <p>Quêtes actives et historique complet connu pour chacun de tes héros.</p>
+      <section class="quests-panel quests-atlas" aria-labelledby="quests-title">
+        <header class="quests-header quests-world-header">
+          <div class="quests-title-wrap">
+            <span class="quest-atlas-emblem" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><path d="M17 9h30v46H17z"/><path d="M22 14h20v30H22z"/><path d="M24 17l8 6 8-6v23l-8-6-8 6z"/><path d="M13 14h4v36h-4zM47 14h4v36h-4z"/></svg>
+            </span>
+            <div>
+              <span class="characters-kicker">ATLAS D’AZEROTH</span>
+              <h2 id="quests-title">Journal des quêtes</h2>
+              <p>Explore Azeroth région par région et retrouve ce que ton héros a terminé, ce qu’il poursuit et ce qu’il lui reste à découvrir.</p>
+            </div>
           </div>
           <div class="quests-actions">
-            <select id="questsCharacterSelect" class="quests-select" aria-label="Personnage"></select>
-            <button id="questsRefreshButton" class="quests-refresh" type="button">Actualiser</button>
+            <div id="questsCharacterPicker" class="quests-character-picker">
+              <button id="questsCharacterButton" class="quests-character-button" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="quests-character-avatar"><img id="questsCharacterAvatar" src="" alt="" hidden></span>
+                <span class="quests-character-copy">
+                  <strong id="questsCharacterName">Personnage</strong>
+                  <small id="questsCharacterRealm">Royaume</small>
+                </span>
+                <span class="quests-character-chevron" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" focusable="false">
+                    <circle cx="16" cy="16" r="12.5" class="control-icon-ring"/>
+                    <path d="m10.5 13.5 5.5 5 5.5-5" class="control-icon-glyph"/>
+                  </svg>
+                </span>
+              </button>
+              <div id="questsCharacterMenu" class="quests-character-menu" role="listbox" hidden></div>
+              <select id="questsCharacterSelect" class="quests-select quests-character-native" aria-label="Personnage" tabindex="-1"></select>
+            </div>
+            <button id="questsRefreshButton" class="quests-refresh" type="button" aria-label="Actualiser les données">
+              <span class="quests-refresh-label">Actualiser</span>
+              <svg class="quests-refresh-icon" viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="16" cy="16" r="12.5" class="control-icon-ring"/>
+                <path d="M23.2 12.3A8 8 0 0 0 9.4 9.8L7.5 12M8.8 19.7a8 8 0 0 0 13.8 2.5l1.9-2.2" class="control-icon-glyph"/>
+                <path d="M7.6 7.8V12h4.2M24.4 24.2V20h-4.2" class="control-icon-glyph"/>
+              </svg>
+            </button>
           </div>
         </header>
-        <div class="quests-summary">
-          <div class="quest-kpi"><strong id="questsActiveCount">0</strong><span id="questsActiveLabel">Quêtes actives</span></div>
-          <div class="quest-kpi"><strong id="questsObjectivesCount">0</strong><span id="questsObjectivesLabel">Objectifs à terminer</span></div>
-          <div class="quest-kpi"><strong id="questsCompletedCount">0</strong><span id="questsCompletedLabel">Titres uniques personnels</span></div>
-          <div class="quest-kpi"><strong id="questsAccountSharedCount">0</strong><span id="questsAccountSharedLabel">Titres partagés du compte</span></div>
+
+        <div class="quests-summary quests-summary-premium">
+          <div class="quest-kpi">
+            <span class="quest-kpi-icon quest-kpi-scroll" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M15 8h22v27H15z"/><path d="M10 12c0-3 2-5 5-5h3v6h-3c-3 0-5-1-5-1zM15 35h22v3c0 2-2 4-4 4H15c-3 0-5-2-5-5s2-5 5-5"/><path d="M21 17h10M21 22h10M21 27h7"/></svg></span>
+            <div><strong id="questsActiveCount">0</strong><span id="questsActiveLabel">Quêtes en cours</span></div>
+          </div>
+          <div class="quest-kpi">
+            <span class="quest-kpi-icon quest-kpi-check" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="15"/><path d="m16 24 6 6 11-13"/><path d="m24 4 3 5 6-2 1 6 6 1-2 6 5 3-5 4 2 6-6 1-1 6-6-2-3 6-4-6-6 2-1-6-6-1 2-6-5-4 5-3-2-6 6-1 1-6 6 2z"/></svg></span>
+            <div><strong id="questsCompletedCount">0</strong><span id="questsCompletedLabel">Quêtes terminées</span></div>
+          </div>
+          <div class="quest-kpi">
+            <span class="quest-kpi-icon quest-kpi-alert" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="15"/><path d="M24 14v13M24 33h.01"/><path d="m24 4 3 5 6-2 1 6 6 1-2 6 5 3-5 4 2 6-6 1-1 6-6-2-3 6-4-6-6 2-1-6-6-1 2-6-5-4 5-3-2-6 6-1 1-6 6 2z"/></svg></span>
+            <div><strong id="questsObjectivesCount">0</strong><span id="questsObjectivesLabel">Objectifs à terminer</span></div>
+          </div>
+          <div class="quest-kpi">
+            <span class="quest-kpi-icon quest-kpi-book" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 10h13c3 0 5 2 5 5v23c0-3-2-5-5-5H8zM40 10H27c-3 0-5 2-5 5v23c0-3 2-5 5-5h13z"/><path d="M13 17h7M13 22h7M28 17h7M28 22h7"/></svg></span>
+            <div><strong id="questsAccountSharedCount">0</strong><span id="questsAccountSharedLabel">Quêtes à découvrir</span></div>
+          </div>
         </div>
-        <div id="questsGrid" class="quests-grid"></div>
+
+        <div class="quest-atlas-layout">
+          <aside class="quest-atlas-column quest-continents-column">
+            <div class="quest-column-title"><span>CONTINENTS</span></div>
+            <nav id="questsContinentNav" class="quest-continent-nav" aria-label="Royaumes et continents"></nav>
+          </aside>
+
+          <aside class="quest-atlas-column quest-regions-column">
+            <div class="quest-column-title"><span id="questsRegionsColumnTitle">RÉGIONS</span></div>
+            <div id="questsRegionsGrid" class="quest-regions-grid"></div>
+          </aside>
+
+          <main class="quest-atlas-column quest-center-column">
+            <section id="questsRegionDetail" class="quest-region-detail" hidden>
+              <header class="quest-region-detail-head">
+                <div class="quest-region-heading-copy">
+                  <span class="quest-region-marker" aria-hidden="true">
+                    <svg viewBox="0 0 36 36" focusable="false"><circle cx="18" cy="18" r="13"/><path d="M18 8v12M18 26h.01"/></svg>
+                  </span>
+                  <div>
+                  <span id="questsRegionSubtitle">Azeroth</span>
+                  <h3 id="questsRegionTitle">Région</h3>
+                  </div>
+                </div>
+              </header>
+
+              <div id="questsRegionHero" class="quest-region-hero">
+                <div class="quest-region-hero-shade"></div>
+                <div class="quest-region-hero-copy">
+                  <span id="questsRegionProgressText">0 terminée · 0 en cours · 0 à faire</span>
+                </div>
+              </div>
+
+              <div class="quest-region-progress-row">
+                <span id="questsRegionCompletedText">0 / 0 quêtes terminées</span>
+                <strong id="questsRegionPercent">0%</strong>
+              </div>
+              <div class="quest-region-detail-progress" aria-hidden="true"><i id="questsRegionProgressBar"></i></div>
+
+              <div class="quest-status-filters" role="group" aria-label="Filtrer les quêtes">
+                <button type="button" class="is-active" data-quest-status-filter="all"><span>Toutes</span><b id="questsFilterAllCount">0</b></button>
+                <button type="button" data-quest-status-filter="active"><span>En cours</span><b id="questsFilterActiveCount">0</b></button>
+                <button type="button" data-quest-status-filter="completed"><span>Terminées</span><b id="questsFilterCompletedCount">0</b></button>
+                <button type="button" data-quest-status-filter="todo"><span>À faire</span><b id="questsFilterTodoCount">0</b></button>
+              </div>
+
+              <div class="quest-list-toolbar">
+                <span id="questsListCount">Quêtes (0)</span>
+                <span>Ordre de zone</span>
+              </div>
+              <div id="questsGrid" class="quests-grid quest-world-list"></div>
+            </section>
+          </main>
+
+          <aside id="questDetailsPanel" class="quest-atlas-column quest-details-panel quest-details-docked" aria-live="polite" aria-labelledby="questDetailsTitle">
+            <div id="questDetailsContent" class="quest-details-content">
+              <div class="quest-details-empty">
+                <span class="quest-details-empty-mark">?</span>
+                <strong>Sélectionne une quête</strong>
+                <p>Les objectifs, la description, les récompenses et les informations utiles apparaîtront ici.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
 
         <div id="questDetailsBackdrop" class="quest-details-backdrop" hidden></div>
-        <aside id="questDetailsPanel" class="quest-details-panel" aria-hidden="true" aria-labelledby="questDetailsTitle">
-          <button id="questDetailsClose" class="quest-details-close" type="button" aria-label="Fermer les détails de la quête">×</button>
-          <div id="questDetailsContent" class="quest-details-content"></div>
-        </aside>
+        <button id="questDetailsClose" class="quest-details-close quest-details-close-mobile" type="button" aria-label="Fermer les détails de la quête">×</button>
 
-        <section class="quest-completed-list">
-          <h3 id="questsCompletedHeading">Historique personnel des quêtes terminées</h3>
-          <div id="questsCompletedList" class="quest-history"></div>
-        </section>
+
       </section>
     </section>
 

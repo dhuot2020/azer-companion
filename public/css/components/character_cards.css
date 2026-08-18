@@ -187,7 +187,7 @@
   margin: 0 auto;
   overflow: hidden;
   color: color-mix(in srgb, var(--class-color) 76%, white);
-  font-family: "Cinzel Decorative", Cinzel, Georgia, serif;
+  font-family: var(--font-primary);
   font-size: clamp(1.02rem, 1.08vw, 1.28rem);
   font-weight: 700;
   line-height: 1.15;
@@ -212,7 +212,7 @@
 .character-race-line {
   margin-top: 0;
   color: #dec28d;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 0.94rem;
   line-height: 1.15;
 }
@@ -226,7 +226,7 @@
 .character-class-name {
   margin-top: 6px;
   color: var(--class-color);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 0.98rem;
   font-weight: 500;
   line-height: 1.15;
@@ -267,7 +267,7 @@
 
 .character-level-line {
   color: #e3c28b;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 0.98rem;
   line-height: 1.15;
 }
@@ -277,7 +277,7 @@
   margin-top: 5px;
   overflow: hidden;
   color: #d7b97f;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-primary);
   font-size: 0.82rem;
   line-height: 1.15;
   letter-spacing: 0;
@@ -290,7 +290,7 @@
 .character-level-medallion,
 .character-faction-emblem,
 .character-class-medallion {
-  display: none !important;
+  display: none;
 }
 
 /* ======================================================

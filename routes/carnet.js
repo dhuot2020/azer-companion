@@ -13,7 +13,10 @@ const router = express.Router();
 const BLIZZARD_REGION = String(
   process.env.BLIZZARD_REGION || "us",
 ).toLowerCase();
-const BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
+const REQUESTED_BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
+const BLIZZARD_LOCALE = REQUESTED_BLIZZARD_LOCALE.toLowerCase() === "fr_ca"
+  ? "fr_FR"
+  : REQUESTED_BLIZZARD_LOCALE;
 const BLIZZARD_API_ORIGIN = `https://${BLIZZARD_REGION}.api.blizzard.com`;
 const BLIZZARD_PROFILE_QUERY = `namespace=profile-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
 const CHARACTER_MEDIA_CONCURRENCY = 6;

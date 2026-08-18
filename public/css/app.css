@@ -1,27 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=Orbitron:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Aboreto&display=swap");
 
+/* Base */
 @import url("./base/base.css");
 
+/* Structure */
 @import url("./layout/shell.css");
 @import url("./layout/sidebar.css");
 @import url("./layout/hero.css");
-
-@import url("./pages/carnet.css");
 @import url("./layout/footer.css");
 
-@import url("./responsive/main.css");
-@import url("./overrides/v05.css");
-@import url("./responsive/hero.css");
+/* Pages */
+@import url("./pages/carnet.css");
+@import url("./pages/home_dashboard.css?v=20260812-1");
 
-@import url("./components/characters_view.css?v=20260808-12");
-@import url("./components/character_cards.css");
-@import url("./responsive/characters.css");
-@import url("./components/character_profile.css?v=20260808-7");
-@import url("./components/battlenet.css");
+/* Components */
 @import url("./components/buttons.css");
-
+@import url("./components/battlenet.css");
+@import url("./components/characters_view.css?v=20260812-1");
+@import url("./components/character_cards.css");
+@import url("./components/character_profile.css?v=20260812-1");
 @import url("./components/compass_menu.css");
+@import url("./components/quests_view.css?v=20260812-1");
 
-@import url("./pages/home_dashboard.css?v=20260731-120");
+/* Responsive */
+@import url("./responsive/main.css");
+@import url("./responsive/hero.css");
+@import url("./responsive/characters.css");
 
-@import url("./components/quests_view.css?v=20260801-1");
+/* Shared visual language. Intentionally loaded last. */
+@import url("./AZTheme.css?v=20260812-1");

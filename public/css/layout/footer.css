@@ -24,3 +24,24 @@
 .mobile-menu-button {
   display: none;
 }
+
+.app-footer {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  z-index: 40;
+  width: auto;
+  min-height: 59px;
+  background: linear-gradient(180deg, rgba(4, 20, 33, 0.99), rgba(2, 13, 22, 0.99));
+  border: 1px solid var(--line-soft);
+  border-top-color: var(--line);
+  border-radius: 0;
+  box-shadow: inset 0 0 18px rgba(12, 74, 113, 0.08);
+}
+
+@media (max-width: 720px) {
+  .app-footer {
+    min-height: 108px;
+  }
+}

@@ -114,7 +114,7 @@ body.compass-menu-open {
 
 .compass-menu-kicker {
   color: #e9bd68;
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-primary);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.25em;
@@ -123,7 +123,7 @@ body.compass-menu-open {
 .compass-menu-heading h2 {
   margin: 7px 0 3px;
   color: #f4ca74;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-primary);
   font-size: clamp(29px, 4vw, 43px);
   font-weight: 500;
   letter-spacing: 0.055em;
@@ -365,7 +365,7 @@ body.compass-menu-open {
 
 .compass-action-label {
   color: #f1c96e;
-  font-family: "Cinzel", Georgia, serif;
+  font-family: var(--font-primary);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.05;
@@ -460,7 +460,7 @@ body.compass-menu-open {
   left: 50%;
   bottom: -27px;
   color: rgba(233, 189, 104, 0.78);
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-primary);
   font-size: 8px;
   letter-spacing: 0.22em;
   transform: translateX(-50%);
@@ -566,13 +566,13 @@ body.compass-menu-open {
   .compass-core-halo,
   .compass-action-ray i,
   .compass-wheel.is-launching .compass-core {
-    animation: none !important;
+    animation: none;
   }
 
   .compass-menu-panel,
   .compass-action,
   .compass-core,
   .compass-core img {
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.01ms;
   }
 }

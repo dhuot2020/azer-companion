@@ -1,8 +1,0 @@
-## Interface: 120007, 120100
-## Title: Azer Companion Collector
-## Notes: Collecteur silencieux de données pour Azer Companion.
-## Author: DH Studio
-## Version: 0.1.2
-## SavedVariables: AzerCompanionDB
-
-AzerCompanionCollector.lua
