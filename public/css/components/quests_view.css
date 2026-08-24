@@ -2670,3 +2670,237 @@ body.quest-details-open { overflow: hidden; }
   }
   .quest-nav-copy strong { font-size: 15px; }
 }
+
+/* Class quests / progression */
+.class-quests-section { margin: 0 0 18px; padding: 18px; border: 1px solid rgba(100,160,59,.38); background: rgba(0,34,54,.72); }
+.class-quests-head { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin-bottom:14px; }
+.class-quests-head h3 { margin:3px 0 4px; font-size:1.35rem; }
+.class-quests-head p { margin:0; opacity:.78; }
+.class-quests-progress { min-width:150px; text-align:right; }
+.class-quests-progress strong { display:block; font-size:1.5rem; }
+.class-quests-progress span { font-size:.75rem; opacity:.7; text-transform:uppercase; }
+.class-quests-category-title { margin:12px 0 9px; font-size:.82rem; letter-spacing:.12em; text-transform:uppercase; }
+.class-quests-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(245px,1fr)); gap:10px; }
+.class-quest-card { padding:13px 14px; border:1px solid rgba(245,245,245,.14); background:rgba(0,20,32,.62); }
+.class-quest-card.is-completed { border-color:rgba(100,160,59,.65); }
+.class-quest-card.is-active { border-color:rgba(245,182,66,.7); }
+.class-quest-card-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+.class-quest-card h4 { margin:0; font-size:.96rem; }
+.class-quest-status { white-space:nowrap; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; opacity:.8; }
+.class-quest-card p { margin:8px 0 0; font-size:.78rem; line-height:1.45; opacity:.78; }
+.class-quest-unlock { margin-top:7px; font-size:.75rem; }
+.class-quest-unlock strong { font-weight:600; }
+@media (max-width: 760px) { .class-quests-head { align-items:flex-start; flex-direction:column; } .class-quests-progress { text-align:left; } }
+
+/* =====================================================
+   CLASS QUESTS V2 - COMPACT OVERLAY
+   Keeps the Atlas fully usable in the desktop one-pager.
+   ===================================================== */
+.class-quests-section {
+  position: relative;
+  z-index: 24;
+  flex: 0 0 auto;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(100,160,59,.38);
+  background: linear-gradient(180deg, rgba(0,43,65,.94), rgba(0,28,43,.94));
+  box-shadow: inset 0 0 0 1px rgba(245,245,245,.025), 0 5px 14px rgba(0,0,0,.2);
+}
+.class-quests-head {
+  min-height: 54px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.class-quests-heading { min-width: 0; }
+.class-quests-heading .characters-kicker { font-size: 9px; line-height: 1; }
+.class-quests-title-row { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.class-quests-head h3 { margin: 2px 0 0; font-size: 1.05rem; line-height: 1.15; }
+.class-quests-head p { margin: 2px 0 0; font-size: .72rem; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.class-quests-summary { color: #d8b455; font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; white-space: nowrap; }
+.class-quests-actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.class-quests-progress { min-width: 70px; text-align: right; }
+.class-quests-progress strong { display: inline; margin-right: 4px; font-size: 1rem; color: #f2cf68; }
+.class-quests-progress span { font-size: .62rem; }
+.class-quests-toggle {
+  min-height: 36px;
+  padding: 0 10px 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(219,165,44,.58);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #102a36, #06161e 58%, #030c11);
+  color: #e9cf85;
+  font: 600 .69rem var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  cursor: pointer;
+}
+.class-quests-toggle:hover { border-color: #e2ae35; }
+.class-quests-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; transition: transform .18s ease; }
+.class-quests-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.class-quests-categories {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  max-height: min(56vh, 560px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid rgba(219,165,44,.45);
+  background: linear-gradient(180deg, rgba(0,38,58,.985), rgba(0,20,32,.99));
+  box-shadow: 0 20px 50px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.025);
+  scrollbar-width: thin;
+  scrollbar-color: var(--quest-scroll-thumb) var(--quest-scroll-track);
+}
+.class-quests-categories[hidden] { display: none !important; }
+.class-quests-section.is-open { border-color: rgba(219,165,44,.62); }
+.class-quests-category:first-child .class-quests-category-title { margin-top: 0; }
+.class-quests-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.class-quest-card { min-height: 132px; }
+
+@media (max-width: 900px) {
+  .class-quests-head { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .class-quests-head p { white-space: normal; }
+  .class-quests-actions { width: 100%; justify-content: space-between; }
+  .class-quests-categories { position: static; max-height: 50vh; margin-top: 8px; }
+}
+
+
+/* CLASS QUESTS V4 - HUNTER SPECIAL BESTIARY */
+.class-quests-category-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0 9px; }
+.class-quests-category-head .class-quests-category-title { margin:0; }
+.class-quests-category-head > span { color:#d8b455; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; }
+.hunter-bestiary-category { margin-top:18px; padding-top:12px; border-top:1px solid rgba(216,180,85,.18); }
+.hunter-pet-card .hunter-pet-meta { margin-top:8px; color:rgba(245,245,245,.58); font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; }
+.hunter-pet-card.is-completed { box-shadow: inset 3px 0 0 rgba(100,160,59,.85); }
+.hunter-pet-card.is-available { box-shadow: inset 3px 0 0 rgba(245,182,66,.72); }
+.hunter-pet-card.is-unknown { opacity:.82; }
+
+
+/* CLASS QUESTS V5 - HUNTER BESTIARY CARDS */
+.hunter-bestiary-description{margin:4px 0 0;max-width:760px;color:rgba(245,245,245,.56);font-size:.7rem;line-height:1.35}.hunter-bestiary-toolbar{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}.hunter-bestiary-filter{min-height:30px;padding:6px 12px;border:1px solid rgba(216,180,85,.28);border-radius:3px;background:rgba(0,20,32,.72);color:rgba(245,245,245,.72);font:600 .66rem var(--font-primary);text-transform:uppercase;letter-spacing:.055em;cursor:pointer}.hunter-bestiary-filter:hover,.hunter-bestiary-filter.is-active{border-color:rgba(245,182,66,.78);color:#f5b642;background:rgba(245,182,66,.08)}.hunter-bestiary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:10px}.hunter-bestiary-card{overflow:hidden;min-width:0;border:1px solid rgba(245,245,245,.14);border-radius:3px;background:linear-gradient(180deg,rgba(0,31,47,.96),rgba(0,18,29,.98));box-shadow:0 8px 22px rgba(0,0,0,.22)}.hunter-bestiary-card[hidden]{display:none!important}.hunter-bestiary-card.is-completed{border-color:rgba(100,160,59,.62)}.hunter-bestiary-card.is-available{border-color:rgba(245,182,66,.32)}.hunter-pet-visual{position:relative;height:128px;overflow:hidden;border-bottom:1px solid rgba(216,180,85,.2);background:#001722}.hunter-pet-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,12,19,.88));pointer-events:none}.hunter-pet-visual img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .22s ease}.hunter-bestiary-card:hover .hunter-pet-visual img{transform:scale(1.035)}.hunter-pet-status{position:absolute;z-index:2;right:8px;bottom:8px;padding:4px 7px;border:1px solid rgba(245,245,245,.2);border-radius:2px;background:rgba(0,14,22,.88);font:700 .59rem var(--font-primary);text-transform:uppercase;letter-spacing:.055em}.hunter-pet-status.is-completed{color:#8fc568;border-color:rgba(100,160,59,.55)}.hunter-pet-status.is-available{color:#f5b642;border-color:rgba(245,182,66,.5)}.hunter-pet-status.is-unknown{color:rgba(245,245,245,.64)}.hunter-pet-body{padding:11px 12px 12px}.hunter-pet-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.hunter-pet-heading h5{margin:0;color:#f5f5f5;font-size:.92rem;letter-spacing:.025em}.hunter-pet-heading>span{color:rgba(245,245,245,.48);font-size:.59rem;text-transform:uppercase;text-align:right}.hunter-pet-location{margin-top:5px;color:#d8b455;font-size:.64rem;text-transform:uppercase;letter-spacing:.035em}.hunter-pet-requirements{display:grid;gap:5px;margin-top:10px}.hunter-pet-requirement{display:grid;gap:2px;padding:7px 8px;border-left:2px solid rgba(245,182,66,.65);background:rgba(0,0,0,.18);color:rgba(245,245,245,.7);font-size:.65rem;line-height:1.35}.hunter-pet-requirement.is-ready{border-left-color:rgba(100,160,59,.7)}.hunter-pet-requirement-label{color:#f5b642;font-weight:700;text-transform:uppercase;letter-spacing:.045em}.hunter-pet-special{min-height:2.5em;margin:9px 0 0;color:rgba(245,245,245,.58);font-size:.67rem;line-height:1.4}.hunter-pet-details{width:100%;margin-top:10px;padding:7px 9px;border:1px solid rgba(216,180,85,.22);border-radius:2px;background:rgba(216,180,85,.04);color:rgba(216,180,85,.58);font:600 .63rem var(--font-primary);text-transform:uppercase;letter-spacing:.05em;text-align:left}.hunter-pet-details span{float:right;font-size:1rem;line-height:.7}.hunter-pet-details[disabled]{cursor:default;opacity:.72}@media(max-width:900px){.hunter-bestiary-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.hunter-pet-visual{height:112px}}
+
+/* V7 - Fiche Bestiaire Azer Companion */
+body.hunter-pet-sheet-open{overflow:hidden}
+.hunter-pet-sheet-backdrop{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:28px;background:rgba(0,10,17,.78);backdrop-filter:blur(4px)}
+.hunter-pet-sheet{position:relative;width:min(900px,94vw);max-height:min(860px,92vh);overflow:hidden;border-radius:4px;background:linear-gradient(180deg,rgba(0,34,54,.99),rgba(0,23,37,.99));box-shadow:0 28px 80px rgba(0,0,0,.64);animation:hunterModalIn .18s ease-out}
+@keyframes hunterModalIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.hunter-pet-sheet-header{position:relative;border-bottom:1px solid var(--az-header-separator,rgba(202,216,226,.22))}
+.hunter-pet-sheet-close{position:absolute;z-index:6;right:14px;top:12px;width:36px;height:36px;border-radius:3px;color:#f5f5f5;font:400 1.35rem var(--font-primary);cursor:pointer}
+.hunter-pet-sheet-hero{position:relative;height:300px;overflow:hidden;background:#001722}
+.hunter-pet-sheet-hero img{width:100%;height:100%;object-fit:cover;display:block}.hunter-pet-sheet-veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,20,32,.04) 12%,rgba(0,20,32,.18) 44%,rgba(0,34,54,.98) 100%)}
+.hunter-pet-sheet-title{position:absolute;z-index:2;left:24px;right:72px;bottom:22px}.hunter-pet-sheet-title h3{margin:9px 0 3px;color:#f5f5f5;font:700 1.55rem var(--font-primary);letter-spacing:.04em;text-transform:uppercase}.hunter-pet-sheet-title p{margin:0;color:#d8b455;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+.hunter-pet-sheet-content{max-height:calc(92vh - 410px);overflow:auto;padding:18px 22px 20px}
+.hunter-pet-sheet-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}.hunter-pet-sheet-meta>div,.hunter-sheet-info{padding:11px 12px;border-radius:3px;background:rgba(0,0,0,.13)}
+.hunter-pet-sheet-meta span,.hunter-sheet-info span{display:block;margin-bottom:4px;color:rgba(245,245,245,.46);font-size:.58rem;text-transform:uppercase;letter-spacing:.08em}.hunter-pet-sheet-meta strong,.hunter-sheet-info strong{color:#f5f5f5;font-size:.72rem;font-weight:600;line-height:1.4}
+.hunter-sheet-section{padding:14px 0;border-top:1px solid var(--az-header-separator,rgba(202,216,226,.18))}.hunter-sheet-section:first-of-type{margin-top:14px}.hunter-sheet-section h4{margin:0 0 9px;color:#f5b642;font-size:.68rem;text-transform:uppercase;letter-spacing:.075em}.hunter-sheet-section p{margin:0;color:rgba(245,245,245,.68);font-size:.72rem;line-height:1.55}
+.hunter-pet-sheet-requirements{display:grid;gap:7px}
+.hunter-pet-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 22px 16px;border-top:1px solid var(--az-header-separator,rgba(202,216,226,.22));background:rgba(0,18,29,.9)}.hunter-pet-sheet-actions button{min-height:38px}.hunter-pet-sheet-actions button:disabled{opacity:.55}
+@media(max-width:700px){.hunter-pet-sheet-backdrop{padding:12px}.hunter-pet-sheet{width:100%;max-height:94vh}.hunter-pet-sheet-hero{height:220px}.hunter-pet-sheet-content{max-height:calc(94vh - 330px)}.hunter-pet-sheet-meta,.hunter-pet-sheet-actions{grid-template-columns:1fr}}
+
+
+/* BESTIAIRE DYNAMIQUE - DONNEES COLLECTOR */
+.hunter-pet-collector-meta {
+  margin-top: 5px;
+  color: rgba(100,160,59,.92);
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+.hunter-bestiary-empty {
+  grid-column: 1 / -1;
+  padding: 18px;
+  border: 1px dashed rgba(132,151,160,.28);
+  color: rgba(245,245,245,.56);
+  text-align: center;
+  font-size: .72rem;
+}
+
+/* Bestiaire V3.1 - cartes visuelles compactes + progression de classe a hauteur naturelle */
+.class-quests-grid{align-items:start!important;grid-template-columns:repeat(auto-fit,minmax(225px,1fr))!important}
+.class-quest-card{height:auto!important;min-height:0!important;align-self:start!important}
+.class-quest-card p{margin-bottom:0!important}
+.hunter-bestiary-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;align-items:start}
+.hunter-bestiary-card{height:auto!important;align-self:start;border-color:rgba(126,145,154,.62)!important;box-shadow:inset 0 1px 0 rgba(245,245,245,.08),0 7px 18px rgba(0,0,0,.22)!important}
+.hunter-pet-visual{height:150px!important;background:#001722}
+.hunter-pet-visual img{object-fit:cover!important;object-position:center!important}
+.hunter-pet-body{padding:10px 11px 11px!important}
+.hunter-pet-heading{min-height:38px;align-items:flex-start!important}
+.hunter-pet-heading h5{font-size:.86rem!important;line-height:1.15}
+.hunter-pet-heading>span{max-width:45%;font-size:.56rem!important;line-height:1.25}
+.hunter-pet-quick-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:24px;margin-top:7px;color:rgba(245,245,245,.58);font-size:.61rem;text-transform:uppercase}
+.hunter-pet-badge{padding:3px 5px;border:1px solid rgba(216,180,85,.28);border-radius:2px;color:#d8b455;background:rgba(216,180,85,.05);font-size:.55rem;letter-spacing:.035em}
+.hunter-pet-details{margin-top:8px!important;border:1px solid rgba(126,145,154,.72)!important;background:linear-gradient(180deg,rgba(15,47,64,.9),rgba(0,28,43,.94))!important;box-shadow:inset 0 1px 0 rgba(245,245,245,.1),inset 0 -1px 0 rgba(0,0,0,.36)!important}
+.hunter-bestiary-category{max-height:620px;overflow:auto;padding-right:6px}
+@media(max-width:1250px){.hunter-bestiary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:900px){.hunter-bestiary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.hunter-pet-visual{height:135px!important}}
+@media(max-width:560px){.hunter-bestiary-grid{grid-template-columns:1fr!important}}
+
+/* ==========================================================
+   ROADMAP — TOME DE LA BÊTE HYBRIDE
+   ========================================================== */
+.hybrid-roadmap-category{
+  margin:0 0 14px;
+  padding:14px;
+  border:1px solid rgba(216,180,85,.44);
+  background:linear-gradient(180deg,rgba(7,28,40,.94),rgba(0,20,31,.92));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);
+}
+.hybrid-roadmap-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+.hybrid-roadmap-hero h4{margin:3px 0 2px;font-size:1.12rem;color:#f2cf68}
+.hybrid-roadmap-hero p{margin:0;font-size:.72rem;opacity:.74}
+.hybrid-roadmap-percent{text-align:right;white-space:nowrap}
+.hybrid-roadmap-percent strong{display:block;font-size:1.65rem;line-height:1;color:#f2cf68}
+.hybrid-roadmap-percent span{font-size:.66rem;opacity:.68;text-transform:uppercase;letter-spacing:.08em}
+.hybrid-roadmap-track{height:7px;margin:12px 0 10px;border:1px solid rgba(216,180,85,.28);background:rgba(0,0,0,.38);overflow:hidden}
+.hybrid-roadmap-track i{display:block;height:100%;background:linear-gradient(90deg,#64a03b,#d8b455);box-shadow:0 0 10px rgba(100,160,59,.3)}
+.hybrid-roadmap-current{display:flex;align-items:center;gap:9px;padding:8px 10px;margin-bottom:10px;border-left:2px solid #f5b642;background:rgba(245,182,66,.06)}
+.hybrid-roadmap-current span{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;opacity:.65}
+.hybrid-roadmap-current strong{font-size:.75rem;font-weight:500;color:#f5f5f5}
+.hybrid-roadmap-stages{display:grid;gap:7px}
+.hybrid-roadmap-stage{border:1px solid rgba(128,145,152,.22);background:rgba(0,0,0,.18)}
+.hybrid-roadmap-stage[open]{border-color:rgba(216,180,85,.36)}
+.hybrid-roadmap-stage summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;list-style:none}
+.hybrid-roadmap-stage summary::-webkit-details-marker{display:none}
+.hybrid-roadmap-stage summary>span{min-width:0}
+.hybrid-roadmap-stage summary strong{display:block;font-size:.76rem;font-weight:500}
+.hybrid-roadmap-stage summary small{display:block;margin-top:2px;font-size:.64rem;opacity:.58;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hybrid-roadmap-stage summary b{font-size:.68rem;font-weight:500;color:#d8b455;white-space:nowrap}
+.hybrid-roadmap-stage.is-completed summary strong{color:#8fbd6f}
+.hybrid-roadmap-stage.is-active summary strong{color:#f5b642}
+.hybrid-roadmap-stage ul{list-style:none;margin:0;padding:0 9px 9px}
+.hybrid-roadmap-item{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:8px;padding:6px 5px;border-top:1px solid rgba(255,255,255,.035)}
+.hybrid-roadmap-check{font-size:.78rem;text-align:center;opacity:.8}
+.hybrid-roadmap-copy strong{display:block;font-size:.7rem;font-weight:400}
+.hybrid-roadmap-copy small{display:block;margin-top:1px;color:#f5b642;font-size:.62rem;opacity:.88}
+.hybrid-roadmap-status{font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;opacity:.65;white-space:nowrap}
+.hybrid-roadmap-item.is-completed .hybrid-roadmap-check,.hybrid-roadmap-item.is-completed .hybrid-roadmap-status{color:#8fbd6f}
+.hybrid-roadmap-item.is-active{background:rgba(245,182,66,.045)}
+.hybrid-roadmap-item.is-active .hybrid-roadmap-check,.hybrid-roadmap-item.is-active .hybrid-roadmap-status{color:#f5b642}
+.hybrid-roadmap-item.is-todo{opacity:.7}
+@media(max-width:760px){
+  .hybrid-roadmap-hero{align-items:flex-start;flex-direction:column;gap:8px}
+  .hybrid-roadmap-percent{text-align:left}
+  .hybrid-roadmap-current{align-items:flex-start;flex-direction:column;gap:2px}
+  .hybrid-roadmap-stage summary small{white-space:normal}
+}
+
+/* Roadmaps d'apprivoisement - cartes sélectionnables */
+.class-quest-card[data-hunter-roadmap-id]{cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.class-quest-card[data-hunter-roadmap-id]:hover{border-color:rgba(245,182,66,.55);box-shadow:0 0 0 1px rgba(245,182,66,.08) inset}
+.class-quest-card[data-hunter-roadmap-id]:focus-visible{outline:1px solid #f5b642;outline-offset:2px}
+.class-quest-card.is-roadmap-selected{border-color:#f5b642;box-shadow:0 0 0 1px rgba(245,182,66,.18) inset,0 0 14px rgba(245,182,66,.08)}
+.class-quest-card.is-roadmap-selected .class-quest-card-top h4{color:#f2cf68}
+
+/* Filtres de la feuille de route : Toutes / Terminées / À faire */
+.hybrid-roadmap-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 10px}
+.hybrid-roadmap-filter{appearance:none;border:1px solid rgba(128,145,152,.5);background:rgba(0,20,31,.78);color:#f5f5f5;padding:6px 10px;font:inherit;font-size:.66rem;text-transform:uppercase;letter-spacing:.055em;cursor:pointer;transition:border-color .15s ease,background .15s ease,color .15s ease}
+.hybrid-roadmap-filter span{margin-left:7px;color:#d8b455;opacity:.9}
+.hybrid-roadmap-filter:hover{border-color:rgba(245,182,66,.7)}
+.hybrid-roadmap-filter.is-active{border-color:#f5b642;background:rgba(245,182,66,.1);color:#f2cf68;box-shadow:inset 0 -2px 0 rgba(245,182,66,.55)}
+.hybrid-roadmap-filter:focus-visible{outline:1px solid #f5b642;outline-offset:2px}

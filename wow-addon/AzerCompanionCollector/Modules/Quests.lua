@@ -11,6 +11,93 @@ local function safeCall(fn, ...)
     return a, b, c, d, e, f, g, h, i, j
 end
 
+local HUNTER_CLASS_ID = 3
+local HUNTER_TAMING_UNLOCKS = {
+    dragonkin = { questFlagID = 72094 },
+    ottuk = { questFlagID = 66444 },
+    ["cloud-serpent"] = { questFlagID = 62254 },
+    undead = { questFlagID = 62255 },
+    gargon = { questFlagID = 61160 },
+    ["blood-beast"] = { questFlagID = 54753 },
+    direhorn = { spellID = 138430 },
+    mechanical = { spellID = 205154 },
+    feathermane = { spellID = 242155 },
+}
+
+local function getCharacterClassID(character)
+    local classID = tonumber(character and character.profile and character.profile.classID)
+    if classID then return classID end
+    local _, _, unitClassID = safeCall(UnitClass, "player")
+    return tonumber(unitClassID)
+end
+
+local function isQuestFlagCompleted(questID)
+    if not questID or not C_QuestLog or type(C_QuestLog.IsQuestFlaggedCompleted) ~= "function" then
+        return nil, false
+    end
+    local ok, result = pcall(C_QuestLog.IsQuestFlaggedCompleted, questID)
+    if not ok then return nil, false end
+    return result and true or false, true
+end
+
+local function isSpellKnownForPlayer(spellID)
+    if not spellID then return nil, false end
+
+    if type(IsSpellKnown) == "function" then
+        local ok, result = pcall(IsSpellKnown, spellID)
+        if ok then return result and true or false, true end
+    end
+
+    if C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then
+        local ok, result = pcall(C_SpellBook.IsSpellKnown, spellID)
+        if ok then return result and true or false, true end
+    end
+
+    return nil, false
+end
+
+local function captureClassUnlocks(character)
+    character.classProgress = character.classProgress or {}
+    character.classProgress.scannedAt = Collector.Utils.Now()
+
+    if getCharacterClassID(character) ~= HUNTER_CLASS_ID then
+        return character.classProgress
+    end
+
+    local hunter = character.classProgress.hunter or {}
+    local taming = {}
+
+    for unlockID, definition in pairs(HUNTER_TAMING_UNLOCKS) do
+        local completed
+        local supported = false
+        local source
+        local sourceID
+
+        if definition.questFlagID then
+            completed, supported = isQuestFlagCompleted(definition.questFlagID)
+            source = "quest_flag"
+            sourceID = definition.questFlagID
+        elseif definition.spellID then
+            completed, supported = isSpellKnownForPlayer(definition.spellID)
+            source = "spell_known"
+            sourceID = definition.spellID
+        end
+
+        taming[unlockID] = {
+            id = unlockID,
+            completed = completed == true,
+            supported = supported == true,
+            source = source,
+            sourceID = sourceID,
+            scannedAt = character.classProgress.scannedAt,
+        }
+    end
+
+    hunter.taming = taming
+    hunter.scannedAt = character.classProgress.scannedAt
+    character.classProgress.hunter = hunter
+    return character.classProgress
+end
 
 local function safeNumber(fn, ...)
     local value = safeCall(fn, ...)
@@ -360,9 +447,9 @@ local function captureActiveQuests(character)
     local currentHeaderName = nil
 
     if C_QuestLog and C_QuestLog.GetNumQuestLogEntries then
-        entries = tonumber(C_QuestLog.GetNumQuestLogEntries()) or 0
+        entries = safeNumber(C_QuestLog.GetNumQuestLogEntries) or 0
     elseif GetNumQuestLogEntries then
-        entries = tonumber(GetNumQuestLogEntries()) or 0
+        entries = safeNumber(GetNumQuestLogEntries) or 0
     end
 
     -- Première passe : prendre un instantané du journal SANS sélectionner de quête.
@@ -630,6 +717,7 @@ function Module:Scan(_, done)
     local active = captureActiveQuests(character)
     local accountActive = AzerCompanionDB.account.quests.activeShared or {}
     local history, accountShared, requestedTitles = captureCompletedHistory(character)
+    local classProgress = captureClassUnlocks(character)
     done({
         ok = true,
         active = countTable(active),
@@ -640,6 +728,7 @@ function Module:Scan(_, done)
         completedObserved = #(character.quests.completedObserved or {}),
         requestedTitles = requestedTitles,
         historyMode = "full_completed_ids",
+        classUnlocks = classProgress and classProgress.hunter and countTable(classProgress.hunter.taming) or 0,
         scannedAt = character.quests.activeScannedAt,
     })
 end
@@ -652,11 +741,13 @@ function Module:OnEvent(event, ...)
 
     if event == "QUEST_LOG_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
         captureActiveQuests(character)
+        captureClassUnlocks(character)
     elseif event == "QUEST_TURNED_IN" then
         local questID, experienceReward, moneyReward = ...
         if questID then
             recordCompletedQuest(character, questID, experienceReward, moneyReward)
             captureActiveQuests(character)
+            captureClassUnlocks(character)
         end
     elseif event == "QUEST_DATA_LOAD_RESULT" then
         local questID, success = ...

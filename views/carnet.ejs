@@ -301,6 +301,27 @@
           </div>
         </div>
 
+        <section id="classQuestsSection" class="class-quests-section" hidden>
+          <header class="class-quests-head">
+            <div class="class-quests-heading">
+              <span class="characters-kicker">PROGRESSION DE CLASSE</span>
+              <div class="class-quests-title-row">
+                <h3 id="classQuestsTitle">Quêtes de classe</h3>
+                <span id="classQuestsSummary" class="class-quests-summary">0 / 0 débloqués</span>
+              </div>
+              <p id="classQuestsIntro">Les déblocages importants propres à la classe du personnage sélectionné.</p>
+            </div>
+            <div class="class-quests-actions">
+              <div class="class-quests-progress"><strong id="classQuestsKnownCount">0</strong><span>confirmés</span></div>
+              <button id="classQuestsToggle" class="class-quests-toggle" type="button" aria-expanded="false" aria-controls="classQuestsCategories">
+                <span>Voir les déblocages</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"/></svg>
+              </button>
+            </div>
+          </header>
+          <div id="classQuestsCategories" class="class-quests-categories" hidden></div>
+        </section>
+
         <div class="quest-atlas-layout">
           <aside class="quest-atlas-column quest-continents-column">
             <div class="quest-column-title"><span>CONTINENTS</span></div>

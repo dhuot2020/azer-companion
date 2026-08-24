@@ -1578,3 +1578,77 @@ body.is-collection-modal-open { overflow: hidden; }
   .profile-modal-showcase { min-height: 260px; }
   .profile-modal-showcase > img { height: 235px; }
 }
+
+/* V6 - cartes de collection compactes : montures et mascottes */
+.profile-collection-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.profile-collection-tile.collection-card {
+  display: block;
+  aspect-ratio: auto;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(0,31,47,.96), rgba(0,18,29,.98));
+}
+.collection-card .profile-collection-thumb {
+  height: 112px;
+  border: 0;
+  border-bottom: 1px solid rgba(216,180,85,.22);
+  border-radius: 0;
+  background: #001722;
+}
+.collection-card .profile-collection-thumb img { object-fit: contain; padding: 4px; }
+.collection-card-visual::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 48%, rgba(0,12,19,.72));
+  pointer-events: none;
+}
+.collection-card-status {
+  position: absolute;
+  z-index: 3;
+  right: 7px;
+  bottom: 7px;
+  padding: 3px 6px;
+  border: 1px solid rgba(100,160,59,.55);
+  border-radius: 2px;
+  background: rgba(0,14,22,.88);
+  color: #8fc568;
+  font: 700 .55rem var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.collection-card-body { display: grid; gap: 3px; padding: 9px 10px 10px; }
+.collection-card-name {
+  overflow: hidden;
+  color: #f5f5f5;
+  font: 700 .76rem var(--font-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.collection-card-type {
+  overflow: hidden;
+  color: #d8b455;
+  font-size: .59rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.collection-card-meta { color: rgba(245,245,245,.55); font-size: .61rem; }
+.collection-card-action {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(216,180,85,.14);
+  color: rgba(216,180,85,.7);
+  font: 600 .58rem var(--font-primary);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.collection-card-action b { float: right; font-size: .9rem; line-height: .7; }
+@media (max-width: 1100px) { .profile-collection-list { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 760px) { .profile-collection-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }

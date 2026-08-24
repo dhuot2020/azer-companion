@@ -1,3 +1,18 @@
+## 2026-08-18 - Class Quests V4
+- Ajout du Bestiaire spécial du Chasseur (rares/spéciaux uniquement).
+- Nouveau module Collector `HunterPets.lua` basé sur `C_StableInfo`.
+- Suivi réel par `creatureID` des familiers actifs et en écurie.
+- Catalogue initial de 12 bêtes spirituelles rares/spéciales.
+- Affichage Apprivoisé / À apprivoiser / Inconnu dans Progression de classe.
+- Correction de l'ordre de déclaration de `safeCall` dans `Modules/Quests.lua`.
+
+
+## 2026-08-18 - Class Quests V3
+
+- Le Collector détecte les déblocages d'apprivoisement du Chasseur via flags de quête ou sorts connus.
+- `/api/quests` transmet `classProgress` au frontend.
+- La progression de classe affiche désormais `Débloqué`, `À obtenir`, `En cours` ou `Inconnu` selon les données réelles disponibles.
+- Aucun état négatif n'est déduit lorsqu'une API de détection n'est pas disponible.
 
 ## Collector 2.1.0-alpha1
 

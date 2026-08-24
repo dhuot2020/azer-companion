@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-18",
+  "sourcePolicy": "Catalogue Azer Companion de progressions de classe importantes. Les statuts sont calcules uniquement a partir des donnees Collector connues; une absence de preuve reste inconnue.",
+  "classes": {
+    "hunter": {
+      "classId": 3,
+      "name": "Chasseur",
+      "categories": [
+        {
+          "id": "taming",
+          "name": "Apprivoisement",
+          "description": "Connaissances speciales permettant d'apprivoiser des familles de betes qui ne sont pas accessibles par defaut.",
+          "entries": [
+            {"id":"dragonkin","name":"Draconiens inferieurs","unlock":"How to Train a Dragonkin","sourceType":"quest","questId":72372,"completionFlagQuestId":72094,"itemId":201791,"expansion":"Dragonflight","requirement":"Atteindre le renom 23 avec le Concordat de Valdrakken sur un Chasseur, puis obtenir le tome aupres de Kaestrasz.","accountWide":true},
+            {"id":"ottuk","name":"Loutrèkes","unlock":"Ottuk Taming","sourceType":"quest","completionFlagQuestId":66444,"expansion":"Dragonflight","requirement":"Terminer la progression debloquee au renom 11 des Roharts iskaariens, incluant While the Iron Is Hot.","accountWide":true},
+            {"id":"cloud-serpent","name":"Serpents-nuages","unlock":"How to School Your Serpent","sourceType":"reputation","completionFlagQuestId":62254,"itemId":183123,"expansion":"Shadowlands / Pandaria","requirement":"Etre Exalte aupres de l'Ordre du Serpent-nuage et utiliser le tome. Les Pandarens n'en ont pas besoin.","accountWide":true,"raceExceptions":["pandaren"]},
+            {"id":"undead","name":"Betes mortes-vivantes","unlock":"Simple Tome of Bone-Binding","sourceType":"drop","completionFlagQuestId":62255,"expansion":"Shadowlands","requirement":"Obtenir le tome sur des creatures de Maldraxxus ou dans Malepeste. Les Morts-vivants n'en ont pas besoin.","accountWide":true,"raceExceptions":["scourge","undead"]},
+            {"id":"gargon","name":"Gargons","unlock":"Gargon Training Manual","sourceType":"drop","completionFlagQuestId":61160,"itemId":180705,"expansion":"Shadowlands","requirement":"Obtenir le manuel sur Huntmaster Petrus en Revendreth.","accountWide":true},
+            {"id":"blood-beast","name":"Betes de sang","unlock":"Blood-Soaked Tome of Dark Whispers","sourceType":"drop","completionFlagQuestId":54753,"itemId":166502,"expansion":"Battle for Azeroth","requirement":"Obtenir le tome sur Zul a Uldir en difficulte normale, heroique ou mythique.","accountWide":true},
+            {"id":"direhorn","name":"Navrecornes","unlock":"Ancient Tome of Dinomancy","sourceType":"drop","spellId":138430,"itemId":94232,"expansion":"Mists of Pandaria","requirement":"Obtenir l'Ancien tome de dinomancie sur les Dinomanciens zandalari de l'Ile des Geants. Les Trolls zandalari n'en ont pas besoin.","accountWide":false,"raceExceptions":["zandalaritroll"]},
+            {"id":"mechanical","name":"Betes mecaniques","unlock":"Mecha-Bond Imprint Matrix","sourceType":"crafted","spellId":205154,"itemId":134125,"expansion":"Legion","requirement":"Utiliser une Matrice d'impression de lien mecanique fabriquee par les ingenieurs. Gnomes, Gobelins et Mecagnomes n'en ont pas besoin.","accountWide":false,"raceExceptions":["gnome","goblin","mechagnome"]},
+            {"id":"feathermane","name":"Betes hybrides / Plumelins","unlock":"Tome of the Hybrid Beast","sourceType":"class-campaign","spellId":242155,"itemId":147580,"expansion":"Legion","requirement":"Terminer la campagne du domaine de classe du Chasseur et Breaching the Tomb afin de debloquer la monture de classe, puis acheter le tome au Pavillon du Traqueur.","accountWide":true}
+          ]
+        }
+      ]
+    }
+  }
+}

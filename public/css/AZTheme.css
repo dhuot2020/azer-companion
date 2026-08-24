@@ -1267,3 +1267,14 @@ body::after {
     0 1px 0 rgba(0, 0, 0, 0.98),
     0 0 7px rgba(191, 224, 241, 0.12);
 }
+
+
+/* =========================================================
+   STANDARD AZER COMPANION - CADRES METALLIQUES INTERNES
+   V7.2 : meme langage visuel pour cartes, fiches et modales.
+========================================================= */
+:root{--az-frame-width:2px;--az-frame-bg-top:rgba(8,45,68,.98);--az-frame-bg-bottom:rgba(3,27,43,.98);--az-header-separator:rgba(202,216,226,.22)}
+.az-metal-frame,.hunter-bestiary-card,.collection-card,.profile-collection-tile,.hunter-pet-sheet-meta>div,.hunter-sheet-info,.class-quests-category,.home-panel,.account-overview,.feature-card,.side-card,.wide-panel,.profile-achievements-card,.profile-collections-card,.profile-professions-card,.profile-progress-card,.quest-card,.quest-region-card,.quest-secret-card,.quest-travel-card,.character-card-face{border:var(--az-frame-width) solid transparent;background:linear-gradient(180deg,var(--az-frame-bg-top),var(--az-frame-bg-bottom)) padding-box,linear-gradient(90deg,var(--az-steel-1) 0%,var(--az-steel-2) 24%,var(--az-steel-3) 50%,var(--az-steel-4) 76%,var(--az-steel-5) 100%) border-box;box-shadow:0 6px 16px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.045)}
+.hunter-pet-visual,.collection-card-visual,.hunter-pet-sheet-header,.home-panel>header,.profile-collection-card-header,.class-quests-category-head{border-bottom:1px solid var(--az-header-separator)}
+.hunter-pet-details,.collection-card-action,.hunter-pet-sheet-actions{border-top:1px solid var(--az-header-separator)}
+.hunter-pet-details,.collection-card-action{margin-top:10px;padding-top:9px}

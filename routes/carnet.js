@@ -1133,6 +1133,19 @@ router.get("/api/quests", async (req, res) => {
       guid: character.guid,
       name: character.name,
       realm: character.realm,
+      level: character.level || 0,
+      className: character.className || character.appearance?.className || "",
+      classId: character.classId || character.appearance?.classID || 0,
+      classSlug: character.appearance?.classSlug || "",
+      raceName: character.raceName || character.appearance?.raceName || "",
+      raceId: character.raceId || character.appearance?.raceID || 0,
+      raceSlug: character.appearance?.raceSlug || "",
+      classProgress: character.classProgress && typeof character.classProgress === "object"
+        ? character.classProgress
+        : {},
+      hunterPets: character.hunterPets && typeof character.hunterPets === "object"
+        ? character.hunterPets
+        : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
       active: normalizeQuestList(character.quests?.active),
       activeAccountShared: normalizeQuestList(character.quests?.activeAccountShared),
       completedObserved: normalizeQuestList(character.quests?.completedObserved),
@@ -1300,6 +1313,29 @@ router.get("/api/quests", async (req, res) => {
     return res.status(500).json({ available: false, account: null, characters: [], error: "collector_quests_unavailable" });
   }
 });
+const hunterPetIconCache = new Map();
+router.get("/api/media/file/:fileId", async (req, res) => {
+  const fileId = Number(req.params.fileId || 0);
+  if (!fileId) return res.status(404).end();
+  const cached = hunterPetIconCache.get(fileId);
+  if (cached) return res.redirect(302, cached);
+  const accessToken = req.session?.blizzard_access_token;
+  if (!accessToken) return res.status(404).end();
+  try {
+    const url = `${BLIZZARD_API_ORIGIN}/data/wow/search/media?namespace=static-${BLIZZARD_REGION}&assets.file_data_id=${fileId}&_pageSize=1`;
+    const payload = await fetchJsonWithRetry(url, accessToken, 2);
+    const result = Array.isArray(payload?.results) ? payload.results[0]?.data : null;
+    const assets = Array.isArray(result?.assets) ? result.assets : [];
+    const asset = assets.find((item) => Number(item?.file_data_id || 0) === fileId) || assets[0];
+    if (!asset?.value) return res.status(404).end();
+    hunterPetIconCache.set(fileId, asset.value);
+    return res.redirect(302, asset.value);
+  } catch (error) {
+    console.warn(`Hunter pet media ${fileId} indisponible:`, error.message);
+    return res.status(404).end();
+  }
+});
+
 router.get("/api/collector", async (req, res) => {
   try {
     res.json(await readCollectorSummary());

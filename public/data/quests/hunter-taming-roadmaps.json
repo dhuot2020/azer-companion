@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-22",
+  "sourcePolicy": "Roadmaps Azer Companion. Les pourcentages utilisent seulement les preuves que le Collector sait verifier; les pre-requis externes restent affiches comme actions a accomplir et ne sont pas inventes comme termines.",
+  "roadmaps": {
+    "dragonkin": {
+      "id":"dragonkin","title":"Draconiens inférieurs","subtitle":"Parcours vers How to Train a Dragonkin · Dragonflight",
+      "stages":[
+        {"name":"Concordat de Valdrakken","description":"Atteindre le renom 23 sur un Chasseur.","entries":[{"title":"Renom 23 avec le Concordat de Valdrakken","note":"Prérequis de réputation; Azer Companion l'affiche comme objectif tant que le déblocage final n'est pas confirmé."}]},
+        {"name":"Kaestrasz","description":"Récupérer le tome auprès du maître des écuries à Valdrakken.","entries":[{"title":"Taming the Dragon...kin","questId":72372,"aliases":["Dressage des draconiens","Taming the Dragon...kin"],"note":"Kaestrasz propose cette quête une fois le renom requis atteint."}]},
+        {"name":"Déblocage","description":"Utiliser le tome et confirmer le dressage des draconiens.","entries":[{"title":"Apprivoisement des draconiens inférieurs","kind":"unlock","unlockId":"dragonkin"}]}
+      ]
+    },
+    "ottuk": {
+      "id":"ottuk","title":"Loutrèkes","subtitle":"Parcours vers le Dressage de loutrèke · Dragonflight",
+      "stages":[
+        {"name":"Roharts iskaariens","description":"Atteindre le renom 11 pour ouvrir Le devoir d’un chef.","entries":[{"title":"Renom 11 avec les Roharts iskaariens","note":"Débloque la suite de quêtes Le devoir d’un chef."}]},
+        {"name":"Le devoir d’un chef","description":"Terminer la suite qui mène à Tant que le fer est chaud.","entries":[
+          {"title":"La tribu perdue"},{"title":"Isolation soudaine"},{"title":"Affaire pressante"},{"title":"Impressions catastrophiques"},{"title":"Eaux troubles"},{"title":"Sauvetage de fournitures"},{"title":"Test du roharsenal"},{"title":"Le compte y est… presque","aliases":["Le compte y est... presque"]},{"title":"Tourner la page"},{"title":"Jour de deuil"},{"title":"La seule solution est d’avancer","aliases":["La seule solution est d'avancer"]},{"title":"Appel à la chasse"},{"title":"Tant que le fer est chaud","questId":66444,"aliases":["While the Iron Is Hot"]}
+        ]},
+        {"name":"Déblocage","description":"La quête finale apprend le Dressage de loutrèke.","entries":[{"title":"Apprivoisement des loutrèkes","kind":"unlock","unlockId":"ottuk"}]}
+      ]
+    },
+    "cloud-serpent": {
+      "id":"cloud-serpent","title":"Serpents-nuages","subtitle":"Parcours vers How to School Your Serpent · Pandarie",
+      "stages":[
+        {"name":"Ordre du Serpent-nuage","description":"Monter la réputation jusqu’à Exalté.","entries":[{"title":"Être Exalté auprès de l’Ordre du Serpent-nuage","note":"Les Pandarens n'ont pas besoin du tome."}]},
+        {"name":"Arboretum de la forêt de Jade","description":"Acheter le tome auprès de San Écailles-Rouges.","entries":[{"title":"Acheter How to School Your Serpent","note":"Récompense de réputation disponible une fois Exalté."}]},
+        {"name":"Déblocage","description":"Utiliser le tome pour le compte.","entries":[{"title":"Apprivoisement des serpents-nuages","kind":"unlock","unlockId":"cloud-serpent"}]}
+      ]
+    },
+    "undead": {
+      "id":"undead","title":"Bêtes mortes-vivantes","subtitle":"Parcours vers Simple Tome of Bone-Binding · Shadowlands",
+      "stages":[
+        {"name":"Maldraxxus","description":"Le tome est un butin de zone à Maldraxxus et peut aussi tomber dans Malepeste.","entries":[{"title":"Farmer Simple Tome of Bone-Binding","note":"Tuer des créatures à Maldraxxus ou des boss de Malepeste jusqu'à obtenir le tome."}]},
+        {"name":"Déblocage","description":"Utiliser le tome. Les Morts-vivants n’en ont pas besoin.","entries":[{"title":"Apprivoisement des bêtes mortes-vivantes","kind":"unlock","unlockId":"undead"}]}
+      ]
+    },
+    "gargon": {
+      "id":"gargon","title":"Gargons","subtitle":"Parcours vers Gargon Training Manual · Shadowlands",
+      "stages":[
+        {"name":"Revendreth","description":"Trouver et vaincre Huntmaster Petrus.","entries":[{"title":"Vaincre Huntmaster Petrus","note":"Le rare se trouve en Revendreth et laisse tomber le manuel de dressage."}]},
+        {"name":"Manuel de dressage","description":"Récupérer puis utiliser le Gargon Training Manual.","entries":[{"title":"Obtenir Gargon Training Manual","note":"Butin de Huntmaster Petrus."}]},
+        {"name":"Déblocage","description":"Confirmer l’apprivoisement des gargons.","entries":[{"title":"Apprivoisement des gargons","kind":"unlock","unlockId":"gargon"}]}
+      ]
+    },
+    "blood-beast": {
+      "id":"blood-beast","title":"Bêtes de sang","subtitle":"Parcours vers Blood-Soaked Tome of Dark Whispers · Battle for Azeroth",
+      "stages":[
+        {"name":"Uldir","description":"Entrer dans le raid Uldir en difficulté normale ou supérieure.","entries":[{"title":"Atteindre Zul, Ressuscité","note":"Le tome est lié au boss Zul à Uldir."}]},
+        {"name":"Zul, Ressuscité","description":"Vaincre Zul jusqu’à obtenir le tome.","entries":[{"title":"Obtenir Blood-Soaked Tome of Dark Whispers","note":"Butin réservé aux Chasseurs, difficulté normale, héroïque ou mythique."}]},
+        {"name":"Déblocage","description":"Utiliser le tome pour tous les Chasseurs du compte.","entries":[{"title":"Apprivoisement des bêtes de sang","kind":"unlock","unlockId":"blood-beast"}]}
+      ]
+    },
+    "direhorn": {
+      "id":"direhorn","title":"Navrecornes","subtitle":"Parcours vers Ancient Tome of Dinomancy · Mists of Pandaria",
+      "stages":[
+        {"name":"Île des Géants","description":"Se rendre sur l’Île des Géants au nord de la Pandarie.","entries":[{"title":"Trouver les Dinomanciens zandalari","note":"Ils sont présents sur l'île, notamment autour des camps et du navire zandalari."}]},
+        {"name":"Ancien tome de dinomancie","description":"Farmer les Dinomanciens zandalari jusqu’au butin.","entries":[{"title":"Obtenir l’Ancien tome de dinomancie","aliases":["Ancient Tome of Dinomancy"],"note":"Le déblocage n'est pas lié au compte; les Trolls zandalari n'en ont pas besoin."}]},
+        {"name":"Déblocage","description":"Utiliser le tome sur ce Chasseur.","entries":[{"title":"Apprivoisement des navrecornes","kind":"unlock","unlockId":"direhorn"}]}
+      ]
+    },
+    "mechanical": {
+      "id":"mechanical","title":"Bêtes mécaniques","subtitle":"Parcours vers Mecha-Bond Imprint Matrix · Legion",
+      "stages":[
+        {"name":"Obtenir la matrice","description":"Acheter une matrice fabriquée par un ingénieur, ou la faire fabriquer.","entries":[{"title":"Obtenir Mecha-Bond Imprint Matrix","note":"La matrice est échangeable; seuls les ingénieurs ont besoin du schéma pour la fabriquer."}]},
+        {"name":"Option ingénierie","description":"Le schéma est vendu par Xur’ios à Dalaran contre 1 Pièce curieuse.","entries":[{"title":"Schéma : Mecha-Bond Imprint Matrix","note":"Optionnel si tu achètes directement la matrice à l’Hôtel des ventes ou à un autre joueur."}]},
+        {"name":"Déblocage","description":"Utiliser la matrice. Gnomes, Gobelins et Mécagnomes n’en ont pas besoin.","entries":[{"title":"Apprivoisement des bêtes mécaniques","kind":"unlock","unlockId":"mechanical"}]}
+      ]
+    }
+  }
+}

@@ -2401,19 +2401,29 @@ function renderProfileCollectionList() {
   const kind = activeProfileCollectionTab === "mounts" ? "mount" : "pet";
   const start = (profileCollectionPage - 1) * PROFILE_COLLECTION_PAGE_SIZE;
   const visibleItems = items.slice(start, start + PROFILE_COLLECTION_PAGE_SIZE);
-  list.innerHTML = visibleItems.map((item) => `<button
-      class="profile-collection-tile ${item.favorite ? "is-favorite" : ""}"
+  list.innerHTML = visibleItems.map((item) => {
+    const typeLabel = kind === "mount" ? "Monture" : (item.speciesName || "Mascotte de combat");
+    const metaLabel = kind === "pet" && item.level ? `Niveau ${item.level}` : (item.favorite ? "Favori" : "Collection");
+    return `<button
+      class="profile-collection-tile collection-card ${item.favorite ? "is-favorite" : ""}"
       type="button"
       aria-label="${escapeHtml(item.name)}"
       data-profile-collection-index="${items.indexOf(item)}"
     >
-      <span class="profile-collection-thumb">
+      <span class="profile-collection-thumb collection-card-visual">
         <img src="${getProfileCollectionMediaUrl(kind, item)}" alt="" loading="lazy">
         <span aria-hidden="true">${kind === "mount" ? "♞" : "✦"}</span>
+        <span class="collection-card-status">Possédé</span>
+      </span>
+      <span class="collection-card-body">
+        <strong class="collection-card-name">${escapeHtml(item.name)}</strong>
+        <small class="collection-card-type">${escapeHtml(typeLabel)}</small>
+        <span class="collection-card-meta">${escapeHtml(metaLabel)}</span>
+        <span class="collection-card-action">Voir la fiche <b>›</b></span>
       </span>
       ${item.favorite ? '<span class="profile-tile-favorite" aria-hidden="true">★</span>' : ""}
-      ${kind === "pet" && item.level ? `<span class="profile-tile-level">${item.level}</span>` : ""}
-    </button>`).join("");
+    </button>`;
+  }).join("");
 
   list.querySelectorAll(".profile-collection-tile").forEach((tile) => {
     const item = items[Number(tile.dataset.profileCollectionIndex)];
@@ -3265,6 +3275,16 @@ const questsState = {
   worldCatalogPromise: null,
   questCatalog: null,
   questCatalogPromise: null,
+  classQuests: null,
+  classQuestsPromise: null,
+  hunterHybridRoadmap: null,
+  hunterHybridRoadmapPromise: null,
+  hunterTamingRoadmaps: null,
+  hunterTamingRoadmapsPromise: null,
+  hunterSelectedRoadmapId: "feathermane",
+  hunterRoadmapFilter: "todo",
+  hunterSpecialPets: null,
+  hunterSpecialPetsPromise: null,
   selectedContinent: "",
   selectedRegion: "",
   statusFilter: "all",
@@ -3859,6 +3879,472 @@ async function loadQuestCatalog() {
   return questsState.questCatalogPromise;
 }
 
+async function loadClassQuests() {
+  if (questsState.classQuests) return questsState.classQuests;
+  if (questsState.classQuestsPromise) return questsState.classQuestsPromise;
+  questsState.classQuestsPromise = fetch("/data/quests/class-quests.json", { cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) throw new Error("Catalogue des quêtes de classe indisponible.");
+      return response.json();
+    })
+    .then((payload) => {
+      questsState.classQuests = payload?.classes ? payload : { classes: {} };
+      return questsState.classQuests;
+    })
+    .catch((error) => {
+      console.warn(error.message || error);
+      questsState.classQuests = { classes: {} };
+      return questsState.classQuests;
+    });
+  return questsState.classQuestsPromise;
+}
+
+async function loadHunterHybridRoadmap() {
+  if (questsState.hunterHybridRoadmap) return questsState.hunterHybridRoadmap;
+  if (questsState.hunterHybridRoadmapPromise) return questsState.hunterHybridRoadmapPromise;
+  questsState.hunterHybridRoadmapPromise = fetch("/data/quests/hunter-hybrid-beast-roadmap.json", { cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) throw new Error("Feuille de route du Tome de la bête hybride indisponible.");
+      return response.json();
+    })
+    .then((payload) => {
+      questsState.hunterHybridRoadmap = payload?.stages ? payload : { stages: [] };
+      return questsState.hunterHybridRoadmap;
+    })
+    .catch((error) => {
+      console.warn(error.message || error);
+      questsState.hunterHybridRoadmap = { stages: [] };
+      return questsState.hunterHybridRoadmap;
+    });
+  return questsState.hunterHybridRoadmapPromise;
+}
+
+async function loadHunterTamingRoadmaps() {
+  if (questsState.hunterTamingRoadmaps) return questsState.hunterTamingRoadmaps;
+  if (questsState.hunterTamingRoadmapsPromise) return questsState.hunterTamingRoadmapsPromise;
+  questsState.hunterTamingRoadmapsPromise = fetch("/data/quests/hunter-taming-roadmaps.json", { cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) throw new Error("Feuilles de route d'apprivoisement indisponibles.");
+      return response.json();
+    })
+    .then((payload) => {
+      questsState.hunterTamingRoadmaps = payload?.roadmaps ? payload : { roadmaps: {} };
+      return questsState.hunterTamingRoadmaps;
+    })
+    .catch((error) => {
+      console.warn(error.message || error);
+      questsState.hunterTamingRoadmaps = { roadmaps: {} };
+      return questsState.hunterTamingRoadmaps;
+    });
+  return questsState.hunterTamingRoadmapsPromise;
+}
+
+async function loadHunterSpecialPets() {
+  if (questsState.hunterSpecialPets) return questsState.hunterSpecialPets;
+  if (questsState.hunterSpecialPetsPromise) return questsState.hunterSpecialPetsPromise;
+  questsState.hunterSpecialPetsPromise = fetch("/data/quests/hunter-special-pets.json", { cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) throw new Error("Bestiaire spécial du Chasseur indisponible.");
+      return response.json();
+    })
+    .then((payload) => {
+      questsState.hunterSpecialPets = payload?.classes ? payload : { classes: {} };
+      return questsState.hunterSpecialPets;
+    })
+    .catch((error) => {
+      console.warn(error.message || error);
+      questsState.hunterSpecialPets = { classes: {} };
+      return questsState.hunterSpecialPets;
+    });
+  return questsState.hunterSpecialPetsPromise;
+}
+
+function normalizeClassQuestSlug(value) {
+  return String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function getClassQuestDefinition(character) {
+  const classes = questsState.classQuests?.classes || {};
+  const visual = getQuestCharacterVisual(character);
+  const candidates = [character?.classSlug, character?.className, visual.className].map(normalizeClassQuestSlug).filter(Boolean);
+  return Object.values(classes).find((entry) => Number(entry.classId || 0) === Number(character?.classId || 0))
+    || Object.entries(classes).find(([slug]) => candidates.includes(normalizeClassQuestSlug(slug)))?.[1]
+    || null;
+}
+
+function getClassQuestStatus(entry, character, model) {
+  const raceSlug = normalizeClassQuestSlug(character?.raceSlug || character?.raceName);
+  if ((entry.raceExceptions || []).map(normalizeClassQuestSlug).includes(raceSlug)) {
+    return { key: "completed", label: "Débloqué (racial)" };
+  }
+
+  const collected = character?.classProgress?.hunter?.taming?.[entry.id];
+  if (collected?.supported === true) {
+    return collected.completed === true
+      ? { key: "completed", label: "Débloqué" }
+      : { key: "available", label: "À obtenir" };
+  }
+
+  const ids = [entry.questId, entry.completionFlagQuestId].map(Number).filter(Boolean);
+  if (ids.some((id) => model.completedIds.has(id))) return { key: "completed", label: "Débloqué" };
+  if (ids.some((id) => model.activeIds.has(id))) return { key: "active", label: "En cours" };
+  return { key: "unknown", label: "Inconnu" };
+}
+
+function getHunterPetCollection(character) {
+  const payload = character?.hunterPets || {};
+  const raw = payload.pets && typeof payload.pets === "object" ? Object.values(payload.pets) : [];
+  const pets = raw
+    .filter((pet) => pet && typeof pet === "object")
+    .map((pet, index) => ({
+      ...pet,
+      creatureID: Number(pet.creatureID || pet.creatureId || 0),
+      petNumber: Number(pet.petNumber || 0),
+      slotID: Number(pet.slotID || 0),
+      _collectorKey: `${Number(pet.creatureID || pet.creatureId || 0)}:${Number(pet.petNumber || pet.slotID || index + 1)}`,
+    }))
+    .filter((pet) => pet.creatureID > 0);
+  const creatureIds = new Set(pets.map((pet) => pet.creatureID));
+  return {
+    supported: payload.supported === true,
+    scannedAt: Number(payload.scannedAt || 0),
+    pets,
+    creatureIds,
+    reportedCount: Number(payload.count || pets.length || 0),
+  };
+}
+
+function getHunterCatalogEntries() {
+  const hunterCatalog = questsState.hunterSpecialPets?.classes?.hunter;
+  if (!hunterCatalog) return [];
+  return (hunterCatalog.categories || []).flatMap((category) =>
+    (category.entries || []).map((entry) => ({ ...entry, _categoryName: category.name || "Bestiaire spécial" }))
+  );
+}
+
+function getHunterCatalogByCreatureId() {
+  return new Map(getHunterCatalogEntries().map((entry) => [Number(entry.creatureId || 0), entry]).filter(([id]) => id));
+}
+
+function buildCollectedHunterPetEntry(pet, catalogByCreatureId) {
+  const catalog = catalogByCreatureId.get(Number(pet.creatureID || 0));
+  if (catalog) {
+    return {
+      ...catalog,
+      collectorPet: pet,
+      collected: true,
+      id: `collected:${pet._collectorKey}`,
+      name: pet.name || catalog.name,
+      family: pet.familyName || catalog.family,
+      creatureId: Number(pet.creatureID || catalog.creatureId || 0),
+    };
+  }
+  return {
+    id: `collected:${pet._collectorKey}`,
+    name: pet.name || `Créature ${pet.creatureID}`,
+    creatureId: Number(pet.creatureID || 0),
+    family: pet.familyName || "Familier de chasseur",
+    zone: pet.source === "active" ? "Familier actif" : "Écurie",
+    expansion: "Collection personnelle",
+    special: pet.isExotic === true
+      ? "Bête exotique enregistrée par le Collector."
+      : "Familier enregistré directement depuis l'écurie du Chasseur.",
+    beastMastery: pet.isExotic === true,
+    image: { localPath: pet.icon ? `/api/media/file/${Number(pet.icon)}` : "", fallback: "/assets/hero-hinterlands.jpg" },
+    requirements: pet.isExotic === true
+      ? [{ type: "specialization", label: "Maîtrise des bêtes", detail: "Bête exotique : spécialisation Maîtrise des bêtes requise." }]
+      : [],
+    collectorPet: pet,
+    collected: true,
+  };
+}
+
+function renderHunterPetCard(entry, statusKey, statusLabel) {
+  const imagePath = entry.image?.localPath || entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const fallbackPath = entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const pet = entry.collectorPet || null;
+  const badges = [];
+  if (pet?.source === "active") badges.push("Actif");
+  if (pet?.isExotic === true || entry.beastMastery === true) badges.push("Exotique");
+  if (pet?.isFavorite === true) badges.push("Favori");
+  if (!pet && entry.collected !== true) badges.push("Rare / spécial");
+  const badgeHtml = badges.map((badge) => `<span class="hunter-pet-badge">${escapeHtml(badge)}</span>`).join("");
+  const levelHtml = pet?.level ? `<span>Niv. ${escapeHtml(pet.level)}</span>` : "";
+  return `<article class="hunter-bestiary-card is-${statusKey}" data-hunter-pet-status="${escapeHtml(statusKey)}" data-hunter-pet-id="${escapeHtml(entry.id)}">
+    <div class="hunter-pet-visual"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(entry.name)}" loading="lazy" onerror="if(this.dataset.fallback!=='1'){this.dataset.fallback='1';this.src='${escapeHtml(fallbackPath)}';}"><span class="hunter-pet-status is-${escapeHtml(statusKey)}">${escapeHtml(statusLabel)}</span></div>
+    <div class="hunter-pet-body">
+      <div class="hunter-pet-heading"><h5>${escapeHtml(entry.name)}</h5><span>${escapeHtml(entry.family || "Bête spéciale")}</span></div>
+      <div class="hunter-pet-quick-meta">${levelHtml}${badgeHtml}</div>
+      <button class="hunter-pet-details" type="button" data-hunter-pet-open="${escapeHtml(entry.id)}">Voir la fiche <span>›</span></button>
+    </div>
+  </article>`;
+}
+function renderHunterSpecialPets(character) {
+  if (Number(character?.classId || 0) !== 3) return { html: "", collected: 0, total: 0 };
+  const hunterCatalog = questsState.hunterSpecialPets?.classes?.hunter;
+  if (!hunterCatalog) return { html: "", collected: 0, total: 0 };
+
+  const collection = getHunterPetCollection(character);
+  const catalogEntries = getHunterCatalogEntries();
+  const catalogByCreatureId = getHunterCatalogByCreatureId();
+  const collectedEntries = collection.pets.map((pet) => buildCollectedHunterPetEntry(pet, catalogByCreatureId));
+  const collectedSpecialIds = new Set(
+    collectedEntries
+      .filter((entry) => catalogByCreatureId.has(Number(entry.creatureId || 0)))
+      .map((entry) => Number(entry.creatureId || 0))
+  );
+  const remainingEntries = catalogEntries.filter((entry) => !collection.creatureIds.has(Number(entry.creatureId || 0)));
+
+  const collectedCards = collectedEntries.length
+    ? collectedEntries.map((entry) => renderHunterPetCard(entry, "completed", "Apprivoisé")).join("")
+    : `<div class="hunter-bestiary-empty">Aucune bête n'a encore été remontée par le Collector pour ce personnage.</div>`;
+
+  const remainingCards = remainingEntries.length
+    ? remainingEntries.map((entry) => renderHunterPetCard(entry, collection.supported ? "available" : "unknown", collection.supported ? "À apprivoiser" : "Inconnu")).join("")
+    : `<div class="hunter-bestiary-empty">Toutes les bêtes rares cataloguées ont été apprivoisées.</div>`;
+
+  const collectedSection = `<section class="class-quests-category hunter-bestiary-category">
+    <div class="class-quests-category-head"><div><h4 class="class-quests-category-title">Mes bêtes apprivoisées</h4><p class="hunter-bestiary-description">Cartes générées directement depuis l'écurie et les familiers actifs remontés par Azer Companion Collector.</p></div><span>${collectedEntries.length} détectée${collectedEntries.length > 1 ? "s" : ""}</span></div>
+    <div class="hunter-bestiary-grid">${collectedCards}</div>
+  </section>`;
+
+  const remainingSection = `<section class="class-quests-category hunter-bestiary-category">
+    <div class="class-quests-category-head"><div><h4 class="class-quests-category-title">Rares et spéciales à rechercher</h4><p class="hunter-bestiary-description">Catalogue Azer Companion. Les bêtes déjà détectées dans ton écurie sont retirées automatiquement de cette liste.</p></div><span>${collectedSpecialIds.size} / ${catalogEntries.length} cataloguées</span></div>
+    <div class="hunter-bestiary-toolbar" role="group" aria-label="Filtres du bestiaire"><button type="button" class="hunter-bestiary-filter is-active" data-hunter-filter="all">Toutes</button><button type="button" class="hunter-bestiary-filter" data-hunter-filter="available">À faire</button><button type="button" class="hunter-bestiary-filter" data-hunter-filter="unknown">Inconnues</button></div>
+    <div class="hunter-bestiary-grid">${remainingCards}</div>
+  </section>`;
+
+  return {
+    html: collectedSection + remainingSection,
+    collected: collectedEntries.length,
+    total: catalogEntries.length,
+    collectedSpecial: collectedSpecialIds.size,
+  };
+}
+function normalizeRoadmapTitle(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’‘`´]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function buildRoadmapQuestIndex(model) {
+  const activeByTitle = new Map();
+  const completedByTitle = new Map();
+  (model?.active || []).forEach((quest) => activeByTitle.set(normalizeRoadmapTitle(quest?.title), quest));
+  (model?.history || []).forEach((quest) => completedByTitle.set(normalizeRoadmapTitle(quest?.title), quest));
+  return { activeByTitle, completedByTitle };
+}
+
+function getRoadmapEntryStatus(entry, character, model, index) {
+  if (entry.kind === "unlock" && entry.unlockId) {
+    const unlock = character?.classProgress?.hunter?.taming?.[entry.unlockId];
+    if (unlock?.supported === true) {
+      return unlock.completed === true
+        ? { key: "completed", label: "Débloqué", quest: null }
+        : { key: "todo", label: "À obtenir", quest: null };
+    }
+  }
+  const questId = Number(entry.questId || 0);
+  if (questId && model?.completedIds?.has(questId)) {
+    return { key: "completed", label: "Terminé", quest: (model.history || []).find((q) => Number(q.id) === questId) || null };
+  }
+  if (questId && model?.activeIds?.has(questId)) {
+    return { key: "active", label: "En cours", quest: (model.active || []).find((q) => Number(q.id) === questId) || null };
+  }
+  const names = [entry.title, ...(entry.aliases || [])].map(normalizeRoadmapTitle).filter(Boolean);
+  for (const name of names) {
+    if (index.completedByTitle.has(name)) return { key: "completed", label: "Terminé", quest: index.completedByTitle.get(name) };
+  }
+  for (const name of names) {
+    if (index.activeByTitle.has(name)) return { key: "active", label: "En cours", quest: index.activeByTitle.get(name) };
+  }
+  return { key: "todo", label: "À venir", quest: null };
+}
+
+function roadmapObjectiveText(quest) {
+  const objectives = Array.isArray(quest?.objectives) ? quest.objectives : [];
+  const unfinished = objectives.find((objective) => objective && objective.finished !== true) || objectives[0];
+  return unfinished?.text || quest?.objectiveText || "";
+}
+
+function renderHunterTamingRoadmap(character, model, roadmap) {
+  if (Number(character?.classId || 0) !== 3 || !roadmap?.stages?.length) return { html: "", completed: 0, total: 0, percent: 0 };
+  const index = buildRoadmapQuestIndex(model);
+  const rows = [];
+  const filter = ["all", "completed", "todo"].includes(questsState.hunterRoadmapFilter) ? questsState.hunterRoadmapFilter : "todo";
+  const stageHtml = roadmap.stages.map((stage) => {
+    const statuses = (stage.entries || []).map((entry) => {
+      const status = getRoadmapEntryStatus(entry, character, model, index);
+      rows.push({ entry, status, stage });
+      return { entry, status };
+    });
+    const done = statuses.filter(({ status }) => status.key === "completed").length;
+    const active = statuses.filter(({ status }) => status.key === "active").length;
+    const visibleStatuses = statuses.filter(({ status }) => filter === "all" || (filter === "completed" ? status.key === "completed" : status.key !== "completed"));
+    if (!visibleStatuses.length) return "";
+    const entriesHtml = visibleStatuses.map(({ entry, status }) => {
+      const objective = status.key === "active" ? roadmapObjectiveText(status.quest) : "";
+      const note = objective || (status.key !== "completed" ? entry.note || "" : "");
+      return `<li class="hybrid-roadmap-item is-${escapeHtml(status.key)}">
+        <span class="hybrid-roadmap-check" aria-hidden="true">${status.key === "completed" ? "✓" : status.key === "active" ? "◆" : "○"}</span>
+        <span class="hybrid-roadmap-copy"><strong>${escapeHtml(entry.title)}</strong>${note ? `<small>${escapeHtml(note)}</small>` : ""}</span>
+        <span class="hybrid-roadmap-status">${escapeHtml(status.label)}</span>
+      </li>`;
+    }).join("");
+    const stageState = done === statuses.length && statuses.length ? "completed" : active ? "active" : "todo";
+    return `<details class="hybrid-roadmap-stage is-${stageState}" ${active || filter !== "all" ? "open" : ""}>
+      <summary><span><strong>${escapeHtml(stage.name)}</strong><small>${escapeHtml(stage.description || "")}</small></span><b>${done} / ${statuses.length}</b></summary>
+      <ul>${entriesHtml}</ul>
+    </details>`;
+  }).join("");
+  const completed = rows.filter(({ status }) => status.key === "completed").length;
+  const total = rows.length;
+  const todo = total - completed;
+  const percent = total ? Math.round((completed / total) * 100) : 0;
+  const current = rows.find(({ status }) => status.key === "active") || rows.find(({ status }) => status.key === "todo");
+  const currentText = current ? `${current.stage.name} · ${current.entry.title}` : "Objectif atteint — apprivoisement débloqué";
+  const filterButton = (key, label, count) => `<button type="button" class="hybrid-roadmap-filter${filter === key ? " is-active" : ""}" data-roadmap-filter="${key}">${label}<span>${count}</span></button>`;
+  return { completed, total, percent, html: `<section class="class-quests-category hybrid-roadmap-category">
+    <div class="hybrid-roadmap-hero"><div><span class="characters-kicker">OBJECTIF CHASSEUR</span><h4>${escapeHtml(roadmap.title || "Déblocage d'apprivoisement")}</h4><p>${escapeHtml(roadmap.subtitle || "")}</p></div>
+    <div class="hybrid-roadmap-percent"><strong>${percent}%</strong><span>${completed} / ${total}</span></div></div>
+    <div class="hybrid-roadmap-track" aria-label="Progression ${percent}%"><i style="width:${percent}%"></i></div>
+    <div class="hybrid-roadmap-current"><span>Étape actuelle</span><strong>${escapeHtml(currentText)}</strong></div>
+    <div class="hybrid-roadmap-filters" aria-label="Filtrer la feuille de route">
+      ${filterButton("all", "Toutes", total)}
+      ${filterButton("completed", "Terminées", completed)}
+      ${filterButton("todo", "À faire", todo)}
+    </div>
+    <div class="hybrid-roadmap-stages">${stageHtml}</div></section>` };
+}
+function getHunterRoadmap(entry) {
+  if (!entry) return null;
+  if (entry.id === "feathermane") return questsState.hunterHybridRoadmap;
+  return questsState.hunterTamingRoadmaps?.roadmaps?.[entry.id] || null;
+}
+
+function renderHunterHybridRoadmap(character, model) {
+  const definition = getClassQuestDefinition(character);
+  const entries = (definition?.categories || []).flatMap((category) => category.entries || []);
+  const selected = entries.find((entry) => entry.id === questsState.hunterSelectedRoadmapId) || entries.find((entry) => entry.id === "feathermane");
+  return renderHunterTamingRoadmap(character, model, getHunterRoadmap(selected));
+}
+
+function renderClassQuests(character, model) {
+  const section = document.getElementById("classQuestsSection");
+  const categoriesHost = document.getElementById("classQuestsCategories");
+  if (!section || !categoriesHost) return;
+  const definition = character && questsState.selectedKey !== "__account__" ? getClassQuestDefinition(character) : null;
+  if (!definition) {
+    section.hidden = true;
+    categoriesHost.innerHTML = "";
+    return;
+  }
+  section.hidden = false;
+  document.getElementById("classQuestsTitle").textContent = `Progression de classe · ${definition.name || character.className || "Héros"}`;
+  const statuses = [];
+  const unlockHtml = (definition.categories || []).map((category) => {
+    const cards = (category.entries || []).map((entry) => {
+      const status = getClassQuestStatus(entry, character, model); statuses.push(status);
+      return `<article class="class-quest-card is-${escapeHtml(status.key)}${entry.id === questsState.hunterSelectedRoadmapId ? " is-roadmap-selected" : ""}" data-hunter-roadmap-id="${escapeHtml(entry.id)}" role="button" tabindex="0" aria-label="Voir la progression ${escapeHtml(entry.name)}">
+        <div class="class-quest-card-top"><h4>${escapeHtml(entry.name)}</h4><span class="class-quest-status">${escapeHtml(status.label)}</span></div>
+        <div class="class-quest-unlock"><strong>${escapeHtml(entry.unlock || "Déblocage de classe")}</strong> · ${escapeHtml(entry.expansion || "")}</div>
+        <p>${escapeHtml(entry.requirement || "")}</p>
+      </article>`;
+    }).join("");
+    return `<section class="class-quests-category"><h4 class="class-quests-category-title">${escapeHtml(category.name)}</h4><div class="class-quests-grid">${cards}</div></section>`;
+  }).join("");
+  const roadmap = renderHunterHybridRoadmap(character, model);
+  const bestiary = renderHunterSpecialPets(character);
+  categoriesHost.innerHTML = roadmap.html + unlockHtml + bestiary.html;
+  categoriesHost.querySelectorAll("[data-hunter-roadmap-id]").forEach((card) => {
+    const select = () => { questsState.hunterSelectedRoadmapId = card.dataset.hunterRoadmapId || "feathermane"; renderClassQuests(character, model); };
+    card.addEventListener("click", select);
+    card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(); } });
+  });
+  categoriesHost.querySelectorAll("[data-roadmap-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      questsState.hunterRoadmapFilter = button.dataset.roadmapFilter || "todo";
+      renderClassQuests(character, model);
+    });
+  });
+  const known = statuses.filter((status) => status.key === "completed").length;
+  document.getElementById("classQuestsKnownCount").textContent = String(known);
+  const summary = document.getElementById("classQuestsSummary");
+  if (summary) {
+    const roadmapPart = roadmap.total ? ` · Tome hybride ${roadmap.percent}%` : "";
+    const petPart = bestiary.total ? ` · ${bestiary.collected} familiers détectés · ${bestiary.collectedSpecial || 0} / ${bestiary.total} rares cataloguées` : "";
+    summary.textContent = `${known} / ${statuses.length} débloqués${roadmapPart}${petPart}`;
+  }
+}
+
+function findHunterSpecialPet(petId) {
+  const catalogEntries = getHunterCatalogEntries();
+  const catalogEntry = catalogEntries.find((item) => String(item.id) === String(petId));
+  if (catalogEntry) return catalogEntry;
+
+  if (String(petId || "").startsWith("collected:")) {
+    const character = getSelectedQuestCharacter() || null;
+    const collection = getHunterPetCollection(character);
+    const collectorKey = String(petId).slice("collected:".length);
+    const pet = collection.pets.find((item) => String(item._collectorKey) === collectorKey);
+    if (pet) return buildCollectedHunterPetEntry(pet, getHunterCatalogByCreatureId());
+  }
+  return null;
+}
+function closeHunterPetSheet() {
+  document.querySelector(".hunter-pet-sheet-backdrop")?.remove();
+  document.body.classList.remove("hunter-pet-sheet-open");
+}
+
+function openHunterPetSheet(petId) {
+  const entry = findHunterSpecialPet(petId);
+  if (!entry) return;
+  const character = getSelectedQuestCharacter() || null;
+  const collection = getHunterPetCollection(character);
+  const owned = collection.creatureIds.has(Number(entry.creatureId || 0));
+  const statusKey = owned ? "completed" : (collection.supported ? "available" : "unknown");
+  const statusLabel = owned ? "Apprivoisé" : (collection.supported ? "À apprivoiser" : "Inconnu");
+  const imagePath = entry.image?.localPath || entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const fallbackPath = entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const requirements = Array.isArray(entry.requirements) ? entry.requirements : [];
+  const requirementHtml = requirements.length ? requirements.map((r) => `<div class="hunter-sheet-info"><span>${escapeHtml(r.label || "Prérequis")}</span><strong>${escapeHtml(r.detail || "")}</strong></div>`).join("") : `<div class="hunter-sheet-info"><span>Prérequis</span><strong>Aucun apprentissage spécial catalogué.</strong></div>`;
+  closeHunterPetSheet();
+  const host = document.createElement("div");
+  host.className = "hunter-pet-sheet-backdrop";
+  host.innerHTML = `<article class="hunter-pet-sheet az-metal-frame" role="dialog" aria-modal="true" aria-label="${escapeHtml(entry.name)}">
+    <header class="hunter-pet-sheet-header">
+      <button class="hunter-pet-sheet-close" type="button" aria-label="Fermer">×</button>
+      <div class="hunter-pet-sheet-hero"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(entry.name)}" onerror="if(this.dataset.fallback!=='1'){this.dataset.fallback='1';this.src='${escapeHtml(fallbackPath)}';}"><div class="hunter-pet-sheet-veil"></div><div class="hunter-pet-sheet-title"><span class="hunter-pet-status is-${statusKey}">${statusLabel}</span><h3>${escapeHtml(entry.name)}</h3><p>${escapeHtml(entry.family || "Bête spéciale")}</p></div></div>
+    </header>
+    <div class="hunter-pet-sheet-content">
+      <div class="hunter-pet-sheet-meta"><div><span>Localisation</span><strong>${escapeHtml(entry.zone || "Zone inconnue")}</strong></div><div><span>Extension</span><strong>${escapeHtml(entry.expansion || "Inconnue")}</strong></div></div>
+      <section class="hunter-sheet-section"><h4>Prérequis d'apprivoisement</h4>${requirementHtml}</section>
+      <section class="hunter-sheet-section"><h4>Méthode</h4><p>${escapeHtml(entry.special || "Aucune méthode spéciale cataloguée.")}</p></section>
+      <section class="hunter-sheet-section"><h4>Progression</h4><div class="hunter-sheet-progress is-${statusKey}">${escapeHtml(statusLabel)}</div></section>
+    </div>
+    <footer class="hunter-pet-sheet-actions"><button type="button" disabled>Voir le déblocage</button><button type="button" disabled>Voir dans l'Atlas</button></footer>
+  </article>`;
+  document.body.appendChild(host);
+  document.body.classList.add("hunter-pet-sheet-open");
+}
+
+document.addEventListener("click", (event) => {
+  const openButton = event.target.closest("[data-hunter-pet-open]");
+  if (openButton) { openHunterPetSheet(openButton.dataset.hunterPetOpen); return; }
+  if (event.target.closest(".hunter-pet-sheet-close") || (event.target.classList.contains("hunter-pet-sheet-backdrop"))) { closeHunterPetSheet(); return; }
+  const filterButton = event.target.closest(".hunter-bestiary-filter");
+  if (!filterButton) return;
+  const category = filterButton.closest(".hunter-bestiary-category");
+  if (!category) return;
+  const filter = filterButton.dataset.hunterFilter || "all";
+  category.querySelectorAll(".hunter-bestiary-filter").forEach((button) => button.classList.toggle("is-active", button === filterButton));
+  category.querySelectorAll(".hunter-bestiary-card").forEach((card) => { card.hidden = filter !== "all" && card.dataset.hunterPetStatus !== filter; });
+});
+
 function getQuestCatalogRegion(continentName, regionName) {
   const regions = questsState.questCatalog?.regions || {};
   return regions[`${continentName}::${regionName}`] || null;
@@ -4393,6 +4879,7 @@ function renderQuestsView() {
   document.getElementById("questsCompletedLabel").textContent = "Quêtes terminées connues";
   document.getElementById("questsAccountSharedLabel").textContent = "Quêtes à faire cataloguées";
 
+  renderClassQuests(character, model);
   renderQuestWorldNavigation(model);
   renderRegionQuestList(model, character, isAccountView);
 
@@ -4420,7 +4907,7 @@ async function loadQuests(force = false) {
     const response = await fetch(`/api/quests?ts=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error("Quêtes indisponibles.");
     questsState.payload = await response.json();
-    await Promise.all([loadQuestDatabase(), loadQuestWorldCatalog(), loadQuestCatalog()]);
+    await Promise.all([loadQuestDatabase(), loadQuestWorldCatalog(), loadQuestCatalog(), loadClassQuests(), loadHunterSpecialPets(), loadHunterHybridRoadmap(), loadHunterTamingRoadmaps()]);
     questsState.loaded = true;
     renderQuestsView();
   } catch (error) {
@@ -4446,6 +4933,28 @@ document.getElementById("questsNav")?.addEventListener("click", (event) => {
 });
 
 document.getElementById("questsRefreshButton")?.addEventListener("click", () => loadQuests(true));
+
+const classQuestsToggle = document.getElementById("classQuestsToggle");
+const classQuestsCategories = document.getElementById("classQuestsCategories");
+classQuestsToggle?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (!classQuestsCategories) return;
+  const willOpen = classQuestsCategories.hidden;
+  classQuestsCategories.hidden = !willOpen;
+  classQuestsToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  classQuestsToggle.querySelector("span").textContent = willOpen ? "Masquer les déblocages" : "Voir les déblocages";
+  document.getElementById("classQuestsSection")?.classList.toggle("is-open", willOpen);
+});
+
+document.addEventListener("click", (event) => {
+  const section = document.getElementById("classQuestsSection");
+  if (!section?.classList.contains("is-open") || section.contains(event.target)) return;
+  if (classQuestsCategories) classQuestsCategories.hidden = true;
+  section.classList.remove("is-open");
+  classQuestsToggle?.setAttribute("aria-expanded", "false");
+  const label = classQuestsToggle?.querySelector("span");
+  if (label) label.textContent = "Voir les déblocages";
+});
 
 const questsCharacterButton = document.getElementById("questsCharacterButton");
 const questsCharacterMenu = document.getElementById("questsCharacterMenu");

@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-22",
+  "id": "hunter-hybrid-beast",
+  "classId": 3,
+  "title": "Tome de la bête hybride",
+  "subtitle": "Parcours complet vers l'apprivoisement des bêtes hybrides / plumelins",
+  "finalUnlockId": "feathermane",
+  "stages": [
+    {
+      "id": "hunter-campaign",
+      "name": "Campagne du domaine de chasseur",
+      "description": "Terminer la campagne principale du Pavillon du Traqueur jusqu'à Halduron Luisaile.",
+      "entries": [
+        {"title":"Une question de tactique"},
+        {"title":"Le début de la campagne"},
+        {"title":"Levez-vous, champions !","aliases":["Levez-vous, champions !","Levez-vous, champions !"]},
+        {"title":"Un vrai soutien"},
+        {"title":"Champion : Loren Sabot-Tempête"},
+        {"title":"Prise de contact"},
+        {"title":"Recrutement des troupes"},
+        {"title":"Des troupes sur le terrain"},
+        {"title":"Un peu de technique"},
+        {"title":"Rapports de reconnaissance"},
+        {"title":"Une étoile filante"},
+        {"title":"Le Secours invisible"},
+        {"title":"Troubles naissants"},
+        {"title":"Un piège à assassins"},
+        {"title":"Une convocation urgente"},
+        {"title":"Le rappel d’Hilaire","aliases":["Le rappel d'Hilaire"]},
+        {"title":"La morsure de la bête"},
+        {"title":"Champion : belluaire Hilaire"},
+        {"title":"Retour chez soi"},
+        {"title":"Le recrutement de Rexxar"},
+        {"title":"Compétences de survie"},
+        {"title":"Survivre une nuit entière"},
+        {"title":"Champion : Rexxar"},
+        {"title":"Signal d’alerte","aliases":["Signal d'alerte"]},
+        {"title":"Protection invisible"},
+        {"title":"Accélération du recrutement"},
+        {"title":"À la rescousse de nos alliés"},
+        {"title":"Chasseurs de Haut-Roc"},
+        {"title":"Champion : Hemet Nesingwary"},
+        {"title":"Championne : Addie Pétibourbe"},
+        {"title":"Baron et le veneur"},
+        {"title":"Le flair retrouvé"},
+        {"title":"Champion : veneur Blake"},
+        {"title":"Prêt à travailler"},
+        {"title":"Les mages disparus"},
+        {"title":"L’odeur des mages","aliases":["L'odeur des mages"]},
+        {"title":"Au service de l’archimage","aliases":["Au service de l'archimage"]},
+        {"title":"Enquête sur l’ennemi","aliases":["Enquête sur l'ennemi"]},
+        {"title":"Appât tellurique"},
+        {"title":"Apprivoiser la bête"},
+        {"title":"La nature de la bête"},
+        {"title":"Demande de renforts"},
+        {"title":"Information des alliés"},
+        {"title":"Fourré Sombrecœur : le chêne du Cauchemar"},
+        {"title":"Minerai sous-marin"},
+        {"title":"Le calice manquant"},
+        {"title":"Composants requis","questId":42408},
+        {"title":"Montrer l’exemple","questId":44680},
+        {"title":"Armes d’azur","questId":42656},
+        {"title":"Rencontre dans le val des Griffelunes"},
+        {"title":"Enchantements délicats"},
+        {"title":"Livraison rapide","questId":42133},
+        {"title":"La défense de Dalaran"},
+        {"title":"Champion : Halduron Luisaile","questId":42415}
+      ]
+    },
+    {
+      "id": "broken-shore-access",
+      "name": "Accès aux expéditions des Îles Brisées",
+      "description": "Débloquer les expéditions et l'accès requis pour poursuivre le Déclin de la Légion.",
+      "entries": [
+        {"title":"L’union des îles","aliases":["L'union des îles"],"questId":43341}
+      ]
+    },
+    {
+      "id": "legionfall",
+      "name": "Conquête de la tombe",
+      "description": "Campagne du Déclin de la Légion au Rivage Brisé.",
+      "entries": [
+        {"title":"Les armées du Déclin de la Légion"},
+        {"title":"L’assaut du rivage Brisé","aliases":["L'assaut du rivage Brisé"]},
+        {"title":"Commencer la construction"},
+        {"title":"Halte d’Aalgen","aliases":["Halte d'Aalgen","La halte d’Aalgen","La halte d'Aalgen"]},
+        {"title":"Halte de la Vengeance"},
+        {"title":"La défense des îles Brisées"},
+        {"title":"Les champions du Déclin"},
+        {"title":"Coup d’éclat","aliases":["Coup d'éclat"]},
+        {"title":"La marque du Sentinax","aliases":["Marque du Sentinax"]},
+        {"title":"Une prophétie auto-réalisatrice"},
+        {"title":"Invasion intolérable"},
+        {"title":"Délestage en règle"},
+        {"title":"Tombent les têtes"},
+        {"title":"La ligue des champions"},
+        {"title":"Massacre en règle"}
+      ]
+    },
+    {
+      "id": "legionfall-champion",
+      "name": "Champion du Déclin — Chasseur",
+      "description": "Recruter Chassenuit Syrenne pour le Pavillon du Traqueur.",
+      "entries": [
+        {"title":"Champion : Chassenuit Syrenne","aliases":["Championne : Chassenuit Syrenne","Champion : Chassenuit Syrenne"]}
+      ]
+    },
+    {
+      "id": "class-mount",
+      "name": "Monture de classe du Chasseur",
+      "description": "Terminer la courte chaîne finale de la monture de classe.",
+      "entries": [
+        {"title":"A Golden Ticket","aliases":["Un billet doré","Un ticket en or","A Golden Ticket"]},
+        {"title":"Night of the Wilds","aliases":["La nuit des sauvages","Nuit des sauvages","Night of the Wilds"]}
+      ]
+    },
+    {
+      "id": "tome",
+      "name": "Tome de la bête hybride",
+      "description": "Après la monture de classe, acheter le tome auprès de Pan la Main Douce au Pavillon du Traqueur.",
+      "entries": [
+        {"title":"Apprivoisement des bêtes hybrides","unlockId":"feathermane","kind":"unlock"}
+      ]
+    }
+  ]
+}

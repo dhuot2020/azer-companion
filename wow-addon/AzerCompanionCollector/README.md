@@ -46,3 +46,14 @@ La base existante `AzerCompanionDB` est conservée et migrée vers `schemaVersio
 4. Dans Azer Companion, ouvrez le menu **Quêtes** puis cliquez sur **Actualiser**.
 
 Le Collector importe les quêtes actives et leurs objectifs. L'historique complet antérieur à l'installation n'est pas toujours exposé par l'API WoW; les nouvelles quêtes terminées sont enregistrées avec le personnage et la date.
+
+
+## Alpha 3 - Progression de classe Chasseur
+
+Le module Quêtes capture maintenant les déblocages spéciaux d'apprivoisement du Chasseur.
+Les déblocages basés sur un flag de quête utilisent `C_QuestLog.IsQuestFlaggedCompleted`; ceux basés sur une connaissance utilisent l'API de sorts disponible dans le client.
+Les résultats sont écrits dans `character.classProgress.hunter.taming` et restent explicitement `supported = false` si l'API n'est pas disponible.
+
+
+### Chasseur - Bestiaire spécial (alpha4)
+Le module `HunterPets.lua` lit les familiers actifs et l'écurie via `C_StableInfo`. Azer Companion conserve le `creatureID`, le nom, la famille, le niveau, l'icône et la source (actif/écurie). Le site compare ensuite les `creatureID` observés à son catalogue de bêtes rares/spéciales. Une bête n'est marquée **Apprivoisée** que si elle est réellement présente dans les données du Collector.

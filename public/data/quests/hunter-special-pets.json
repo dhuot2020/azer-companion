@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-18",
+  "sourcePolicy": "Selection Azer Companion de betes rares ou speciales pour Chasseur. La possession est confirmee uniquement par les donnees reelles de l'ecurie du Collector, via creatureID.",
+  "classes": {
+    "hunter": {
+      "classId": 3,
+      "name": "Chasseur",
+      "categories": [
+        {
+          "id": "spirit-beasts",
+          "name": "Betes spirituelles rares",
+          "description": "Selection de betes spirituelles rares, uniques ou a methode d'apparition speciale.",
+          "entries": [
+            {
+              "id": "loquenahak",
+              "name": "Loque'nahak",
+              "creatureId": 32517,
+              "family": "Bete spirituelle",
+              "zone": "Bassin de Sholazar",
+              "expansion": "Wrath of the Lich King",
+              "special": "Rare emblematique; plusieurs points d'apparition.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/loquenahak.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "gondria",
+              "name": "Gondria",
+              "creatureId": 33776,
+              "family": "Bete spirituelle",
+              "zone": "Zul'Drak",
+              "expansion": "Wrath of the Lich King",
+              "special": "Rare spectral.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/gondria.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "skoll",
+              "name": "Skoll",
+              "creatureId": 35189,
+              "family": "Bete spirituelle",
+              "zone": "Les pics Foudroyes",
+              "expansion": "Wrath of the Lich King",
+              "special": "Rare spectral electrique.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/skoll.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "arcturis",
+              "name": "Arcturis",
+              "creatureId": 38453,
+              "family": "Bete spirituelle",
+              "zone": "Les Grisonnes",
+              "expansion": "Wrath of the Lich King",
+              "special": "Rare spectral avec zone d'apparition tres restreinte.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/arcturis.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "ghostcrawler",
+              "name": "Ghostcrawler",
+              "creatureId": 50051,
+              "family": "Bete spirituelle",
+              "zone": "Profondeurs Abyssales",
+              "expansion": "Cataclysm",
+              "special": "Rare spectral sous-marin.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/ghostcrawler.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "karoma",
+              "name": "Karoma",
+              "creatureId": 50138,
+              "family": "Bete spirituelle",
+              "zone": "Hautes-terres du Crepuscule",
+              "expansion": "Cataclysm",
+              "special": "Rare loup spectral.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/karoma.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "ankha",
+              "name": "Ankha",
+              "creatureId": 54318,
+              "family": "Bete spirituelle",
+              "zone": "Mont Hyjal",
+              "expansion": "Cataclysm",
+              "special": "Rare spectral; apprivoisement special au Front du Magma.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/ankha.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                },
+                {
+                  "type": "method",
+                  "label": "Methode speciale",
+                  "detail": "Rare spectral; apprivoisement special au Front du Magma."
+                }
+              ]
+            },
+            {
+              "id": "magria",
+              "name": "Magria",
+              "creatureId": 54319,
+              "family": "Bete spirituelle",
+              "zone": "Mont Hyjal",
+              "expansion": "Cataclysm",
+              "special": "Rare spectral; apprivoisement special au Front du Magma.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/magria.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                },
+                {
+                  "type": "method",
+                  "label": "Methode speciale",
+                  "detail": "Rare spectral; apprivoisement special au Front du Magma."
+                }
+              ]
+            },
+            {
+              "id": "banthalos",
+              "name": "Ban'thalos",
+              "creatureId": 54320,
+              "family": "Bete spirituelle",
+              "zone": "Mont Hyjal",
+              "expansion": "Cataclysm",
+              "special": "Rare volant; methode d'engagement particuliere.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/banthalos.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                },
+                {
+                  "type": "method",
+                  "label": "Methode speciale",
+                  "detail": "Rare volant; methode d'engagement particuliere."
+                }
+              ]
+            },
+            {
+              "id": "bulvinkel",
+              "name": "Bulvinkel",
+              "creatureId": 111463,
+              "family": "Bete spirituelle",
+              "zone": "Tornheim",
+              "expansion": "Legion",
+              "special": "Rare sur les falaises pres des Salles des Valeureux.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/bulvinkel.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                }
+              ]
+            },
+            {
+              "id": "lightning-paw",
+              "name": "Lightning Paw",
+              "creatureId": 118244,
+              "family": "Bete spirituelle",
+              "zone": "Bois de la Penombre",
+              "expansion": "Legion",
+              "special": "Rare camoufle dans les buissons; detection rapprochee utile.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/lightning-paw.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                },
+                {
+                  "type": "method",
+                  "label": "Methode speciale",
+                  "detail": "Rare camoufle dans les buissons; detection rapprochee utile."
+                }
+              ]
+            },
+            {
+              "id": "gon",
+              "name": "Gon",
+              "creatureId": 121571,
+              "family": "Bete spirituelle",
+              "zone": "Orgrimmar",
+              "expansion": "Legion",
+              "special": "Invocation via la Coquille d'oeuf spectrale dans la Vallee des Esprits.",
+              "beastMastery": true,
+              "image": {
+                "localPath": "/assets/hunter-pets/gon.jpg",
+                "fallback": "/assets/hero-hinterlands.jpg"
+              },
+              "requirements": [
+                {
+                  "type": "specialization",
+                  "label": "Maitrise des betes",
+                  "detail": "Bete exotique : specialisation Maitrise des betes requise."
+                },
+                {
+                  "type": "method",
+                  "label": "Methode speciale",
+                  "detail": "Invocation via la Coquille d'oeuf spectrale dans la Vallee des Esprits."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

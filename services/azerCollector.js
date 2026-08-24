@@ -423,6 +423,12 @@ function normalizeCharacter(character, storageKey = "") {
       ? character.professions
       : Object.values(character.professions || {}),
     achievements: normalizeAchievements(character.achievements),
+    classProgress: character.classProgress && typeof character.classProgress === "object"
+      ? character.classProgress
+      : {},
+    hunterPets: character.hunterPets && typeof character.hunterPets === "object"
+      ? character.hunterPets
+      : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
     quests: {
       active: Object.values(character.quests?.active || {}),
       completedObserved: Array.isArray(character.quests?.completedObserved)
