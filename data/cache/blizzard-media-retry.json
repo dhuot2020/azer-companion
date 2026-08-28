@@ -9,13 +9,13 @@
       "level": 11,
       "status": "resolved",
       "attempts": 6,
-      "lastCheckedAt": 1787443877448,
+      "lastCheckedAt": 1787680397680,
       "nextCheckAt": null,
       "profileStatus": 200,
       "mediaStatus": 200,
       "reason": "Média Blizzard disponible.",
-      "resolvedAt": 1787443877448
+      "resolvedAt": 1787680397680
     }
   },
-  "updatedAt": "2026-08-23T00:11:17.448Z"
+  "updatedAt": "2026-08-25T17:53:17.681Z"
 }

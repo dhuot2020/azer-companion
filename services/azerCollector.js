@@ -470,7 +470,18 @@ async function findCollectorFile() {
     "WTF",
     "Account",
   );
-  const accounts = await fs.readdir(accountsPath, { withFileTypes: true });
+  let accounts;
+
+  try {
+    accounts = await fs.readdir(accountsPath, { withFileTypes: true });
+  } catch (error) {
+    // WoW ou le client retail peuvent ne pas être installés à l'emplacement
+    // configuré. Dans ce cas, le Collector est simplement indisponible.
+    if (error.code === "ENOENT" || error.code === "ENOTDIR") {
+      return null;
+    }
+    throw error;
+  }
   const candidates = [];
 
   for (const account of accounts) {
