@@ -3,3 +3,5 @@ node_modules/
 npm-debug.log*
 .DS_Store
 sessions/AzerCompanionV2.zip
+AzerCompagnionV3.zip
+*.zip

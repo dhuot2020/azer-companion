@@ -14,9 +14,10 @@ const BLIZZARD_REGION = String(
   process.env.BLIZZARD_REGION || "us",
 ).toLowerCase();
 const REQUESTED_BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
-const BLIZZARD_LOCALE = REQUESTED_BLIZZARD_LOCALE.toLowerCase() === "fr_ca"
-  ? "fr_FR"
-  : REQUESTED_BLIZZARD_LOCALE;
+const BLIZZARD_LOCALE =
+  REQUESTED_BLIZZARD_LOCALE.toLowerCase() === "fr_ca"
+    ? "fr_FR"
+    : REQUESTED_BLIZZARD_LOCALE;
 const BLIZZARD_API_ORIGIN = `https://${BLIZZARD_REGION}.api.blizzard.com`;
 const BLIZZARD_PROFILE_QUERY = `namespace=profile-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
 const CHARACTER_MEDIA_CONCURRENCY = 6;
@@ -33,13 +34,21 @@ const CHARACTER_MEDIA_CACHE_FILE = path.join(
 function loadPersistentCharacterMediaCache() {
   try {
     if (!fs.existsSync(CHARACTER_MEDIA_CACHE_FILE)) return;
-    const payload = JSON.parse(fs.readFileSync(CHARACTER_MEDIA_CACHE_FILE, "utf8"));
+    const payload = JSON.parse(
+      fs.readFileSync(CHARACTER_MEDIA_CACHE_FILE, "utf8"),
+    );
     for (const [key, value] of Object.entries(payload?.characters || {})) {
-      if (value && typeof value === "object") characterMediaCache.set(key, value);
+      if (value && typeof value === "object")
+        characterMediaCache.set(key, value);
     }
-    console.info(`Portrait Engine : ${characterMediaCache.size} portrait(s) restauré(s) du cache.`);
+    console.info(
+      `Portrait Engine : ${characterMediaCache.size} portrait(s) restauré(s) du cache.`,
+    );
   } catch (error) {
-    console.warn("Portrait Engine : cache persistant illisible.", error.message);
+    console.warn(
+      "Portrait Engine : cache persistant illisible.",
+      error.message,
+    );
   }
 }
 
@@ -49,11 +58,18 @@ function savePersistentCharacterMediaCache() {
     const characters = Object.fromEntries(characterMediaCache.entries());
     fs.writeFileSync(
       CHARACTER_MEDIA_CACHE_FILE,
-      JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), characters }, null, 2),
+      JSON.stringify(
+        { version: 1, updatedAt: new Date().toISOString(), characters },
+        null,
+        2,
+      ),
       "utf8",
     );
   } catch (error) {
-    console.warn("Portrait Engine : impossible de sauvegarder le cache.", error.message);
+    console.warn(
+      "Portrait Engine : impossible de sauvegarder le cache.",
+      error.message,
+    );
   }
 }
 
@@ -85,21 +101,26 @@ async function fetchQuestRewardMedia(kind, id, accessToken) {
   const cached = getCachedQuestRewardMedia(kind, numericId);
   if (cached !== null) return cached;
 
-  const path = kind === "currency"
-    ? `/data/wow/media/currency/${numericId}`
-    : `/data/wow/media/item/${numericId}`;
+  const path =
+    kind === "currency"
+      ? `/data/wow/media/currency/${numericId}`
+      : `/data/wow/media/item/${numericId}`;
   const url = `${BLIZZARD_API_ORIGIN}${path}?namespace=static-${BLIZZARD_REGION}&locale=${encodeURIComponent(BLIZZARD_LOCALE)}`;
 
   try {
     const response = await fetchJsonWithRetry(url, accessToken, 2);
     if (!response.ok) return setCachedQuestRewardMedia(kind, numericId, null);
     const payload = await response.json();
-    const iconUrl = payload.assets?.find((asset) =>
-      ["icon", "icon-raw"].includes(String(asset?.key || "").toLowerCase()),
-    )?.value || null;
+    const iconUrl =
+      payload.assets?.find((asset) =>
+        ["icon", "icon-raw"].includes(String(asset?.key || "").toLowerCase()),
+      )?.value || null;
     return setCachedQuestRewardMedia(kind, numericId, iconUrl);
   } catch (error) {
-    console.warn(`Icône de récompense indisponible (${kind} ${numericId}) :`, error.message);
+    console.warn(
+      `Icône de récompense indisponible (${kind} ${numericId}) :`,
+      error.message,
+    );
     return null;
   }
 }
@@ -122,9 +143,16 @@ async function enrichQuestRewardMedia(quests, accessToken) {
   }
 
   const media = new Map();
-  await mapWithConcurrency([...jobs.values()], QUEST_REWARD_MEDIA_CONCURRENCY, async (job) => {
-    media.set(`${job.kind}:${job.id}`, await fetchQuestRewardMedia(job.kind, job.id, accessToken));
-  });
+  await mapWithConcurrency(
+    [...jobs.values()],
+    QUEST_REWARD_MEDIA_CONCURRENCY,
+    async (job) => {
+      media.set(
+        `${job.kind}:${job.id}`,
+        await fetchQuestRewardMedia(job.kind, job.id, accessToken),
+      );
+    },
+  );
 
   return quests.map((quest) => {
     const rewards = quest?.rewards;
@@ -138,9 +166,15 @@ async function enrichQuestRewardMedia(quests, accessToken) {
       ...quest,
       rewards: {
         ...rewards,
-        items: (rewards.items || []).map((item) => enrichItem(item, "item", "itemID")),
-        choices: (rewards.choices || []).map((item) => enrichItem(item, "item", "itemID")),
-        currencies: (rewards.currencies || []).map((item) => enrichItem(item, "currency", "currencyID")),
+        items: (rewards.items || []).map((item) =>
+          enrichItem(item, "item", "itemID"),
+        ),
+        choices: (rewards.choices || []).map((item) =>
+          enrichItem(item, "item", "itemID"),
+        ),
+        currencies: (rewards.currencies || []).map((item) =>
+          enrichItem(item, "currency", "currencyID"),
+        ),
       },
     };
   });
@@ -163,7 +197,6 @@ async function mapWithConcurrency(items, concurrency, callback) {
   return results;
 }
 
-
 function normalizeCharacterIdentityPart(value) {
   return String(value || "")
     .normalize("NFKC")
@@ -179,10 +212,9 @@ function getCharacterIdentityKey(character) {
 }
 
 function getCharacterMediaCacheKey(character) {
-  return [
-    String(character?.id || ""),
-    getCharacterIdentityKey(character),
-  ].join("::");
+  return [String(character?.id || ""), getCharacterIdentityKey(character)].join(
+    "::",
+  );
 }
 
 function getAzerFallbackPortrait(character) {
@@ -193,7 +225,11 @@ function getAzerFallbackPortrait(character) {
   return `/assets/characters/showcase/avatars/showcase-${String(portraitIndex).padStart(2, "0")}.webp`;
 }
 
-function applyAzerFallbackPortrait(character, diagnostic, mediaStatus = "fallback") {
+function applyAzerFallbackPortrait(
+  character,
+  diagnostic,
+  mediaStatus = "fallback",
+) {
   const fallbackUrl = getAzerFallbackPortrait(character);
   return {
     ...character,
@@ -215,7 +251,9 @@ function applyAzerFallbackPortrait(character, diagnostic, mediaStatus = "fallbac
 }
 
 function applyCachedCharacterMedia(character) {
-  const cachedMedia = characterMediaCache.get(getCharacterMediaCacheKey(character));
+  const cachedMedia = characterMediaCache.get(
+    getCharacterMediaCacheKey(character),
+  );
 
   if (!cachedMedia) {
     return character;
@@ -238,7 +276,11 @@ function applyCachedCharacterMedia(character) {
 }
 
 function cacheCharacterMedia(character) {
-  if (!character?.avatarUrl && !character?.portraitUrl && !character?.fullBodyUrl) {
+  if (
+    !character?.avatarUrl &&
+    !character?.portraitUrl &&
+    !character?.fullBodyUrl
+  ) {
     return character;
   }
 
@@ -269,7 +311,10 @@ async function fetchJsonWithRetry(url, accessToken, attempts = 2) {
       },
     });
 
-    if (response.ok || ![404, 429, 500, 502, 503, 504].includes(response.status)) {
+    if (
+      response.ok ||
+      ![404, 429, 500, 502, 503, 504].includes(response.status)
+    ) {
       break;
     }
 
@@ -297,10 +342,14 @@ function normalizeBlizzardHref(href) {
 }
 
 async function fetchCharacterAvatar(character, accessToken) {
-  const rawRealmSlug = String(character.realmSlug || character.realm || "").trim();
+  const rawRealmSlug = String(
+    character.realmSlug || character.realm || "",
+  ).trim();
   const realmSlug = encodeURIComponent(rawRealmSlug.toLowerCase());
   const characterName = encodeURIComponent(
-    String(character.name || "").trim().toLowerCase(),
+    String(character.name || "")
+      .trim()
+      .toLowerCase(),
   );
   const standardProfileUrl =
     `${BLIZZARD_API_ORIGIN}/profile/wow/character/` +
@@ -310,9 +359,12 @@ async function fetchCharacterAvatar(character, accessToken) {
     `${realmSlug}/${characterName}/character-media?${BLIZZARD_PROFILE_QUERY}`;
 
   const profileUrls = [];
-  const canonicalProfileUrl = normalizeBlizzardHref(character.profileHref || null);
+  const canonicalProfileUrl = normalizeBlizzardHref(
+    character.profileHref || null,
+  );
   if (canonicalProfileUrl) profileUrls.push(canonicalProfileUrl);
-  if (!profileUrls.includes(standardProfileUrl)) profileUrls.push(standardProfileUrl);
+  if (!profileUrls.includes(standardProfileUrl))
+    profileUrls.push(standardProfileUrl);
 
   const diagnostic = {
     character: `${character.name}-${rawRealmSlug}`,
@@ -323,7 +375,11 @@ async function fetchCharacterAvatar(character, accessToken) {
   };
 
   const queuedRetry = mediaRetry.getEntry(character);
-  if (queuedRetry && queuedRetry.status === "waiting" && !mediaRetry.isDue(character)) {
+  if (
+    queuedRetry &&
+    queuedRetry.status === "waiting" &&
+    !mediaRetry.isDue(character)
+  ) {
     return applyAzerFallbackPortrait(
       character,
       {
@@ -342,15 +398,25 @@ async function fetchCharacterAvatar(character, accessToken) {
     const candidateMediaUrls = [];
 
     for (const profileUrl of profileUrls) {
-      const profileResponse = await fetchJsonWithRetry(profileUrl, accessToken, 2);
-      diagnostic.profileAttempts.push({ url: profileUrl, status: profileResponse.status });
+      const profileResponse = await fetchJsonWithRetry(
+        profileUrl,
+        accessToken,
+        2,
+      );
+      diagnostic.profileAttempts.push({
+        url: profileUrl,
+        status: profileResponse.status,
+      });
 
       if (!profileResponse.ok) continue;
       const profile = await profileResponse.json();
       const canonicalMediaUrl = normalizeBlizzardHref(
         profile?.media?.href || profile?.media_url || null,
       );
-      if (canonicalMediaUrl && !candidateMediaUrls.includes(canonicalMediaUrl)) {
+      if (
+        canonicalMediaUrl &&
+        !candidateMediaUrls.includes(canonicalMediaUrl)
+      ) {
         candidateMediaUrls.push(canonicalMediaUrl);
       }
     }
@@ -380,7 +446,8 @@ async function fetchCharacterAvatar(character, accessToken) {
       const portraitUrl = avatarUrl || insetUrl || null;
 
       if (avatarUrl || portraitUrl || fullBodyUrl) {
-        diagnostic.source = mediaUrl === standardMediaUrl ? "constructed" : "canonical";
+        diagnostic.source =
+          mediaUrl === standardMediaUrl ? "constructed" : "canonical";
         diagnostic.resolved = true;
         mediaRetry.resolve(character, {
           profileStatus: diagnostic.profileAttempts.at(-1)?.status || 200,
@@ -408,7 +475,11 @@ async function fetchCharacterAvatar(character, accessToken) {
         mediaStatus: "cached",
         portraitSource: "persistent-cache",
         isFallbackPortrait: false,
-        mediaDiagnostic: { ...diagnostic, source: "persistent-cache", resolved: true },
+        mediaDiagnostic: {
+          ...diagnostic,
+          source: "persistent-cache",
+          resolved: true,
+        },
       };
     }
 
@@ -416,10 +487,11 @@ async function fetchCharacterAvatar(character, accessToken) {
       ...diagnostic.profileAttempts.map((attempt) => attempt.status),
       ...diagnostic.mediaAttempts.map((attempt) => attempt.status),
     ];
-    const allMissing = statuses.length > 0 && statuses.every((status) => status === 404);
+    const allMissing =
+      statuses.length > 0 && statuses.every((status) => status === 404);
     console.warn(
       `Portrait Engine : aucun média Blizzard pour ${character.name}-${rawRealmSlug}. ` +
-      `Région=${BLIZZARD_REGION}, statuts=${statuses.join(",") || "aucun"}.`,
+        `Région=${BLIZZARD_REGION}, statuts=${statuses.join(",") || "aucun"}.`,
     );
 
     const retryEntry = mediaRetry.schedule(character, {
@@ -518,13 +590,22 @@ async function fetchCharacterProfessions(realm, name, accessToken) {
   });
 
   if (!response.ok) {
-    const error = new Error(
-      `Métiers Blizzard indisponibles pour ${name} sur ${realm} (${response.status}).`,
+    const errorText = await response.text();
+
+    console.error(
+      "Erreur profil Battle.net:",
+      response.status,
+      response.statusText,
+      errorText,
     );
+
+    const error = new Error(
+      `Impossible de récupérer le profil Battle.net. HTTP ${response.status}`,
+    );
+
     error.status = response.status;
     throw error;
   }
-
   return normalizeCharacterProfessions(await response.json());
 }
 
@@ -567,8 +648,16 @@ function normalizeCharacterAchievements(data = {}) {
 }
 
 async function fetchCharacterAchievements(realm, name, accessToken) {
-  const realmSlug = encodeURIComponent(String(realm || "").trim().toLowerCase());
-  const characterName = encodeURIComponent(String(name || "").trim().toLowerCase());
+  const realmSlug = encodeURIComponent(
+    String(realm || "")
+      .trim()
+      .toLowerCase(),
+  );
+  const characterName = encodeURIComponent(
+    String(name || "")
+      .trim()
+      .toLowerCase(),
+  );
   const data = await fetchProfileResource(
     `/profile/wow/character/${realmSlug}/${characterName}/achievements`,
     accessToken,
@@ -591,14 +680,14 @@ async function fetchAccountCollections(accessToken) {
     ),
   ]);
 
-  const mounts = mountsResult.status === "fulfilled"
-    ? mountsResult.value.mounts || []
-    : [];
-  const pets = petsResult.status === "fulfilled"
-    ? petsResult.value.pets || []
-    : [];
+  const mounts =
+    mountsResult.status === "fulfilled" ? mountsResult.value.mounts || [] : [];
+  const pets =
+    petsResult.status === "fulfilled" ? petsResult.value.pets || [] : [];
   const uniqueSpecies = new Set(
-    pets.map((pet) => Number(pet.species?.id || pet.species_id || 0)).filter(Boolean),
+    pets
+      .map((pet) => Number(pet.species?.id || pet.species_id || 0))
+      .filter(Boolean),
   );
 
   return {
@@ -613,9 +702,10 @@ async function fetchAccountCollections(accessToken) {
           favorite: entry.is_favorite === true,
         }))
         .filter((entry) => entry.id)
-        .sort((first, second) =>
-          Number(second.favorite) - Number(first.favorite) ||
-          first.name.localeCompare(second.name, "fr"),
+        .sort(
+          (first, second) =>
+            Number(second.favorite) - Number(first.favorite) ||
+            first.name.localeCompare(second.name, "fr"),
         ),
     },
     pets: {
@@ -637,10 +727,11 @@ async function fetchAccountCollections(accessToken) {
           speed: Number(entry.stats?.speed || 0),
         }))
         .filter((entry) => entry.id)
-        .sort((first, second) =>
-          Number(second.favorite) - Number(first.favorite) ||
-          second.level - first.level ||
-          first.name.localeCompare(second.name, "fr"),
+        .sort(
+          (first, second) =>
+            Number(second.favorite) - Number(first.favorite) ||
+            second.level - first.level ||
+            first.name.localeCompare(second.name, "fr"),
         ),
     },
   };
@@ -648,8 +739,10 @@ async function fetchAccountCollections(accessToken) {
 
 async function fetchCollectionDetail(kind, id, accessToken) {
   const cacheKey = `${kind}:${id}`;
-  if (collectionDetailCache.has(cacheKey)) return collectionDetailCache.get(cacheKey);
-  const detailPath = kind === "mount" ? `/data/wow/mount/${id}` : `/data/wow/pet/${id}`;
+  if (collectionDetailCache.has(cacheKey))
+    return collectionDetailCache.get(cacheKey);
+  const detailPath =
+    kind === "mount" ? `/data/wow/mount/${id}` : `/data/wow/pet/${id}`;
   const detail = await fetchProfileResource(
     detailPath,
     accessToken,
@@ -662,7 +755,8 @@ async function fetchCollectionDetail(kind, id, accessToken) {
 
 async function fetchCollectionMedia(kind, id, displayId, accessToken) {
   const cacheKey = `${kind}:${id}:${displayId || 0}`;
-  if (collectionMediaCache.has(cacheKey)) return collectionMediaCache.get(cacheKey);
+  if (collectionMediaCache.has(cacheKey))
+    return collectionMediaCache.get(cacheKey);
 
   let creatureDisplayId = Number(displayId || 0);
   if (!creatureDisplayId) {
@@ -681,11 +775,15 @@ async function fetchCollectionMedia(kind, id, displayId, accessToken) {
   if (!response.ok) return null;
   const media = await response.json();
   const preferredKeys = ["zoom-raw", "zoom", "avatar", "icon"];
-  const asset = preferredKeys
-    .map((key) => (media.assets || []).find(
-      (entry) => String(entry.key || "").toLowerCase() === key,
-    )?.value)
-    .find(Boolean) || null;
+  const asset =
+    preferredKeys
+      .map(
+        (key) =>
+          (media.assets || []).find(
+            (entry) => String(entry.key || "").toLowerCase() === key,
+          )?.value,
+      )
+      .find(Boolean) || null;
   if (asset) collectionMediaCache.set(cacheKey, asset);
   return asset;
 }
@@ -861,7 +959,8 @@ async function handleAccountSync(req, res) {
     console.error("Erreur de synchronisation Azer Companion :", error);
     return res.status(error.status || 502).json({
       connected: false,
-      error: error.message || "La synchronisation est temporairement indisponible.",
+      error:
+        error.message || "La synchronisation est temporairement indisponible.",
     });
   }
 }
@@ -909,7 +1008,11 @@ router.get("/api/characters/:realm/:name/progression", async (req, res) => {
   const [professionsResult, achievementsResult, collectionsResult] =
     await Promise.allSettled([
       fetchCharacterProfessions(req.params.realm, req.params.name, accessToken),
-      fetchCharacterAchievements(req.params.realm, req.params.name, accessToken),
+      fetchCharacterAchievements(
+        req.params.realm,
+        req.params.name,
+        accessToken,
+      ),
       fetchAccountCollections(accessToken),
     ]);
 
@@ -918,7 +1021,9 @@ router.get("/api/characters/:realm/:name/progression", async (req, res) => {
     professions:
       professionsResult.status === "fulfilled" ? professionsResult.value : [],
     achievements:
-      achievementsResult.status === "fulfilled" ? achievementsResult.value : null,
+      achievementsResult.status === "fulfilled"
+        ? achievementsResult.value
+        : null,
     collections:
       collectionsResult.status === "fulfilled" ? collectionsResult.value : null,
     available: {
@@ -931,7 +1036,9 @@ router.get("/api/characters/:realm/:name/progression", async (req, res) => {
 
 router.get("/api/portraits/diagnostics", async (req, res) => {
   if (!req.session.blizzard_access_token) {
-    return res.status(401).json({ connected: false, error: "Compte Battle.net non connecté." });
+    return res
+      .status(401)
+      .json({ connected: false, error: "Compte Battle.net non connecté." });
   }
 
   try {
@@ -951,7 +1058,9 @@ router.get("/api/portraits/diagnostics", async (req, res) => {
     }));
     return res.json({ connected: true, region: BLIZZARD_REGION, portraits });
   } catch (error) {
-    return res.status(error.status || 502).json({ connected: true, error: error.message });
+    return res
+      .status(error.status || 502)
+      .json({ connected: true, error: error.message });
   }
 });
 
@@ -973,7 +1082,6 @@ router.post("/api/blizzard-sync/retry/:realm/:name", (req, res) => {
     message: "La prochaine synchronisation vérifiera immédiatement Blizzard.",
   });
 });
-
 
 router.get("/api/ase/status", (req, res) => {
   res.json({
@@ -1030,7 +1138,9 @@ router.get("/api/ase/collection-detail/:kind/:id", async (req, res) => {
       id,
       name: String(detail.name || ""),
       description: String(detail.description || ""),
-      source: String(detail.source?.name || detail.source || detail.source_type?.name || ""),
+      source: String(
+        detail.source?.name || detail.source || detail.source_type?.name || "",
+      ),
       type: String(
         kind === "pet"
           ? detail.battle_pet_type?.name || "Mascotte de combat"
@@ -1052,11 +1162,17 @@ router.get("/api/ase/collection-media/:kind/:id", async (req, res) => {
   if (!id || !accessToken) return res.status(404).end();
 
   try {
-    const mediaUrl = await fetchCollectionMedia(kind, id, displayId, accessToken);
+    const mediaUrl = await fetchCollectionMedia(
+      kind,
+      id,
+      displayId,
+      accessToken,
+    );
     if (!mediaUrl) return res.status(404).end();
     const mediaResponse = await fetch(mediaUrl);
     if (!mediaResponse.ok) return res.status(404).end();
-    const contentType = mediaResponse.headers.get("content-type") || "image/png";
+    const contentType =
+      mediaResponse.headers.get("content-type") || "image/png";
     const imageBuffer = Buffer.from(await mediaResponse.arrayBuffer());
     res.set("Content-Type", contentType);
     res.set("Cache-Control", "private, max-age=604800");
@@ -1070,11 +1186,20 @@ router.get("/api/ase/heroes", async (req, res) => {
   try {
     const syncResult = await synchronizeAccount(req);
     const heroes = Array.isArray(syncResult.heroes) ? syncResult.heroes : [];
-    const requestedKey = String(req.query.characterKey || "").trim().toLowerCase();
+    const requestedKey = String(req.query.characterKey || "")
+      .trim()
+      .toLowerCase();
     const filtered = requestedKey
-      ? heroes.filter((hero) => String(hero.key || "").toLowerCase() === requestedKey)
+      ? heroes.filter(
+          (hero) => String(hero.key || "").toLowerCase() === requestedKey,
+        )
       : heroes;
-    res.json({ ok: true, count: filtered.length, heroes: filtered, summary: syncResult.ase?.hero || null });
+    res.json({
+      ok: true,
+      count: filtered.length,
+      heroes: filtered,
+      summary: syncResult.ase?.hero || null,
+    });
   } catch (error) {
     res.status(error.status || 500).json({ ok: false, error: error.message });
   }
@@ -1118,14 +1243,23 @@ router.get("/api/quests", async (req, res) => {
   try {
     const collector = await readCollectorSummary();
     if (!collector.available) {
-      return res.json({ available: false, account: null, characters: [], completedObserved: [] });
+      return res.json({
+        available: false,
+        account: null,
+        characters: [],
+        completedObserved: [],
+      });
     }
 
-    const normalizeQuestList = (value) => Array.isArray(value) ? value : [];
+    const normalizeQuestList = (value) => (Array.isArray(value) ? value : []);
     const questId = (quest) => Number(quest?.id || 0);
-    const questKey = (character) => String(
-      character.identityKey || `${character.name || ""}-${character.realm || ""}`,
-    ).normalize("NFKC").toLowerCase();
+    const questKey = (character) =>
+      String(
+        character.identityKey ||
+          `${character.name || ""}-${character.realm || ""}`,
+      )
+        .normalize("NFKC")
+        .toLowerCase();
 
     const rawCharacters = (collector.characters || []).map((character) => ({
       storageKey: character.storageKey,
@@ -1140,18 +1274,27 @@ router.get("/api/quests", async (req, res) => {
       raceName: character.raceName || character.appearance?.raceName || "",
       raceId: character.raceId || character.appearance?.raceID || 0,
       raceSlug: character.appearance?.raceSlug || "",
-      classProgress: character.classProgress && typeof character.classProgress === "object"
-        ? character.classProgress
-        : {},
-      hunterPets: character.hunterPets && typeof character.hunterPets === "object"
-        ? character.hunterPets
-        : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
+      classProgress:
+        character.classProgress && typeof character.classProgress === "object"
+          ? character.classProgress
+          : {},
+      hunterPets:
+        character.hunterPets && typeof character.hunterPets === "object"
+          ? character.hunterPets
+          : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
       active: normalizeQuestList(character.quests?.active),
-      activeAccountShared: normalizeQuestList(character.quests?.activeAccountShared),
-      completedObserved: normalizeQuestList(character.quests?.completedObserved),
+      activeAccountShared: normalizeQuestList(
+        character.quests?.activeAccountShared,
+      ),
+      completedObserved: normalizeQuestList(
+        character.quests?.completedObserved,
+      ),
       completedHistory: normalizeQuestList(character.quests?.completedHistory),
-      completedAccountShared: normalizeQuestList(character.quests?.completedAccountShared),
-      completedHistoryScannedAt: character.quests?.completedHistoryScannedAt || 0,
+      completedAccountShared: normalizeQuestList(
+        character.quests?.completedAccountShared,
+      ),
+      completedHistoryScannedAt:
+        character.quests?.completedHistoryScannedAt || 0,
     }));
 
     // Une quête explicitement marquée « compte » par WoW est toujours rangée
@@ -1165,20 +1308,34 @@ router.get("/api/quests", async (req, res) => {
     const activeOccurrences = new Map();
     const accountActiveRecords = new Map();
 
-    const collectorAccountActive = Array.isArray(collector.account?.quests?.activeShared)
+    const collectorAccountActive = Array.isArray(
+      collector.account?.quests?.activeShared,
+    )
       ? collector.account.quests.activeShared
       : [];
     collectorAccountActive.forEach((quest) => {
       const id = questId(quest);
-      if (id) accountActiveRecords.set(id, { ...quest, scope: "account", scopeReason: quest.scopeReason || "collector_account_active" });
+      if (id)
+        accountActiveRecords.set(id, {
+          ...quest,
+          scope: "account",
+          scopeReason: quest.scopeReason || "collector_account_active",
+        });
     });
 
-    const collectorAccountShared = Array.isArray(collector.account?.quests?.completedShared)
+    const collectorAccountShared = Array.isArray(
+      collector.account?.quests?.completedShared,
+    )
       ? collector.account.quests.completedShared
       : [];
     collectorAccountShared.forEach((quest) => {
       const id = questId(quest);
-      if (id) accountRecords.set(id, { ...quest, scope: "account", scopeReason: "collector_account_store" });
+      if (id)
+        accountRecords.set(id, {
+          ...quest,
+          scope: "account",
+          scopeReason: "collector_account_store",
+        });
     });
 
     rawCharacters.forEach((character) => {
@@ -1186,12 +1343,22 @@ router.get("/api/quests", async (req, res) => {
         const id = questId(quest);
         if (!id) return;
         if (!activeOccurrences.has(id)) activeOccurrences.set(id, []);
-        activeOccurrences.get(id).push({ characterKey: questKey(character), quest });
-        if (quest.isAccountQuest || quest.isPetBattleQuest || quest.scope === "account") {
+        activeOccurrences
+          .get(id)
+          .push({ characterKey: questKey(character), quest });
+        if (
+          quest.isAccountQuest ||
+          quest.isPetBattleQuest ||
+          quest.scope === "account"
+        ) {
           accountActiveRecords.set(id, {
             ...quest,
             scope: "account",
-            scopeReason: quest.isAccountQuest ? "blizzard_account" : quest.isPetBattleQuest ? "pet_battle" : "collector_account_active",
+            scopeReason: quest.isAccountQuest
+              ? "blizzard_account"
+              : quest.isPetBattleQuest
+                ? "pet_battle"
+                : "collector_account_active",
           });
         }
       });
@@ -1199,7 +1366,11 @@ router.get("/api/quests", async (req, res) => {
       character.activeAccountShared.forEach((quest) => {
         const id = questId(quest);
         if (!id) return;
-        accountActiveRecords.set(id, { ...quest, scope: "account", scopeReason: quest.scopeReason || "collector_account_active" });
+        accountActiveRecords.set(id, {
+          ...quest,
+          scope: "account",
+          scopeReason: quest.scopeReason || "collector_account_active",
+        });
       });
 
       character.completedObserved.forEach((quest) => {
@@ -1220,13 +1391,19 @@ router.get("/api/quests", async (req, res) => {
         accountRecords.set(id, {
           ...quest,
           scope: "account",
-          scopeReason: quest.isAccountQuest ? "blizzard_account" : quest.isPetBattleQuest ? "pet_battle" : "collector_shared",
+          scopeReason: quest.isAccountQuest
+            ? "blizzard_account"
+            : quest.isPetBattleQuest
+              ? "pet_battle"
+              : "collector_shared",
         });
       });
     });
 
     activeOccurrences.forEach((items, id) => {
-      const distinctCharacters = new Set(items.map((item) => item.characterKey));
+      const distinctCharacters = new Set(
+        items.map((item) => item.characterKey),
+      );
       if (distinctCharacters.size >= 2 && !accountActiveRecords.has(id)) {
         accountActiveRecords.set(id, {
           ...items[0].quest,
@@ -1239,8 +1416,14 @@ router.get("/api/quests", async (req, res) => {
     });
 
     occurrences.forEach((items, id) => {
-      const distinctCharacters = new Set(items.map((item) => item.characterKey));
-      if (distinctCharacters.size >= 2 && !observedIds.has(id) && !accountRecords.has(id)) {
+      const distinctCharacters = new Set(
+        items.map((item) => item.characterKey),
+      );
+      if (
+        distinctCharacters.size >= 2 &&
+        !observedIds.has(id) &&
+        !accountRecords.has(id)
+      ) {
         accountRecords.set(id, {
           ...items[0].quest,
           scope: "account",
@@ -1254,7 +1437,9 @@ router.get("/api/quests", async (req, res) => {
     const accountIds = new Set(accountRecords.keys());
     const accountActiveIds = new Set(accountActiveRecords.keys());
     const characters = rawCharacters.map((character) => {
-      const personalObservedIds = new Set(character.completedObserved.map(questId).filter(Boolean));
+      const personalObservedIds = new Set(
+        character.completedObserved.map(questId).filter(Boolean),
+      );
       const personalActive = character.active.filter((quest) => {
         const id = questId(quest);
         return id && !accountActiveIds.has(id);
@@ -1277,17 +1462,33 @@ router.get("/api/quests", async (req, res) => {
       };
     });
 
-    let accountCompleted = [...accountRecords.values()].sort((a, b) => questId(a) - questId(b));
-    let accountActive = [...accountActiveRecords.values()].sort((a, b) => questId(a) - questId(b));
+    let accountCompleted = [...accountRecords.values()].sort(
+      (a, b) => questId(a) - questId(b),
+    );
+    let accountActive = [...accountActiveRecords.values()].sort(
+      (a, b) => questId(a) - questId(b),
+    );
 
     const accessToken = req.session.blizzard_access_token || null;
-    accountCompleted = await enrichQuestRewardMedia(accountCompleted, accessToken);
+    accountCompleted = await enrichQuestRewardMedia(
+      accountCompleted,
+      accessToken,
+    );
     accountActive = await enrichQuestRewardMedia(accountActive, accessToken);
 
     for (const character of characters) {
-      character.active = await enrichQuestRewardMedia(character.active, accessToken);
-      character.completedObserved = await enrichQuestRewardMedia(character.completedObserved, accessToken);
-      character.completedHistory = await enrichQuestRewardMedia(character.completedHistory, accessToken);
+      character.active = await enrichQuestRewardMedia(
+        character.active,
+        accessToken,
+      );
+      character.completedObserved = await enrichQuestRewardMedia(
+        character.completedObserved,
+        accessToken,
+      );
+      character.completedHistory = await enrichQuestRewardMedia(
+        character.completedHistory,
+        accessToken,
+      );
     }
 
     return res.json({
@@ -1300,7 +1501,9 @@ router.get("/api/quests", async (req, res) => {
         realm: "Bande de guerre",
         active: accountActive,
         activeCount: accountActive.length,
-        completedObserved: accountCompleted.filter((quest) => String(quest.source || "").includes("observed_account")),
+        completedObserved: accountCompleted.filter((quest) =>
+          String(quest.source || "").includes("observed_account"),
+        ),
         completedHistory: accountCompleted,
         completedHistoryCount: accountCompleted.length,
         completedAccountShared: accountCompleted,
@@ -1310,7 +1513,14 @@ router.get("/api/quests", async (req, res) => {
     });
   } catch (error) {
     console.error("Impossible de lire les quêtes du Collector :", error);
-    return res.status(500).json({ available: false, account: null, characters: [], error: "collector_quests_unavailable" });
+    return res
+      .status(500)
+      .json({
+        available: false,
+        account: null,
+        characters: [],
+        error: "collector_quests_unavailable",
+      });
   }
 });
 const hunterPetIconCache = new Map();
@@ -1324,9 +1534,13 @@ router.get("/api/media/file/:fileId", async (req, res) => {
   try {
     const url = `${BLIZZARD_API_ORIGIN}/data/wow/search/media?namespace=static-${BLIZZARD_REGION}&assets.file_data_id=${fileId}&_pageSize=1`;
     const payload = await fetchJsonWithRetry(url, accessToken, 2);
-    const result = Array.isArray(payload?.results) ? payload.results[0]?.data : null;
+    const result = Array.isArray(payload?.results)
+      ? payload.results[0]?.data
+      : null;
     const assets = Array.isArray(result?.assets) ? result.assets : [];
-    const asset = assets.find((item) => Number(item?.file_data_id || 0) === fileId) || assets[0];
+    const asset =
+      assets.find((item) => Number(item?.file_data_id || 0) === fileId) ||
+      assets[0];
     if (!asset?.value) return res.status(404).end();
     hunterPetIconCache.set(fileId, asset.value);
     return res.redirect(302, asset.value);
