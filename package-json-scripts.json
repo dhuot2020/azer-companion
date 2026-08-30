@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "auth:encryption-check": "node scripts/oauth-encryption-check.js"
+  }
+}

@@ -1,0 +1,11 @@
+AZER COMPAGNION - FUSION V2
+
+Principe de cette version:
+- GraphV1 est la source de verite VISUELLE.
+- La structure HTML de views/carnet.ejs vient directement de GraphV1.
+- Les CSS/assets GraphV1 sont recopies tels quels.
+- public/js/app.js part de GraphV1 et recoit seulement les adaptations API multiuser.
+- Le backend PostgreSQL/OAuth/personnage actif reste celui de la version multiuser.
+- La liste PostgreSQL est enrichie pour fournir classe/race/faction/medias au renderer GraphV1.
+
+.env volontairement non inclus.

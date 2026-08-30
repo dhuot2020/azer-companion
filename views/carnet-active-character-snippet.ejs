@@ -1,0 +1,38 @@
+<!-- =========================================================
+     PACK 25 - EXEMPLE D'INTEGRATION DANS carnet.ejs
+     Ajouter uniquement les attributs data-* aux elements existants.
+     Il n'est PAS necessaire de refaire le design.
+========================================================= -->
+
+<!-- Titre actuel -->
+<h1 data-active-character-welcome>
+  Bon retour.
+</h1>
+
+<!-- Dans la zone d'identite du personnage -->
+<strong data-active-character-name>—</strong>
+
+<!-- Niveau -->
+<b data-active-character-level>—</b>
+
+<!-- Royaume, si tu as deja un emplacement -->
+<span data-active-character-realm>—</span>
+
+<!-- Contenu visible seulement lorsqu'un personnage est choisi -->
+<div data-active-character-content hidden>
+  <!-- ton contenu actuel -->
+</div>
+
+<!-- Message si aucun personnage n'est choisi -->
+<div data-active-character-empty>
+  <p>Aucun personnage actif.</p>
+  <button
+    type="button"
+    class="character-switch"
+  >
+    Choisir un personnage
+  </button>
+</div>
+
+<!-- Avant </body> / footer include -->
+<script src="/js/carnet-active-character.js"></script>

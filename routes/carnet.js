@@ -7,8 +7,24 @@ const { readCollectorSummary } = require("../services/azerCollector");
 const { buildSyncResult } = require("../core/sync/syncManager");
 const mediaRetry = require("../services/blizzardMediaRetry");
 const { getStatus: getAseStatus } = require("../core/ase");
+const { getActiveAccessTokenForUser } = require("../repositories/oauthCredentials");
 
 const router = express.Router();
+
+async function getRequestBattleNetAccessToken(req) {
+  // Compatibilite ancien flux, puis nouveau coffre OAuth chiffre PostgreSQL.
+  if (req.session?.blizzard_access_token) {
+    return req.session.blizzard_access_token;
+  }
+
+  const userId = req.session?.userId;
+  if (!userId) return null;
+
+  const credential = await getActiveAccessTokenForUser(userId);
+  if (!credential || credential.expired || !credential.accessToken) return null;
+  return credential.accessToken;
+}
+
 
 const BLIZZARD_REGION = String(
   process.env.BLIZZARD_REGION || "us",
@@ -1000,11 +1016,10 @@ router.get("/api/characters/:realm/:name/professions", async (req, res) => {
 });
 
 router.get("/api/characters/:realm/:name/progression", async (req, res) => {
-  if (!req.session.blizzard_access_token) {
+  const accessToken = await getRequestBattleNetAccessToken(req);
+  if (!accessToken) {
     return res.status(401).json({ connected: false });
   }
-
-  const accessToken = req.session.blizzard_access_token;
   const [professionsResult, achievementsResult, collectionsResult] =
     await Promise.allSettled([
       fetchCharacterProfessions(req.params.realm, req.params.name, accessToken),
@@ -1128,7 +1143,7 @@ router.get("/api/ase/item-icon/:itemId", async (req, res) => {
 router.get("/api/ase/collection-detail/:kind/:id", async (req, res) => {
   const kind = req.params.kind === "pet" ? "pet" : "mount";
   const id = Number(req.params.id || 0);
-  const accessToken = req.session.blizzard_access_token;
+  const accessToken = await getRequestBattleNetAccessToken(req);
   if (!id || !accessToken) return res.status(404).json({ available: false });
 
   try {
@@ -1158,7 +1173,7 @@ router.get("/api/ase/collection-media/:kind/:id", async (req, res) => {
   const kind = req.params.kind === "pet" ? "pet" : "mount";
   const id = Number(req.params.id || 0);
   const displayId = Number(req.query.displayId || 0);
-  const accessToken = req.session.blizzard_access_token;
+  const accessToken = await getRequestBattleNetAccessToken(req);
   if (!id || !accessToken) return res.status(404).end();
 
   try {

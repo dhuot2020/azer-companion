@@ -1,0 +1,32 @@
+<!-- =========================================================
+     CHARACTER SYNC PANEL
+     A integrer dans la page utilisateur/personnage.
+========================================================= -->
+
+<section class="character-sync-panel">
+  <div class="character-sync-panel__header">
+    <div>
+      <h2>Mes personnages</h2>
+      <p>
+        Personnages liés à votre compte Battle.net.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="character-sync-button"
+      data-sync-characters
+    >
+      Synchroniser mes personnages
+    </button>
+  </div>
+
+  <div
+    class="character-list"
+    data-character-list
+  >
+    <p>Chargement des personnages...</p>
+  </div>
+</section>
+
+<script src="/js/character-sync.js"></script>

@@ -1,0 +1,10 @@
+// Dans index.js, ajouter avec les autres require :
+const activeCharacterRouter = require("./routes/activeCharacter");
+
+// Puis APRES le middleware express.json() et la session :
+app.use("/api/characters/active", activeCharacterRouter);
+
+// IMPORTANT:
+// Si app.use("/api/characters", charactersBattleNetRouter) existe déjà,
+// Express acceptera les deux. Il est toutefois plus lisible de déclarer
+// /api/characters/active AVANT /api/characters.

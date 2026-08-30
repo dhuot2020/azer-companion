@@ -320,7 +320,7 @@ function resetProfileImageView() {
   applyProfileImageView();
 }
 const selectedCharacterStorageKey = "azerCompanion.selectedCharacter";
-const charactersRosterStorageKey = "azerCompanion.charactersRoster.v1";
+const charactersRosterStorageKey = "azerCompanion.charactersRoster.v2";
 let currentCharacterKey = readSelectedCharacterKey();
 
 function normalizeCharacterIdentityPart(value) {
@@ -933,25 +933,37 @@ function getGenderIconSvg(gender) {
 // ======================================================
 
 function normalizeCharacter(character) {
-  const classInfo = classDetails[character.classId] || {
+  const normalizedCharacter = {
+    ...character,
+    id: character.id,
+    realm: character.realm || character.realm_name || character.realm_slug || "",
+    realmSlug: character.realmSlug || character.realm_slug || "",
+    classId: character.classId ?? character.blizzard_class_id ?? character.class_id ?? null,
+    raceId: character.raceId ?? character.blizzard_race_id ?? character.race_id ?? null,
+    blizzardCharacterId: character.blizzardCharacterId ?? character.blizzard_character_id ?? null,
+    avatarUrl: character.avatarUrl || character.avatar_url || null,
+    portraitUrl: character.portraitUrl || character.portrait_url || null,
+    fullBodyUrl: character.fullBodyUrl || character.full_body_url || null,
+  };
+
+  const classInfo = classDetails[normalizedCharacter.classId] || {
     name: `Classe ${character.classId}`,
     color: "#d6b76d",
     icon: "⚔",
   };
 
   return {
-    ...character,
-    className: classInfo.name,
+    ...normalizedCharacter,
+    className: normalizedCharacter.class_name || classInfo.name,
     classColor: classInfo.color,
     classIcon: classInfo.icon,
-    raceName: raceNames[character.raceId] || `Race ${character.raceId}`,
-    factionName: String(character.faction || "Alliance").toUpperCase(),
-    genderName:
-      character.genderName || character.gender?.name || character.gender || "",
-    isShowcase: Boolean(character.isShowcase),
-    portraitSource: character.portraitSource || (character.isFallbackPortrait ? "azer-fallback" : "blizzard"),
-    isFallbackPortrait: Boolean(character.isFallbackPortrait || character.portraitSource === "azer-fallback"),
-    image: getCharacterImage(character),
+    raceName: normalizedCharacter.race_name || raceNames[normalizedCharacter.raceId] || (normalizedCharacter.raceId ? `Race ${normalizedCharacter.raceId}` : "Race inconnue"),
+    factionName: String(normalizedCharacter.faction || "Alliance").toUpperCase(),
+    genderName: normalizedCharacter.genderName || normalizedCharacter.gender?.name || normalizedCharacter.gender || "",
+    isShowcase: Boolean(normalizedCharacter.isShowcase),
+    portraitSource: normalizedCharacter.portraitSource || (normalizedCharacter.isFallbackPortrait ? "azer-fallback" : "blizzard"),
+    isFallbackPortrait: Boolean(normalizedCharacter.isFallbackPortrait || normalizedCharacter.portraitSource === "azer-fallback"),
+    image: getCharacterImage(normalizedCharacter),
   };
 }
 
@@ -1214,20 +1226,32 @@ function renderCharacterUnavailable(message) {
   }
 }
 
-function selectCharacter(character) {
-  currentCharacterKey = getCharacterKey(character);
-  saveSelectedCharacterKey(currentCharacterKey);
+async function selectCharacter(character) {
+  if (!character?.id) {
+    console.error("Identifiant PostgreSQL manquant pour le personnage.", character);
+    return;
+  }
+  try {
+    const response = await fetch("/api/characters/active", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ character_id: Number(character.id) }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.ok) throw new Error(data?.message || data?.error || "Sélection impossible");
 
-  document.querySelectorAll(".character-card").forEach((card) => {
-    card.classList.toggle(
-      "active-character",
-      card.dataset.characterKey === currentCharacterKey,
-    );
-  });
-
-  updateDashboardCharacter(character);
-
-  openDashboardView();
+    currentCharacterKey = getCharacterKey(character);
+    saveSelectedCharacterKey(currentCharacterKey);
+    document.querySelectorAll(".character-card").forEach((card) => {
+      card.classList.toggle("active-character", card.dataset.characterKey === currentCharacterKey);
+    });
+    updateDashboardCharacter(character);
+    document.dispatchEvent(new CustomEvent("azer:active-character-changed", { detail: data.character }));
+    openDashboardView();
+  } catch (error) {
+    console.error("Erreur sélection personnage :", error);
+  }
 }
 
 function renderBattleStatus(state, message) {
@@ -1246,17 +1270,14 @@ function renderBattleStatus(state, message) {
 
 async function isBattleNetSessionConnected() {
   try {
-    const response = await fetch("/api/blizzard/status", {
+    const response = await fetch("/api/auth/me", {
       cache: "no-store",
+      credentials: "same-origin",
       headers: { Accept: "application/json" },
     });
-
-    if (!response.ok) {
-      return false;
-    }
-
+    if (!response.ok) return false;
     const status = await response.json();
-    return Boolean(status.connected);
+    return Boolean(status?.ok && status?.user);
   } catch (_error) {
     return false;
   }
@@ -1283,7 +1304,7 @@ function restoreCachedCharactersForExpiredSession() {
   charactersList.innerHTML = `
     <div class="characters-empty">
       <p>Ton compte Battle.net n’est pas connecté.</p>
-      <a class="characters-connect-button" href="/auth/blizzard">
+      <a class="characters-connect-button" href="/api/auth/battlenet">
         Se connecter à Battle.net
       </a>
     </div>
@@ -1292,13 +1313,7 @@ function restoreCachedCharactersForExpiredSession() {
 }
 
 async function loadCharacters(options = {}) {
-  if (!charactersList) {
-    return;
-  }
-
-  if (charactersSyncInProgress) {
-    return;
-  }
+  if (!charactersList || charactersSyncInProgress) return;
 
   charactersSyncInProgress = true;
   const isManualSync = Boolean(options.manual);
@@ -1309,87 +1324,69 @@ async function loadCharacters(options = {}) {
   renderBattleStatus("loading", isManualSync ? "Mise à jour en cours..." : "Synchronisation...");
 
   if (!blizzardCharacters.length) {
-    charactersList.innerHTML = `
-      <div class="characters-loading">
-        Chargement des personnages...
-      </div>
-    `;
+    charactersList.innerHTML = `<div class="characters-loading">Chargement des personnages...</div>`;
   }
 
   try {
     await loadCollectorCharacters();
 
-    // Évite volontairement l'appel à /api/characters lorsque la session est
-    // déjà expirée. Cela supprime le 401 rouge au chargement automatique.
-    if (!isManualSync && !(await isBattleNetSessionConnected())) {
+    if (!(await isBattleNetSessionConnected())) {
       restoreCachedCharactersForExpiredSession();
       return;
     }
 
-    const syncEndpoint = isManualSync
-      ? `/api/sync?ts=${Date.now()}`
-      : `/api/characters?ts=${Date.now()}`;
-    const response = await fetch(syncEndpoint, {
-      method: isManualSync ? "POST" : "GET",
+    if (isManualSync) {
+      const syncResponse = await fetch("/api/characters/import/battlenet", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+      });
+      if (syncResponse.status === 401) {
+        restoreCachedCharactersForExpiredSession();
+        return;
+      }
+      if (!syncResponse.ok) {
+        const payload = await syncResponse.json().catch(() => null);
+        throw new Error(payload?.message || payload?.error || `Synchronisation impossible (${syncResponse.status})`);
+      }
+    }
+
+    const response = await fetch(`/api/characters?ts=${Date.now()}`, {
+      method: "GET",
+      credentials: "same-origin",
       cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
     if (response.status === 401) {
       restoreCachedCharactersForExpiredSession();
       return;
     }
-
-    if (!response.ok) {
-      throw new Error("Impossible de charger les personnages.");
-    }
+    if (!response.ok) throw new Error("Impossible de charger les personnages.");
 
     const data = await response.json();
-
-    if (!data.connected) {
-      renderCharacterUnavailable("Compte Battle.net non connecté");
-      charactersList.innerHTML = `
-        <div class="characters-empty">
-          <p>Ton compte Battle.net n’est pas connecté.</p>
-          <a class="characters-connect-button" href="/auth/blizzard">
-            Se connecter à Battle.net
-          </a>
-        </div>
-      `;
-      return;
-    }
+    if (!data?.ok) throw new Error(data?.message || "Réponse personnages invalide.");
 
     const freshCharacters = (data.characters || []).map(normalizeCharacter);
     const cachedCharacters = readCachedCharacterRoster().map(normalizeCharacter);
-    const previousCharacters = blizzardCharacters.length
-      ? blizzardCharacters
-      : cachedCharacters;
-
-    // Une réponse Battle.net temporairement incomplète ne doit jamais faire
-    // disparaître des personnages déjà connus. Les données fraîches mettent à
-    // jour le roster, tandis que le dernier roster complet conserve les absents.
-    const realCharacters = mergeCharacterRosters(
-      freshCharacters,
-      previousCharacters,
-    );
-
-    blizzardCharacters = realCharacters;
+    blizzardCharacters = mergeCharacterRosters(freshCharacters, cachedCharacters);
     saveCachedCharacterRoster(blizzardCharacters);
 
+    let activeServerCharacter = null;
+    try {
+      const activeResponse = await fetch("/api/characters/active", {
+        credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" },
+      });
+      if (activeResponse.ok) {
+        const activeData = await activeResponse.json();
+        activeServerCharacter = blizzardCharacters.find((c) => String(c.id) === String(activeData?.character?.id || "")) || null;
+      }
+    } catch (_error) {}
 
-
-    const collectorSelectedCharacter =
-      findBattleNetCharacterFromCollector(realCharacters);
+    const collectorSelectedCharacter = findBattleNetCharacterFromCollector(blizzardCharacters);
     const savedSelectedCharacter = blizzardCharacters.find(isCurrentCharacter);
-
-    const selectedCharacter =
-      collectorSelectedCharacter ||
-      savedSelectedCharacter ||
-      realCharacters[0] ||
-      null;
+    const selectedCharacter = activeServerCharacter || collectorSelectedCharacter || savedSelectedCharacter || blizzardCharacters[0] || null;
 
     if (selectedCharacter) {
       currentCharacterKey = getCharacterKey(selectedCharacter);
@@ -1397,53 +1394,18 @@ async function loadCharacters(options = {}) {
       updateDashboardCharacter(selectedCharacter);
     }
 
-    if (charactersCount) {
-      charactersCount.textContent = blizzardCharacters.length;
-    }
-
-    const syncTime = new Intl.DateTimeFormat("fr-CA", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).format(new Date());
-
-    const achievementCount = Number(data.sync?.achievements?.count || 0);
-    const syncDuration = Number(data.sync?.durationMs || 0);
-    const statusParts = [
-      `${realCharacters.length} personnage${realCharacters.length > 1 ? "s" : ""}`,
-    ];
-
-    const achievementLabel = `${achievementCount} haut${achievementCount > 1 ? "s" : ""} fait${achievementCount > 1 ? "s" : ""}`;
-    statusParts.push(achievementLabel);
-
-    statusParts.push(syncTime);
-    renderBattleStatus("connected", statusParts.join(" · "));
-
-    if (isManualSync && data.sync) {
-      console.info("Azer Companion Sync 1.0.1", {
-        durationMs: syncDuration,
-        battleNet: data.sync.battleNet,
-        collector: data.sync.collector,
-        achievements: data.sync.achievements,
-      });
-    }
+    if (charactersCount) charactersCount.textContent = blizzardCharacters.length;
+    const syncTime = new Intl.DateTimeFormat("fr-CA", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
+    renderBattleStatus("connected", `${blizzardCharacters.length} personnage${blizzardCharacters.length > 1 ? "s" : ""} · ${syncTime}`);
 
     renderCharacters();
-    renderHomeDashboardAccount(realCharacters, data.dashboard || null);
-    renderHomeJournal(data.journal || []);
-    renderHomeAchievements(data.achievements || []);
+    renderHomeDashboardAccount(blizzardCharacters, null);
   } catch (error) {
     console.error(error);
-
     renderBattleStatus("disconnected", "Synchronisation impossible");
     renderCharacterUnavailable("Synchronisation impossible");
-
     if (!blizzardCharacters.length) {
-      charactersList.innerHTML = `
-        <div class="characters-empty">
-          Impossible de charger les personnages Battle.net.
-        </div>
-      `;
+      charactersList.innerHTML = `<div class="characters-empty">Impossible de charger les personnages Battle.net.</div>`;
     }
   } finally {
     charactersSyncInProgress = false;
@@ -3074,9 +3036,9 @@ document.addEventListener("keydown", (event) => {
 
 document
   .getElementById("selectProfileCharacter")
-  ?.addEventListener("click", () => {
+  ?.addEventListener("click", async () => {
     if (profiledCharacter && !profiledCharacter.isShowcase) {
-      selectCharacter(profiledCharacter);
+      await selectCharacter(profiledCharacter);
     }
   });
 
@@ -3213,45 +3175,40 @@ loadCharacters();
 
 async function updateBattleNetAuthButton() {
   const authButton = document.getElementById("battleNetAuthButton");
-
-  if (!authButton) {
-    return;
-  }
+  if (!authButton) return;
 
   try {
-    const response = await fetch("/api/blizzard/status", {
-      headers: {
-        Accept: "application/json",
-      },
+    const response = await fetch("/api/auth/me", {
+      credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" },
     });
-
-    if (!response.ok) {
-      throw new Error(`Statut Battle.net indisponible (${response.status})`);
-    }
-
-    const status = await response.json();
-    const isConnected = Boolean(status.connected);
-
+    const isConnected = response.ok;
     authButton.classList.toggle("is-online", isConnected);
     authButton.classList.toggle("is-offline", !isConnected);
 
     if (isConnected) {
-      authButton.href = "/auth/blizzard/logout";
+      authButton.href = "#";
       authButton.title = "Battle.net connecté — cliquer pour se déconnecter";
       authButton.setAttribute("aria-label", "Se déconnecter de Battle.net");
+      authButton.onclick = async (event) => {
+        event.preventDefault();
+        try {
+          await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin", headers: { Accept: "application/json" } });
+        } finally {
+          window.location.reload();
+        }
+      };
     } else {
-      authButton.href = "/auth/blizzard";
+      authButton.onclick = null;
+      authButton.href = "/api/auth/battlenet";
       authButton.title = "Battle.net non connecté — cliquer pour se connecter";
       authButton.setAttribute("aria-label", "Se connecter à Battle.net");
     }
   } catch (error) {
     console.error("Impossible de vérifier la connexion Battle.net :", error);
-
-    authButton.href = "/auth/blizzard";
+    authButton.onclick = null;
+    authButton.href = "/api/auth/battlenet";
     authButton.classList.remove("is-online");
     authButton.classList.add("is-offline");
-    authButton.title = "Battle.net non connecté";
-    authButton.setAttribute("aria-label", "Se connecter à Battle.net");
   }
 }
 

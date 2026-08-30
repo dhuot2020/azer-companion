@@ -1,0 +1,27 @@
+// Avec les autres require:
+const {
+  loadActiveCharacter,
+} = require("./middleware/loadActiveCharacter");
+
+const carnetContextRouter =
+  require("./routes/carnetContext");
+
+// ------------------------------------------------------------
+// API carnet context
+// ------------------------------------------------------------
+app.use(
+  "/api/carnet/context",
+  carnetContextRouter,
+);
+
+// ------------------------------------------------------------
+// IMPORTANT:
+// Ajouter loadActiveCharacter AVANT le carnetRouter.
+// Ainsi toutes les vues rendues par carnetRouter ont aussi:
+//   res.locals.activeCharacter
+// ------------------------------------------------------------
+app.use(
+  "/",
+  loadActiveCharacter,
+  carnetRouter,
+);
