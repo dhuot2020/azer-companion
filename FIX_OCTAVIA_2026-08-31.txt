@@ -1,0 +1,48 @@
+AZER COMPAGNION V3 - CORRECTIF PROFIL / PERSONNAGE ACTIF / EQUIPEMENT
+Date: 2026-08-31
+
+CORRECTIONS PRINCIPALES
+
+1. PERSONNAGE ACTIF
+- Le personnage actif n'est plus uniquement conserve dans MemoryStore.
+- Le choix est aussi persiste dans user_character_preferences.is_default.
+- GET /api/characters/active restaure automatiquement le personnage par defaut depuis PostgreSQL.
+- Le middleware du Carnet et /api/carnet/context utilisent la meme source persistante.
+
+2. PORTRAITS / PLEIN CORPS
+- Les URLs Battle.net presentes dans character_media etaient bien retournees par PostgreSQL,
+  mais app.js les rejetait car mediaOwnerKey n'etait pas defini.
+- normalizeCharacter associe maintenant les medias au vrai characterKey avant de calculer l'image.
+- Cache frontend passe a azerCompanion.charactersRoster.v3 afin d'ignorer l'ancien roster fautif.
+
+3. EQUIPEMENT / ARMURE BATTLE.NET
+- La fiche utilisait encore /api/ase/heroes, qui dependait surtout du Collector local.
+- Nouveau endpoint securise: GET /api/characters/:characterId/equipment
+- Le serveur verifie user_character_access, dechiffre le token OAuth du bon utilisateur,
+  puis interroge l'API Character Equipment de Battle.net.
+- Le resultat est transforme au format attendu par le renderer graphique existant.
+
+4. ICONES D'ITEMS
+- /api/ase/item-icon/:itemId utilise maintenant le coffre OAuth PostgreSQL au lieu de
+  req.session.blizzard_access_token.
+
+5. CACHE JAVASCRIPT
+- Version de /js/app.js changee dans footer.ejs pour forcer le navigateur a charger le
+  fichier corrige et ne pas reutiliser une ancienne version en cache.
+
+6. CARNET
+- /api/carnet/context est maintenant monte dans index.js.
+- loadActiveCharacter est applique avant carnetRouter.
+
+TEST CONSEILLE
+1. Garder le .env actuel.
+2. npm install
+3. npm run dev
+4. Se connecter a /api/auth/battlenet
+5. Hall des heros -> ouvrir un heros -> Choisir ce heros
+6. Verifier /api/characters/active
+7. Cliquer Synchroniser dans le Hall des heros une fois pour rafraichir character_media.
+8. Ouvrir la fiche: portrait/plein corps + equipement doivent venir du bon personnage Battle.net.
+
+NOTE
+Les quetes, metiers, montures et mascottes existants ont ete laisses en place autant que possible.

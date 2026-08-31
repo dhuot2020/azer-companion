@@ -19,5 +19,17 @@ The current local Collector reader remains available during migration. Server-si
 - No UI rewrite.
 - No Windows Sync client yet.
 
+## Implemented foundation
+- Battle.net OAuth is bound to an internal `app_users.id`.
+- OAuth tokens are encrypted in PostgreSQL and never stored in the browser session.
+- Express sessions are persisted in `app_http_sessions`, so restarts and multiple Node instances share authentication state.
+- Session identifiers are regenerated after OAuth login.
+- Character lists, active-character preferences and character API calls are scoped by `user_character_access`.
+- Browser roster and active-character caches are namespaced by internal user ID.
+- The local Collector is disabled by default in production and filtered against the authenticated user's roster in development. Without `LOCAL_COLLECTOR_USER_ID`, it is available only while the database has a single active user.
+
+## Deployment requirement
+Run `npm run db:migrate` before starting a new application version. Migration `025_postgresql_http_sessions` is required by the PostgreSQL session store.
+
 ## Next implementation step
-Add PostgreSQL connection/migration tooling and a PostgreSQL-backed Express session store, then bind the Battle.net OAuth callback to an internal AzerCompagnion user.
+Replace the development-only SavedVariables reader with an authenticated Sync client and persist Collector snapshots by `user_id` and `device_id`.

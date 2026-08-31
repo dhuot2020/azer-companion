@@ -271,6 +271,21 @@ async function importCharacter({ client, userId, character, gameVersionId, acces
 
   const row = characterResult.rows[0];
 
+  // Un personnage Battle.net ne peut avoir qu'un proprietaire OAuth actif.
+  // Si Blizzard l'a transfere vers un autre compte, l'ancien acces proprietaire
+  // ne doit pas survivre a l'upsert global de son identifiant Blizzard.
+  await client.query(
+    `
+      UPDATE user_character_access
+      SET revoked_at = NOW()
+      WHERE character_id = $2
+        AND user_id <> $1
+        AND access_level = 'owner'
+        AND revoked_at IS NULL
+    `,
+    [userId, row.id],
+  );
+
   await saveCharacterMedia({
     client,
     characterId: row.id,
@@ -365,6 +380,29 @@ async function importRetailCharactersForUser(userId) {
         }),
       );
     }
+
+    // Le roster courant de Blizzard est la source de verite. Les personnages
+    // qui ne sont plus presents restent en base pour l'historique, mais ne
+    // sont plus exposes a cet utilisateur.
+    const importedCharacterIds = imported.map((character) => character.id);
+    await client.query(
+      `
+        UPDATE user_character_access uca
+        SET revoked_at = NOW()
+        FROM wow_characters wc
+        WHERE uca.character_id = wc.id
+          AND uca.user_id = $1
+          AND uca.access_level = 'owner'
+          AND uca.revoked_at IS NULL
+          AND wc.region = $2
+          AND NOT (wc.id = ANY($3::bigint[]))
+      `,
+      [
+        userId,
+        String(process.env.BATTLENET_REGION || "us").toLowerCase(),
+        importedCharacterIds,
+      ],
+    );
 
     return {
       received: characters.length,

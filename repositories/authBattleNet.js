@@ -53,6 +53,14 @@ async function getOrCreateBattleNetUser({
 
     const providerId = providerResult.rows[0].id;
 
+    // Serialise deux callbacks OAuth concurrents pour une meme identite.
+    // La contrainte UNIQUE reste la derniere ligne de defense, mais cette
+    // serrure evite qu'ils creent chacun un app_user orphelin.
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))",
+      [String(providerSubject), String(regionKey || "")],
+    );
+
     const existing = await client.query(
       `
         SELECT

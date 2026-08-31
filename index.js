@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
+const { PostgresSessionStore } = require("./middleware/postgresSessionStore");
 
 // ============================================================
 // CONFIGURATION
@@ -13,9 +14,10 @@ const {
   getSessionCookieOptions,
   getSessionSecret,
   isProduction,
+  validateProductionConfig,
 } = require("./config/environment");
 
-const { testConnection } = require("./config/db");
+const { pool, assertDatabaseReady } = require("./config/db");
 
 // ============================================================
 // ROUTES
@@ -29,6 +31,9 @@ const charactersBattleNetRouter = require("./routes/charactersBattleNet");
 
 const activeCharacterRouter = require("./routes/activeCharacter");
 
+const carnetContextRouter = require("./routes/carnetContext");
+const { loadActiveCharacter } = require("./middleware/loadActiveCharacter");
+
 const carnetRouter = require("./routes/carnet");
 
 // ============================================================
@@ -38,6 +43,18 @@ const carnetRouter = require("./routes/carnet");
 const app = express();
 
 const PORT = getPort();
+
+validateProductionConfig();
+
+app.disable("x-powered-by");
+
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  next();
+});
 
 // ============================================================
 // PROXY / NGINX / CLOUDFLARE
@@ -67,11 +84,15 @@ app.use(
 
     secret: getSessionSecret(),
 
+    store: new PostgresSessionStore({ pool }),
+
     resave: false,
 
     saveUninitialized: false,
 
     cookie: getSessionCookieOptions(),
+
+    rolling: true,
   }),
 );
 
@@ -87,17 +108,20 @@ app.set("views", path.join(__dirname, "views"));
 // STATIC
 // ============================================================
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: isProduction() ? "1d" : 0,
+}));
 
 // ============================================================
 // BODY PARSING
 // ============================================================
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 app.use(
   express.urlencoded({
     extended: true,
+    limit: "1mb",
   }),
 );
 
@@ -160,17 +184,20 @@ app.use("/api/characters/active", activeCharacterRouter);
 
 app.use("/api/characters", charactersBattleNetRouter);
 
+// Contexte du Carnet pour le personnage actif
+app.use("/api/carnet/context", carnetContextRouter);
+
 // ============================================================
 // AZER COMPAGNION
 // ============================================================
 
-app.use("/", carnetRouter);
+app.use("/", loadActiveCharacter, carnetRouter);
 
 // ============================================================
 // TEST POSTGRESQL
 // ============================================================
 
-testConnection();
+assertDatabaseReady().then(() => {
 
 // ============================================================
 // DEMARRAGE SERVEUR
@@ -226,4 +253,26 @@ Que l'aventure continue.
 
 server.on("close", () => {
   console.log("Serveur Azer Companion arrêté.");
+});
+
+let shuttingDown = false;
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal}: arrêt propre du serveur...`);
+
+  const forceExit = setTimeout(() => process.exit(1), 10000);
+  forceExit.unref();
+
+  await new Promise((resolve) => server.close(resolve));
+  await pool.end();
+  clearTimeout(forceExit);
+}
+
+process.once("SIGTERM", () => shutdown("SIGTERM").catch(console.error));
+process.once("SIGINT", () => shutdown("SIGINT").catch(console.error));
+}).catch(async (error) => {
+  console.error("Démarrage impossible :", error.message);
+  try { await pool.end(); } catch {}
+  process.exit(1);
 });

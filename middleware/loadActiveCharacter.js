@@ -1,34 +1,45 @@
 const {
   getCharacterForUser,
+  getDefaultCharacterForUser,
 } = require("../repositories/activeCharacter");
+const { findUserById } = require("../repositories/users");
 
-/**
- * Charge le personnage actif de la session, s'il existe,
- * et l'expose dans req.activeCharacter + res.locals.activeCharacter.
- *
- * Ce middleware NE BLOQUE PAS la page si aucun personnage n'est choisi.
- */
 async function loadActiveCharacter(req, res, next) {
   try {
     req.activeCharacter = null;
     res.locals.activeCharacter = null;
 
-    if (!req.session?.userId || !req.session?.activeCharacterId) {
+    if (!req.session?.userId) {
       return next();
     }
 
-    const character = await getCharacterForUser(
-      req.session.userId,
-      req.session.activeCharacterId,
-    );
-
-    if (!character) {
+    const user = await findUserById(req.session.userId);
+    if (!user?.is_active) {
+      delete req.session.userId;
       delete req.session.activeCharacterId;
       return next();
     }
 
-    req.activeCharacter = character;
-    res.locals.activeCharacter = character;
+    let character = null;
+
+    if (req.session.activeCharacterId) {
+      character = await getCharacterForUser(
+        req.session.userId,
+        req.session.activeCharacterId,
+      );
+    }
+
+    if (!character) {
+      character = await getDefaultCharacterForUser(req.session.userId);
+      if (character) {
+        req.session.activeCharacterId = character.id;
+      } else {
+        delete req.session.activeCharacterId;
+      }
+    }
+
+    req.activeCharacter = character || null;
+    res.locals.activeCharacter = character || null;
 
     return next();
   } catch (error) {

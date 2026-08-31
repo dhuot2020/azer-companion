@@ -239,9 +239,8 @@ const PROFILE_COLLECTION_PAGE_SIZE = 20;
 
 const PROFILE_IMAGE_DEFAULT_VIEW = {
   // Le rendu Blizzard "main" contient beaucoup d'espace vide autour du modèle.
-  // 1.72 donne un cadrage plein corps proche de l'armurerie WoW tout en gardant
-  // la tête et les pieds visibles dans notre cadre 5:7.
-  "full-body": { zoom: 2.28, x: 0, y: 2 },
+  // Ce cadrage remplit l'armurerie tout en gardant la tête et les pieds visibles.
+  "full-body": { zoom: 2.05, x: 0, y: 1 },
   // Le portrait utilise maintenant le média Blizzard dédié (inset/bust).
   // À 100 %, l'image remplit déjà le cadre grâce à object-fit: cover.
   portrait: { zoom: 1, x: 0, y: 0 },
@@ -253,8 +252,8 @@ function getProfileImageViewStorageKey(character, mode) {
   const key = character ? getCharacterKey(character) : "unknown";
   // v2 uniquement pour le portrait : on ignore les anciens zooms (ex. 600 %)
   // qui avaient été enregistrés lorsque le portrait utilisait le main-raw.
-  const storageMode = mode === "portrait" ? "portraitV2" : mode === "full-body" ? "fullBodyV9" : mode;
-  return `azer.profileImageView.${key}.${storageMode}`;
+  const storageMode = mode === "portrait" ? "portraitV2" : mode === "full-body" ? "fullBodyV10" : mode;
+  return scopedStorageKey(`azer.profileImageView.${key}.${storageMode}`);
 }
 
 function getProfileImageView(character, mode = profileImageMode) {
@@ -320,8 +319,25 @@ function resetProfileImageView() {
   applyProfileImageView();
 }
 const selectedCharacterStorageKey = "azerCompanion.selectedCharacter";
-const charactersRosterStorageKey = "azerCompanion.charactersRoster.v2";
-let currentCharacterKey = readSelectedCharacterKey();
+const charactersRosterStorageKey = "azerCompanion.charactersRoster.v3";
+let currentUserStorageScope = "anonymous";
+let currentCharacterKey = "";
+let serverActiveCharacterId = "";
+
+function scopedStorageKey(baseKey) {
+  return `${baseKey}.user.${currentUserStorageScope}`;
+}
+
+function setCurrentUserStorageScope(user) {
+  const nextScope = user?.id ? String(user.id) : "anonymous";
+  if (nextScope === currentUserStorageScope) return;
+
+  currentUserStorageScope = nextScope;
+  currentCharacterKey = readSelectedCharacterKey();
+  serverActiveCharacterId = "";
+  blizzardCharacters = [];
+  collectorCharacters = new Map();
+}
 
 function normalizeCharacterIdentityPart(value) {
   return String(value || "")
@@ -356,7 +372,7 @@ function isOwnedCharacterMedia(character) {
 
 function readSelectedCharacterKey() {
   try {
-    return localStorage.getItem(selectedCharacterStorageKey) || "";
+    return localStorage.getItem(scopedStorageKey(selectedCharacterStorageKey)) || "";
   } catch (error) {
     console.warn("Impossible de lire le personnage sélectionné.", error);
     return "";
@@ -365,7 +381,7 @@ function readSelectedCharacterKey() {
 
 function readCachedCharacterRoster() {
   try {
-    const rawValue = localStorage.getItem(charactersRosterStorageKey);
+    const rawValue = localStorage.getItem(scopedStorageKey(charactersRosterStorageKey));
     if (!rawValue) {
       return [];
     }
@@ -387,7 +403,7 @@ function readCachedCharacterRoster() {
 function saveCachedCharacterRoster(characters = []) {
   try {
     localStorage.setItem(
-      charactersRosterStorageKey,
+      scopedStorageKey(charactersRosterStorageKey),
       JSON.stringify({
         updatedAt: Date.now(),
         characters,
@@ -455,7 +471,7 @@ function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
 
 function saveSelectedCharacterKey(characterKey) {
   try {
-    localStorage.setItem(selectedCharacterStorageKey, characterKey);
+    localStorage.setItem(scopedStorageKey(selectedCharacterStorageKey), characterKey);
   } catch (error) {
     console.warn("Impossible de mémoriser le personnage sélectionné.", error);
   }
@@ -463,8 +479,8 @@ function saveSelectedCharacterKey(characterKey) {
 
 function isCurrentCharacter(character) {
   return (
-    Boolean(currentCharacterKey) &&
-    getCharacterKey(character) === currentCharacterKey
+    Boolean(serverActiveCharacterId) &&
+    String(character?.id || "") === String(serverActiveCharacterId)
   );
 }
 
@@ -946,13 +962,19 @@ function normalizeCharacter(character) {
     fullBodyUrl: character.fullBodyUrl || character.full_body_url || null,
   };
 
+  const characterKey = getCharacterKey(normalizedCharacter);
+  if (hasCharacterMedia(normalizedCharacter) && !normalizedCharacter.mediaOwnerKey) {
+    normalizedCharacter.mediaOwnerKey = characterKey;
+  }
+  normalizedCharacter.characterKey = characterKey;
+
   const classInfo = classDetails[normalizedCharacter.classId] || {
-    name: `Classe ${character.classId}`,
+    name: `Classe ${normalizedCharacter.classId || "?"}`,
     color: "#d6b76d",
-    icon: "⚔",
+    icon: "warrior",
   };
 
-  return {
+  const normalizedResult = {
     ...normalizedCharacter,
     className: normalizedCharacter.class_name || classInfo.name,
     classColor: classInfo.color,
@@ -963,8 +985,10 @@ function normalizeCharacter(character) {
     isShowcase: Boolean(normalizedCharacter.isShowcase),
     portraitSource: normalizedCharacter.portraitSource || (normalizedCharacter.isFallbackPortrait ? "azer-fallback" : "blizzard"),
     isFallbackPortrait: Boolean(normalizedCharacter.isFallbackPortrait || normalizedCharacter.portraitSource === "azer-fallback"),
-    image: getCharacterImage(normalizedCharacter),
   };
+
+  normalizedResult.image = getCharacterImage(normalizedResult);
+  return normalizedResult;
 }
 
 // ======================================================
@@ -976,6 +1000,7 @@ function createCharacterCard(character) {
 
   card.className = "character-card";
   card.dataset.characterName = character.name;
+  card.dataset.characterId = String(character.id || "");
   card.dataset.characterKey = getCharacterKey(character);
   card.dataset.faction = character.factionName;
   card.dataset.classId = String(character.classId);
@@ -1241,6 +1266,7 @@ async function selectCharacter(character) {
     const data = await response.json().catch(() => null);
     if (!response.ok || !data?.ok) throw new Error(data?.message || data?.error || "Sélection impossible");
 
+    serverActiveCharacterId = String(data.character?.id || character.id);
     currentCharacterKey = getCharacterKey(character);
     saveSelectedCharacterKey(currentCharacterKey);
     document.querySelectorAll(".character-card").forEach((card) => {
@@ -1275,10 +1301,16 @@ async function isBattleNetSessionConnected() {
       credentials: "same-origin",
       headers: { Accept: "application/json" },
     });
-    if (!response.ok) return false;
+    if (!response.ok) {
+      setCurrentUserStorageScope(null);
+      return false;
+    }
     const status = await response.json();
-    return Boolean(status?.ok && status?.user);
+    const connected = Boolean(status?.ok && status?.user?.id);
+    setCurrentUserStorageScope(connected ? status.user : null);
+    return connected;
   } catch (_error) {
+    setCurrentUserStorageScope(null);
     return false;
   }
 }
@@ -1328,12 +1360,12 @@ async function loadCharacters(options = {}) {
   }
 
   try {
-    await loadCollectorCharacters();
-
     if (!(await isBattleNetSessionConnected())) {
       restoreCachedCharactersForExpiredSession();
       return;
     }
+
+    await loadCollectorCharacters();
 
     if (isManualSync) {
       const syncResponse = await fetch("/api/characters/import/battlenet", {
@@ -1380,12 +1412,15 @@ async function loadCharacters(options = {}) {
       });
       if (activeResponse.ok) {
         const activeData = await activeResponse.json();
-        activeServerCharacter = blizzardCharacters.find((c) => String(c.id) === String(activeData?.character?.id || "")) || null;
+        serverActiveCharacterId = String(activeData?.character?.id || "");
+        activeServerCharacter = blizzardCharacters.find((c) => String(c.id) === serverActiveCharacterId) || null;
       }
     } catch (_error) {}
 
     const collectorSelectedCharacter = findBattleNetCharacterFromCollector(blizzardCharacters);
-    const savedSelectedCharacter = blizzardCharacters.find(isCurrentCharacter);
+    const savedSelectedCharacter = blizzardCharacters.find(
+      (character) => Boolean(currentCharacterKey) && getCharacterKey(character) === currentCharacterKey,
+    );
     const selectedCharacter = activeServerCharacter || collectorSelectedCharacter || savedSelectedCharacter || blizzardCharacters[0] || null;
 
     if (selectedCharacter) {
@@ -2855,19 +2890,43 @@ function renderHeroEquipment(hero) {
 
 async function loadHeroEquipment(character) {
   const status = document.getElementById("heroEquipmentStatus");
-  const key = getHeroEquipmentKey(character);
-  if (status) status.textContent = "Chargement de l’équipement...";
+  if (status) status.textContent = "Chargement de l’équipement Battle.net...";
+
+  if (!character?.id) {
+    if (status) status.textContent = "Identifiant du personnage indisponible.";
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/ase/heroes?characterKey=${encodeURIComponent(key)}`, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`Hero API ${response.status}`);
+    const response = await fetch(
+      `/api/characters/${encodeURIComponent(character.id)}/equipment`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      },
+    );
+
+    if (response.status === 401) {
+      if (status) status.textContent = "Reconnecte Battle.net pour charger l’équipement.";
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Battle.net Equipment API ${response.status}`);
+    }
+
     const payload = await response.json();
-    if (!profiledCharacter || getHeroEquipmentKey(profiledCharacter) !== key) return;
-    const hero = Array.isArray(payload.heroes) ? payload.heroes[0] : null;
-    if (!hero) throw new Error("Fiche Hero introuvable");
-    renderHeroEquipment(hero);
+    if (!profiledCharacter || String(profiledCharacter.id) !== String(character.id)) return;
+
+    if (!payload?.hero) {
+      throw new Error("Équipement Battle.net introuvable");
+    }
+
+    renderHeroEquipment(payload.hero);
   } catch (error) {
-    console.warn("Hero Equipment:", error);
-    if (status) status.textContent = "Équipement indisponible. Lance /azer scan puis synchronise.";
+    console.warn("Battle.net Equipment:", error);
+    if (status) status.textContent = "Équipement Battle.net temporairement indisponible.";
   }
 }
 

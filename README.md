@@ -13,14 +13,19 @@ npm install
 Créer un fichier `.env` contenant :
 
 ```dotenv
-BLIZZARD_CLIENT_ID=
-BLIZZARD_CLIENT_SECRET=
-BLIZZARD_REDIRECT_URI=http://localhost:3030/auth/blizzard/callback
-BLIZZARD_REGION=us
-BLIZZARD_LOCALE=fr_FR
+BATTLENET_CLIENT_ID=
+BATTLENET_CLIENT_SECRET=
+BATTLENET_REDIRECT_URI=http://localhost:3030/api/auth/battlenet/callback
+BATTLENET_REGION=us
+BATTLENET_LOCALE=fr_FR
 SESSION_SECRET=
 PORT=3030
 WOW_INSTALL_PATH=C:\Program Files (x86)\World of Warcraft
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=azercompanion
+DB_USER=azercompanion
+DB_PASSWORD=
 ```
 
 `WOW_INSTALL_PATH` est facultatif lorsque World of Warcraft est installé dans
@@ -30,6 +35,7 @@ données produites par Azer Companion Collector.
 ## Démarrage
 
 ```bash
+npm run db:migrate
 npm start
 ```
 

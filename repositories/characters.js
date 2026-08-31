@@ -41,7 +41,11 @@ async function listCharactersForUser(userId, client = pool) {
         SELECT
           MAX(cm.media_url) FILTER (WHERE cm.media_type = 'avatar' AND cm.is_current) AS avatar_url,
           MAX(cm.media_url) FILTER (WHERE cm.media_type IN ('inset','portrait') AND cm.is_current) AS portrait_url,
-          MAX(cm.media_url) FILTER (WHERE cm.media_type IN ('main','render') AND cm.is_current) AS full_body_url
+          COALESCE(
+            MAX(cm.media_url) FILTER (WHERE cm.media_type = 'main-raw' AND cm.is_current),
+            MAX(cm.media_url) FILTER (WHERE cm.media_type = 'main' AND cm.is_current),
+            MAX(cm.media_url) FILTER (WHERE cm.media_type = 'render' AND cm.is_current)
+          ) AS full_body_url
         FROM character_media cm
         WHERE cm.character_id = wc.id
       ) media ON TRUE

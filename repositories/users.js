@@ -10,6 +10,7 @@ async function findUserById(userId, client = pool) {
         id,
         email,
         display_name,
+        is_active,
         created_at,
         updated_at
       FROM app_users
@@ -20,6 +21,22 @@ async function findUserById(userId, client = pool) {
   );
 
   return result.rows[0] || null;
+}
+
+async function userMayReadLocalCollector(userId, client = pool) {
+  const boundUserId = String(process.env.LOCAL_COLLECTOR_USER_ID || "").trim();
+  if (boundUserId) return boundUserId === String(userId);
+
+  const result = await client.query(
+    `
+      SELECT COUNT(*)::integer AS active_user_count,
+             MIN(id)::text AS only_user_id
+      FROM app_users
+      WHERE is_active = TRUE
+    `,
+  );
+  const row = result.rows[0] || {};
+  return row.active_user_count === 1 && row.only_user_id === String(userId);
 }
 
 /**
@@ -59,4 +76,5 @@ async function findBattleNetIdentity({
 module.exports = {
   findUserById,
   findBattleNetIdentity,
+  userMayReadLocalCollector,
 };

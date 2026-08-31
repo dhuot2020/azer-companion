@@ -7,9 +7,14 @@ const {
   getUserInfo,
 } = require("../services/battleNetOAuth");
 
-const { getOrCreateBattleNetUser } = require("../repositories/authBattleNet");
+const {
+  findBattleNetIdentity,
+  getOrCreateBattleNetUser,
+} = require("../repositories/authBattleNet");
+const { canRegisterBattleTag } = require("../config/environment");
 
 const { saveOAuthCredentials } = require("../repositories/oauthCredentials");
+const { importRetailCharactersForUser } = require("../services/importBattleNetCharacters");
 
 const { pool } = require("../config/db");
 
@@ -130,6 +135,19 @@ router.get("/battlenet/callback", async (req, res, next) => {
       process.env.BATTLENET_REGION || "us",
     ).toLowerCase();
 
+    const existingIdentity = await findBattleNetIdentity({
+      providerSubject,
+      regionKey,
+    });
+
+    if (!existingIdentity && !canRegisterBattleTag(battleTag)) {
+      return res.status(403).json({
+        ok: false,
+        error: "REGISTRATION_NOT_ALLOWED",
+        message: "Ce compte Battle.net n'est pas autorise sur ce serveur.",
+      });
+    }
+
     // --------------------------------------------------------
     // Cree ou retrouve l'utilisateur Azer Compagnion
     // --------------------------------------------------------
@@ -153,6 +171,25 @@ router.get("/battlenet/callback", async (req, res, next) => {
     await saveOAuthCredentials({
       authIdentityId: auth.authIdentityId,
       token,
+    });
+
+    // Le premier affichage doit deja connaitre le roster de ce compte. Une
+    // panne ponctuelle de l'API profil ne doit toutefois pas annuler le login;
+    // l'utilisateur pourra relancer la synchronisation depuis le Carnet.
+    try {
+      await importRetailCharactersForUser(auth.userId);
+    } catch (importError) {
+      console.warn(
+        "Import initial Battle.net reporte :",
+        importError.message,
+      );
+    }
+
+    // Une nouvelle identite de session empeche de reutiliser une session
+    // anonyme fixee avant le retour OAuth et efface les donnees d'un ancien
+    // compte qui aurait utilise le meme navigateur.
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((error) => (error ? reject(error) : resolve()));
     });
 
     // --------------------------------------------------------
@@ -259,7 +296,11 @@ router.post("/logout", (req, res, next) => {
       return next(error);
     }
 
-    res.clearCookie(process.env.SESSION_COOKIE_NAME || "azer.sid");
+    res.clearCookie(process.env.SESSION_COOKIE_NAME || "azer.sid", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
 
     return res.json({
       ok: true,

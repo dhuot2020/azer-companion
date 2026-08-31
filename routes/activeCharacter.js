@@ -1,25 +1,39 @@
 const express = require("express");
 const { requireAuth } = require("../middleware/requireAuth");
-const { getCharacterForUser } = require("../repositories/activeCharacter");
+const { withTransaction } = require("../lib/withTransaction");
+const {
+  getCharacterForUser,
+  getDefaultCharacterForUser,
+  setDefaultCharacterForUser,
+} = require("../repositories/activeCharacter");
 
 const router = express.Router();
 
 router.get("/", requireAuth, async (req, res, next) => {
   try {
-    const characterId = req.session.activeCharacterId;
+    let character = null;
+    const sessionCharacterId = req.session.activeCharacterId;
 
-    if (!characterId) {
-      return res.json({ ok: true, character: null });
+    if (sessionCharacterId) {
+      character = await getCharacterForUser(req.user.id, sessionCharacterId);
     }
 
-    const character = await getCharacterForUser(req.user.id, characterId);
-
+    // La DB devient la source persistante. Ainsi un redemarrage Node ne fait
+    // plus perdre le heros actif pendant le developpement.
     if (!character) {
-      delete req.session.activeCharacterId;
-      return res.json({ ok: true, character: null });
+      character = await getDefaultCharacterForUser(req.user.id);
+
+      if (character) {
+        req.session.activeCharacterId = character.id;
+        await new Promise((resolve, reject) => {
+          req.session.save((error) => (error ? reject(error) : resolve()));
+        });
+      } else {
+        delete req.session.activeCharacterId;
+      }
     }
 
-    return res.json({ ok: true, character });
+    return res.json({ ok: true, character: character || null });
   } catch (error) {
     next(error);
   }
@@ -37,7 +51,9 @@ router.post("/", requireAuth, async (req, res, next) => {
       });
     }
 
-    const character = await getCharacterForUser(req.user.id, characterId);
+    const character = await withTransaction(async (client) => {
+      return setDefaultCharacterForUser(req.user.id, characterId, client);
+    });
 
     if (!character) {
       return res.status(403).json({

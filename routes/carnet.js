@@ -1,4 +1,3 @@
-const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
@@ -8,15 +7,13 @@ const { buildSyncResult } = require("../core/sync/syncManager");
 const mediaRetry = require("../services/blizzardMediaRetry");
 const { getStatus: getAseStatus } = require("../core/ase");
 const { getActiveAccessTokenForUser } = require("../repositories/oauthCredentials");
+const { listCharactersForUser } = require("../repositories/characters");
+const { userMayReadLocalCollector } = require("../repositories/users");
+const { requireAuth } = require("../middleware/requireAuth");
 
 const router = express.Router();
 
 async function getRequestBattleNetAccessToken(req) {
-  // Compatibilite ancien flux, puis nouveau coffre OAuth chiffre PostgreSQL.
-  if (req.session?.blizzard_access_token) {
-    return req.session.blizzard_access_token;
-  }
-
   const userId = req.session?.userId;
   if (!userId) return null;
 
@@ -25,11 +22,76 @@ async function getRequestBattleNetAccessToken(req) {
   return credential.accessToken;
 }
 
+function normalizeIdentityPart(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function characterIdentityKey(character) {
+  return `${normalizeIdentityPart(character?.realm || character?.realm_name || character?.realm_slug)}::${normalizeIdentityPart(character?.name || character?.character_name)}`;
+}
+
+async function getOwnedCharacters(req) {
+  if (!req.session?.userId) return [];
+  return listCharactersForUser(req.session.userId);
+}
+
+async function requireOwnedCharacter(req, res, next) {
+  try {
+    const requestedKey = `${normalizeIdentityPart(req.params.realm)}::${normalizeIdentityPart(req.params.name)}`;
+    const owned = (await getOwnedCharacters(req)).find(
+      (character) => characterIdentityKey(character) === requestedKey,
+    );
+    if (!owned) {
+      return res.status(403).json({
+        connected: true,
+        error: "CHARACTER_ACCESS_DENIED",
+      });
+    }
+    req.ownedCharacter = owned;
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function readCollectorSummaryForUser(req) {
+  if (process.env.NODE_ENV === "production" && process.env.ENABLE_LOCAL_COLLECTOR !== "true") {
+    return { available: false, characters: [] };
+  }
+
+  if (!(await userMayReadLocalCollector(req.session?.userId))) {
+    return { available: false, characters: [] };
+  }
+
+  const collector = await readCollectorSummary();
+  if (!collector.available) return collector;
+
+  const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
+  const characters = (collector.characters || []).filter((character) =>
+    allowedKeys.has(characterIdentityKey(character)),
+  );
+
+  if (characters.length === 0) {
+    return { available: false, characters: [] };
+  }
+
+  return {
+    ...collector,
+    available: true,
+    characters,
+  };
+}
+
 
 const BLIZZARD_REGION = String(
-  process.env.BLIZZARD_REGION || "us",
+  process.env.BATTLENET_REGION || process.env.BLIZZARD_REGION || "us",
 ).toLowerCase();
-const REQUESTED_BLIZZARD_LOCALE = process.env.BLIZZARD_LOCALE || "fr_FR";
+const REQUESTED_BLIZZARD_LOCALE = process.env.BATTLENET_LOCALE || process.env.BLIZZARD_LOCALE || "fr_FR";
 const BLIZZARD_LOCALE =
   REQUESTED_BLIZZARD_LOCALE.toLowerCase() === "fr_ca"
     ? "fr_FR"
@@ -809,25 +871,21 @@ router.get("/", (req, res) => {
     page_title: "Carnet d'aventure",
   });
 });
-router.get("/auth/blizzard", (req, res) => {
-  const state = crypto.randomBytes(24).toString("hex");
-
-  req.session.blizzard_oauth_state = state;
-
-  const params = new URLSearchParams({
-    client_id: process.env.BLIZZARD_CLIENT_ID,
-    redirect_uri: process.env.BLIZZARD_REDIRECT_URI,
-    response_type: "code",
-    scope: "wow.profile",
-    state: state,
-  });
-
-  const authorizationUrl = `https://oauth.battle.net/authorize?${params.toString()}`;
-
-  res.redirect(authorizationUrl);
+router.get("/auth/blizzard", (_req, res) => {
+  res.redirect(307, "/api/auth/battlenet");
 });
 
 router.get("/auth/blizzard/callback", async (req, res) => {
+  const canonicalQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(req.query || {})) {
+    if (Array.isArray(value)) value.forEach((item) => canonicalQuery.append(key, item));
+    else if (value != null) canonicalQuery.set(key, value);
+  }
+  res.redirect(307, `/api/auth/battlenet/callback?${canonicalQuery.toString()}`);
+});
+
+/* Ancien callback OAuth desactive. Le flux canonique est /api/auth/battlenet. */
+/*
   try {
     const code = req.query.code;
     const returnedState = req.query.state;
@@ -888,10 +946,16 @@ router.get("/auth/blizzard/callback", async (req, res) => {
       .send("Une erreur est survenue pendant la connexion Battle.net.");
   }
 });
+*/
 
 async function synchronizeAccount(req) {
   const startedAt = Date.now();
-  const accessToken = req.session.blizzard_access_token;
+  const accessToken = await getRequestBattleNetAccessToken(req);
+  if (!accessToken) {
+    const error = new Error("Compte Battle.net non connecte.");
+    error.status = 401;
+    throw error;
+  }
   const response = await fetch(
     `${BLIZZARD_API_ORIGIN}/profile/user/wow?${BLIZZARD_PROFILE_QUERY}`,
     {
@@ -949,7 +1013,7 @@ async function synchronizeAccount(req) {
   };
 
   try {
-    collector = await readCollectorSummary();
+    collector = await readCollectorSummaryForUser(req);
   } catch (collectorError) {
     console.warn("Résumé Collector indisponible :", collectorError.message);
   }
@@ -962,7 +1026,7 @@ async function synchronizeAccount(req) {
 }
 
 async function handleAccountSync(req, res) {
-  if (!req.session.blizzard_access_token) {
+  if (!(await getRequestBattleNetAccessToken(req))) {
     return res.status(401).json({
       connected: false,
       error: "Compte Battle.net non connecté.",
@@ -981,11 +1045,12 @@ async function handleAccountSync(req, res) {
   }
 }
 
-router.get("/api/characters", handleAccountSync);
-router.post("/api/sync", handleAccountSync);
+router.get("/api/characters", requireAuth, handleAccountSync);
+router.post("/api/sync", requireAuth, handleAccountSync);
 
-router.get("/api/characters/:realm/:name/professions", async (req, res) => {
-  if (!req.session.blizzard_access_token) {
+router.get("/api/characters/:realm/:name/professions", requireAuth, requireOwnedCharacter, async (req, res) => {
+  const accessToken = await getRequestBattleNetAccessToken(req);
+  if (!accessToken) {
     return res.status(401).json({
       connected: false,
     });
@@ -995,7 +1060,7 @@ router.get("/api/characters/:realm/:name/professions", async (req, res) => {
     const professions = await fetchCharacterProfessions(
       req.params.realm,
       req.params.name,
-      req.session.blizzard_access_token,
+      accessToken,
     );
 
     res.json({
@@ -1015,7 +1080,7 @@ router.get("/api/characters/:realm/:name/professions", async (req, res) => {
   }
 });
 
-router.get("/api/characters/:realm/:name/progression", async (req, res) => {
+router.get("/api/characters/:realm/:name/progression", requireAuth, requireOwnedCharacter, async (req, res) => {
   const accessToken = await getRequestBattleNetAccessToken(req);
   if (!accessToken) {
     return res.status(401).json({ connected: false });
@@ -1049,8 +1114,8 @@ router.get("/api/characters/:realm/:name/progression", async (req, res) => {
   });
 });
 
-router.get("/api/portraits/diagnostics", async (req, res) => {
-  if (!req.session.blizzard_access_token) {
+router.get("/api/portraits/diagnostics", requireAuth, async (req, res) => {
+  if (!(await getRequestBattleNetAccessToken(req))) {
     return res
       .status(401)
       .json({ connected: false, error: "Compte Battle.net non connecté." });
@@ -1079,8 +1144,14 @@ router.get("/api/portraits/diagnostics", async (req, res) => {
   }
 });
 
-router.get("/api/blizzard-sync/queue", (req, res) => {
-  const entries = mediaRetry.list();
+router.get("/api/blizzard-sync/queue", requireAuth, async (req, res, next) => {
+  let entries;
+  try {
+    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
+    entries = mediaRetry.list().filter((entry) => allowedKeys.has(characterIdentityKey(entry)));
+  } catch (error) {
+    return next(error);
+  }
   res.json({
     available: true,
     count: entries.filter((entry) => entry.status === "waiting").length,
@@ -1088,7 +1159,7 @@ router.get("/api/blizzard-sync/queue", (req, res) => {
   });
 });
 
-router.post("/api/blizzard-sync/retry/:realm/:name", (req, res) => {
+router.post("/api/blizzard-sync/retry/:realm/:name", requireAuth, requireOwnedCharacter, (req, res) => {
   const character = { realm: req.params.realm, name: req.params.name };
   mediaRetry.reset(character);
   res.json({
@@ -1105,17 +1176,28 @@ router.get("/api/ase/status", (req, res) => {
   });
 });
 
-router.get("/api/ase/events", (req, res) => {
+router.get("/api/ase/events", requireAuth, async (req, res, next) => {
   const eventEngine = require("../core/engine/event/register");
   const types = String(req.query.types || "")
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  const events = eventEngine.listEvents({
-    limit: req.query.limit,
-    characterKey: req.query.characterKey,
-    types,
-  });
+  let events;
+  try {
+    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
+    events = eventEngine.listEvents({
+      limit: 500,
+      types,
+    }).filter((event) => {
+      if (event.realm || event.characterName) {
+        return allowedKeys.has(characterIdentityKey({ realm: event.realm, name: event.characterName }));
+      }
+      const [realm, name] = String(event.characterKey || "").split("::");
+      return allowedKeys.has(characterIdentityKey({ realm, name }));
+    }).slice(0, Math.max(1, Math.min(500, Number(req.query.limit) || 50)));
+  } catch (error) {
+    return next(error);
+  }
   res.json({
     ok: true,
     count: events.length,
@@ -1125,7 +1207,7 @@ router.get("/api/ase/events", (req, res) => {
 
 router.get("/api/ase/item-icon/:itemId", async (req, res) => {
   const itemId = Number(req.params.itemId || 0);
-  const accessToken = req.session.blizzard_access_token;
+  const accessToken = await getRequestBattleNetAccessToken(req);
 
   if (!itemId || !accessToken) {
     return res.status(404).end();
@@ -1197,7 +1279,7 @@ router.get("/api/ase/collection-media/:kind/:id", async (req, res) => {
   }
 });
 
-router.get("/api/ase/heroes", async (req, res) => {
+router.get("/api/ase/heroes", requireAuth, async (req, res) => {
   try {
     const syncResult = await synchronizeAccount(req);
     const heroes = Array.isArray(syncResult.heroes) ? syncResult.heroes : [];
@@ -1220,43 +1302,52 @@ router.get("/api/ase/heroes", async (req, res) => {
   }
 });
 
-router.get("/api/ase/debug", (req, res) => {
+router.get("/api/ase/debug", requireAuth, async (req, res, next) => {
   const eventEngine = require("../core/engine/event/register");
-  res.json({
-    ok: true,
-    ...eventEngine.getDebug({
-      characterKey: req.query.characterKey,
-    }),
-  });
+  try {
+    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
+    const debug = eventEngine.getDebug({});
+    const comparisons = Object.fromEntries(
+      Object.entries(debug.comparisons || {}).filter(([key, value]) => {
+        const [realm, name] = String(key).split("::");
+        return allowedKeys.has(characterIdentityKey({
+          realm: value?.current?.realm || realm,
+          name: value?.current?.name || name,
+        }));
+      }),
+    );
+    return res.json({
+      ok: true,
+      initializedAt: debug.initializedAt,
+      updatedAt: debug.updatedAt,
+      generatedAt: debug.generatedAt,
+      comparisons,
+    });
+  } catch (error) {
+    return next(error);
+  }
 });
 
-router.get("/api/blizzard/status", (req, res) => {
-  const accessToken = req.session.blizzard_access_token;
-  const expiresAt = req.session.blizzard_token_expires_at;
-
-  const connected =
-    Boolean(accessToken) && Boolean(expiresAt) && Date.now() < expiresAt;
-
-  if (!connected) {
-    delete req.session.blizzard_access_token;
-    delete req.session.blizzard_token_expires_at;
+router.get("/api/blizzard/status", async (req, res, next) => {
+  try {
+    const accessToken = await getRequestBattleNetAccessToken(req);
+    return res.json({ connected: Boolean(accessToken) });
+  } catch (error) {
+    return next(error);
   }
-
-  res.json({
-    connected,
-  });
 });
 
 router.get("/auth/blizzard/logout", (req, res) => {
-  delete req.session.blizzard_access_token;
-  delete req.session.blizzard_token_expires_at;
-
-  res.redirect("/");
+  if (!req.session) return res.redirect("/");
+  return req.session.destroy(() => {
+    res.clearCookie(process.env.SESSION_COOKIE_NAME || "azer.sid");
+    res.redirect("/");
+  });
 });
 
-router.get("/api/quests", async (req, res) => {
+router.get("/api/quests", requireAuth, async (req, res) => {
   try {
-    const collector = await readCollectorSummary();
+    const collector = await readCollectorSummaryForUser(req);
     if (!collector.available) {
       return res.json({
         available: false,
@@ -1484,7 +1575,7 @@ router.get("/api/quests", async (req, res) => {
       (a, b) => questId(a) - questId(b),
     );
 
-    const accessToken = req.session.blizzard_access_token || null;
+    const accessToken = await getRequestBattleNetAccessToken(req);
     accountCompleted = await enrichQuestRewardMedia(
       accountCompleted,
       accessToken,
@@ -1544,7 +1635,7 @@ router.get("/api/media/file/:fileId", async (req, res) => {
   if (!fileId) return res.status(404).end();
   const cached = hunterPetIconCache.get(fileId);
   if (cached) return res.redirect(302, cached);
-  const accessToken = req.session?.blizzard_access_token;
+  const accessToken = await getRequestBattleNetAccessToken(req);
   if (!accessToken) return res.status(404).end();
   try {
     const url = `${BLIZZARD_API_ORIGIN}/data/wow/search/media?namespace=static-${BLIZZARD_REGION}&assets.file_data_id=${fileId}&_pageSize=1`;
@@ -1565,9 +1656,9 @@ router.get("/api/media/file/:fileId", async (req, res) => {
   }
 });
 
-router.get("/api/collector", async (req, res) => {
+router.get("/api/collector", requireAuth, async (req, res) => {
   try {
-    res.json(await readCollectorSummary());
+    res.json(await readCollectorSummaryForUser(req));
   } catch (error) {
     console.error("Impossible de lire Azer Companion Collector :", error);
     res.status(500).json({

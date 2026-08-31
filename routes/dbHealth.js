@@ -13,10 +13,11 @@ router.get("/health", async (req, res, next) => {
         (SELECT COUNT(*) FROM schema_migrations) AS migration_count
     `);
 
-    res.json({
-      ok: true,
-      database: result.rows[0],
-    });
+    if (process.env.NODE_ENV === "production") {
+      return res.json({ ok: true });
+    }
+
+    return res.json({ ok: true, database: result.rows[0] });
   } catch (error) {
     next(error);
   }

@@ -1,0 +1,31 @@
+[Unit]
+Description=Azer Companion web application
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=azer
+Group=azer
+WorkingDirectory=/opt/azer-companion
+EnvironmentFile=/etc/azer-companion/azer-companion.env
+
+ExecStartPre=/usr/bin/npm run db:migrate
+ExecStart=/usr/bin/node index.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+KillSignal=SIGTERM
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/azer-companion/data/cache
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=azer-companion
+
+[Install]
+WantedBy=multi-user.target

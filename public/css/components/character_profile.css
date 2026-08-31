@@ -180,7 +180,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  width: min(100%, 990px);
+  width: min(100%, 650px);
   margin: 0 auto 18px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(220, 176, 78, .18);
@@ -225,44 +225,42 @@
 
 .hero-equipment-layout {
   display: grid;
-  grid-template-columns: 180px 430px 180px;
+  grid-template-columns: 58px minmax(300px, 390px) 58px;
   grid-template-areas:
     "left hero right"
     ". weapons .";
   align-items: center;
   justify-content: center;
-  gap: 14px 24px;
-  width: min(100%, 990px);
+  gap: 10px 8px;
+  width: min(100%, 540px);
   margin: 0 auto;
 }
 
 .hero-equipment-center.character-profile-hero {
   position: relative;
   grid-area: hero;
-  width: 430px;
-  height: 625px;
+  width: 390px;
+  height: 520px;
   min-height: 0;
   overflow: hidden;
-  border: 2px solid color-mix(in srgb, var(--profile-class-color) 72%, #d69e30 28%);
-  border-radius: 14px;
+  border: 1px solid #31363a;
+  border-radius: 5px;
   background:
-    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--profile-class-color) 8%, transparent), transparent 48%),
-    linear-gradient(180deg, #0a1720 0%, #050c12 72%, #02070b 100%);
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--profile-class-color) 7%, transparent), transparent 48%),
+    linear-gradient(180deg, #171b1e 0%, #101416 100%);
   box-shadow:
-    0 18px 42px rgba(0, 0, 0, .48),
-    0 0 0 3px rgba(3, 8, 12, .94),
-    0 0 0 4px color-mix(in srgb, var(--profile-class-color) 34%, rgba(185, 128, 32, .48)),
-    0 0 24px color-mix(in srgb, var(--profile-class-color) 16%, transparent),
-    inset 0 0 42px rgba(0, 0, 0, .3);
+    0 14px 34px rgba(0, 0, 0, .46),
+    0 0 0 3px #080a0b,
+    inset 0 -30px 55px rgba(0, 0, 0, .28);
 }
 
 .hero-equipment-center.character-profile-hero::before {
   content: "";
   position: absolute;
   z-index: 2;
-  inset: 10px;
-  border: 1px solid color-mix(in srgb, var(--profile-class-color) 28%, rgba(221, 174, 70, .66));
-  border-radius: 9px;
+  inset: 4px;
+  border: 1px solid rgba(255, 255, 255, .035);
+  border-radius: 2px;
   pointer-events: none;
 }
 
@@ -274,9 +272,9 @@
 
 .character-profile-image-window {
   z-index: 1;
-  inset: 13px;
+  inset: 4px;
   overflow: hidden;
-  border-radius: 9px;
+  border-radius: 2px;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -326,8 +324,8 @@
 .hero-equipment-column {
   display: grid;
   align-content: center;
-  gap: 10px;
-  width: 180px;
+  gap: 8px;
+  width: 58px;
 }
 
 .hero-equipment-column-left {
@@ -344,13 +342,13 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
   padding: 0;
   overflow: visible;
   border: 0;
-  border-radius: 9px;
+  border-radius: 5px;
   color: #d7b65f;
   background: transparent;
   cursor: pointer;
@@ -367,13 +365,13 @@
 .hero-equipment-slot-icon {
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   overflow: hidden;
   border: 2px solid rgba(220, 176, 78, .48);
-  border-radius: 8px;
-  background: linear-gradient(145deg, #101c27, #050b11);
-  box-shadow: 0 0 0 2px #02080d, inset 0 0 10px rgba(0, 0, 0, .65);
+  border-radius: 4px;
+  background: linear-gradient(145deg, #17191b, #08090a);
+  box-shadow: 0 0 0 2px #030405, inset 0 0 10px rgba(0, 0, 0, .65);
   font-size: 1.25rem;
   transition: filter .16s ease, box-shadow .16s ease;
 }
@@ -392,16 +390,7 @@
 }
 
 .hero-equipment-slot-label {
-  position: absolute;
-  top: 50%;
-  width: 104px;
-  color: #a8a196;
-  font: 700 .67rem/1.1 var(--font-primary);
-  letter-spacing: .02em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transform: translateY(-50%);
-  pointer-events: none;
+  display: none;
 }
 
 .hero-equipment-column-left .hero-equipment-slot-label {
@@ -433,7 +422,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 88px;
+  gap: 14px;
   width: 100%;
 }
 
@@ -1422,18 +1411,18 @@ body.is-collection-modal-open { overflow: hidden; }
   }
 
   .hero-equipment-layout {
-    grid-template-columns: 82px minmax(360px, 430px) 82px;
-    column-gap: 12px;
+    grid-template-columns: 58px minmax(300px, 390px) 58px;
+    column-gap: 8px;
   }
 
   .hero-equipment-center.character-profile-hero {
-    width: min(430px, 100%);
+    width: min(390px, 100%);
     height: auto;
-    aspect-ratio: 43 / 62.5;
+    aspect-ratio: 3 / 4;
   }
 
   .hero-equipment-column {
-    width: 82px;
+    width: 58px;
   }
 
   .hero-equipment-slot-label {
