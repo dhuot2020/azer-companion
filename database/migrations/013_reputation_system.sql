@@ -46,10 +46,12 @@ CREATE TABLE account_reputations (
 );
 
 ALTER TABLE character_reputations
-    ADD COLUMN rank_id BIGINT REFERENCES reputation_rank_definitions(id) ON DELETE SET NULL,
-    ADD COLUMN renown_level INTEGER,
-    ADD COLUMN is_maxed BOOLEAN NOT NULL DEFAULT FALSE,
-    ADD COLUMN last_synced_at TIMESTAMPTZ;
+    ADD COLUMN IF NOT EXISTS rank_id BIGINT
+        REFERENCES reputation_rank_definitions(id)
+        ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS renown_level INTEGER,
+    ADD COLUMN IF NOT EXISTS is_maxed BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ;
 
 INSERT INTO schema_migrations(version, description)
 VALUES ('013_reputation_system',
