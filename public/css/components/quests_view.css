@@ -2904,3 +2904,389 @@ body.hunter-pet-sheet-open{overflow:hidden}
 .hybrid-roadmap-filter:hover{border-color:rgba(245,182,66,.7)}
 .hybrid-roadmap-filter.is-active{border-color:#f5b642;background:rgba(245,182,66,.1);color:#f2cf68;box-shadow:inset 0 -2px 0 rgba(245,182,66,.55)}
 .hybrid-roadmap-filter:focus-visible{outline:1px solid #f5b642;outline-offset:2px}
+/* ==========================================================
+   QUEST ATLAS V15 - CORRECTION FINALE ONE-PAGER + TABLETTE
+   2026-09-01
+
+   IMPORTANT :
+   - supprimer le bloc V14 ajouté précédemment
+   - ajouter CE bloc à la fin de quests_view.css
+   - aucun changement visuel volontaire
+========================================================= */
+
+/* =========================================================
+   DESKTOP : OCCUPER TOUTE LA HAUTEUR DISPONIBLE
+========================================================= */
+
+@media (min-width: 1051px) {
+  .quests-view,
+  .quests-view.app-view-active {
+    width: 100%;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .quests-panel.quests-atlas {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .quests-world-header,
+  .quests-summary-premium,
+  .class-quests-section {
+    flex: 0 0 auto;
+  }
+
+  .quest-atlas-layout {
+    display: grid;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    align-items: stretch;
+  }
+
+  .quest-atlas-column,
+  .quest-center-column,
+  .quest-details-panel.quest-details-docked {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .quest-continents-column,
+  .quest-regions-column {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+  }
+
+  .quest-continents-column .quest-continent-nav,
+  .quest-regions-column .quest-regions-grid {
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quest-center-column {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+  }
+
+  .quest-region-detail {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .quests-grid.quest-world-list {
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .quest-details-panel.quest-details-docked {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Le shell reste le seul proprietaire du footer. */
+  .azer-shell:has(.quests-view[aria-hidden="false"]) .main-area {
+    height: calc(100vh - 60px) !important;
+    height: calc(100dvh - 60px) !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+/* =========================================================
+   TABLETTE <= 1050px
+   Meme seuil que le JavaScript openQuestDetails().
+========================================================= */
+
+@media (max-width: 1050px) {
+  .azer-shell:has(.quests-view[aria-hidden="false"]) .main-area {
+    height: calc(100vh - 60px) !important;
+    height: calc(100dvh - 60px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quests-view,
+  .quests-view.app-view-active,
+  .quests-panel.quests-atlas {
+    width: 100%;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .quests-world-header {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    gap: 12px;
+  }
+
+  .quests-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-top: 0;
+  }
+
+  .quests-character-picker {
+    width: min(360px, 100%);
+  }
+
+  .quests-summary-premium {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .class-quests-section,
+  .class-quests-head {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Continents + Regions en haut, quetes pleine largeur dessous. */
+  .quest-atlas-layout {
+    display: grid !important;
+    grid-template-columns: minmax(200px, .85fr) minmax(280px, 1.15fr) !important;
+    grid-template-areas:
+      "continents regions"
+      "center center" !important;
+    gap: 10px;
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .quest-continents-column {
+    grid-area: continents;
+  }
+
+  .quest-regions-column {
+    grid-area: regions;
+  }
+
+  .quest-center-column {
+    grid-area: center;
+  }
+
+  .quest-continents-column,
+  .quest-regions-column {
+    height: 430px !important;
+    min-height: 0 !important;
+    max-height: 430px !important;
+    overflow: hidden !important;
+  }
+
+  .quest-continents-column .quest-continent-nav,
+  .quest-regions-column .quest-regions-grid {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quest-center-column {
+    width: 100%;
+    height: auto !important;
+    min-height: 600px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .quest-region-detail {
+    height: auto !important;
+    min-height: 600px !important;
+  }
+
+  .quests-grid.quest-world-list {
+    max-height: 430px;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* -------------------------------------------------------
+     DETAILS TABLETTE
+     On utilise body.quest-details-open comme source de verite.
+     Le JS ajoute deja cette classe quand une quete est ouverte.
+  ------------------------------------------------------- */
+
+  .quest-details-panel.quest-details-docked {
+    position: fixed !important;
+    top: 12px !important;
+    right: 12px !important;
+    bottom: 72px !important;
+    left: auto !important;
+
+    z-index: 10001 !important;
+
+    width: min(440px, calc(100vw - 24px)) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+
+    border-radius: 7px !important;
+
+    transform: translateX(calc(100% + 40px)) !important;
+    transition: transform .24s ease !important;
+
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fonctionne avec .is-open ET avec la classe body ajoutee par le JS. */
+  .quest-details-panel.quest-details-docked.is-open,
+  body.quest-details-open .quest-details-panel.quest-details-docked {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .quest-details-backdrop {
+    display: none !important;
+  }
+
+  .quest-details-backdrop:not([hidden]),
+  body.quest-details-open .quest-details-backdrop {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 0 60px 0 !important;
+    z-index: 10000 !important;
+    background: rgba(0, 7, 13, .68) !important;
+    backdrop-filter: blur(3px);
+  }
+
+  .quest-details-close-mobile {
+    display: none;
+    position: fixed !important;
+    top: 18px !important;
+    right: 22px !important;
+    z-index: 10002 !important;
+  }
+
+  body.quest-details-open .quest-details-close-mobile {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   PETITE TABLETTE / MOBILE
+========================================================= */
+
+@media (max-width: 760px) {
+  .azer-shell:has(.quests-view[aria-hidden="false"]) {
+    padding-bottom: 108px;
+  }
+
+  .azer-shell:has(.quests-view[aria-hidden="false"]) .main-area {
+    height: calc(100dvh - 108px) !important;
+  }
+
+  .quests-view {
+    padding-inline: 10px;
+    padding-bottom: 18px;
+  }
+
+  .quests-world-header {
+    padding-left: 54px;
+  }
+
+  .quests-actions {
+    align-items: stretch;
+  }
+
+  .quests-character-picker {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .quests-summary-premium {
+    grid-template-columns: 1fr;
+  }
+
+  .quest-kpi::after {
+    display: none;
+  }
+
+  .quest-atlas-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "continents"
+      "regions"
+      "center" !important;
+  }
+
+  .quest-continents-column,
+  .quest-regions-column {
+    width: 100%;
+    height: 390px !important;
+    max-height: 390px !important;
+  }
+
+  .quest-center-column,
+  .quest-region-detail {
+    min-height: 560px !important;
+  }
+
+  .quest-status-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quest-world-row {
+    grid-template-columns: 28px minmax(0, 1fr) 18px;
+  }
+
+  .quest-world-meta {
+    display: none;
+  }
+
+  .quest-details-panel.quest-details-docked {
+    top: 8px !important;
+    right: 8px !important;
+    bottom: 116px !important;
+    left: 8px !important;
+    width: auto !important;
+  }
+
+  .quest-details-backdrop:not([hidden]),
+  body.quest-details-open .quest-details-backdrop {
+    inset: 0 0 108px 0 !important;
+  }
+
+  .quest-details-close-mobile {
+    top: 14px !important;
+    right: 16px !important;
+  }
+}
