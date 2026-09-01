@@ -82,25 +82,69 @@
       </div>
       <div class="sidebar-account-copy">
         <span class="sidebar-account-label">PERSONNAGE ACTIF</span>
-        <strong id="sidebar-account-name">Synchronisation...</strong>
-        <small id="sidebar-account-details">Données Battle.net</small>
+        <strong id="sidebar-account-name" data-active-character-name>Synchronisation...</strong>
+        <small id="sidebar-account-details">Données Battle.net · <span data-active-character-realm>—</span></small>
       </div>
       <span class="sidebar-account-status" title="Synchronisé"></span>
     </section>
 
-    <a
-      href="/api/auth/battlenet"
-      class="character-switch battle-net-button is-offline"
-      id="battleNetAuthButton"
-      aria-label="Se connecter à Battle.net"
-    >
-      <img
-        src="/assets/battlenet-logo.png"
-        alt=""
-        class="battle-net-logo"
-        aria-hidden="true"
-      />
-    </a>
+    <div class="sidebar-quick-actions" aria-label="Connexion et synchronisation">
+      <a
+        href="/api/auth/battlenet"
+        class="character-switch battle-net-button sidebar-quick-action is-offline"
+        id="battleNetAuthButton"
+        aria-label="Se connecter à Battle.net"
+      >
+        <span class="sidebar-action-icon sidebar-action-icon-battlenet" aria-hidden="true">
+          <img src="/assets/battlenet-logo.png" alt="" class="battle-net-logo" />
+        </span>
+        <span class="sidebar-action-label">Battle.net</span>
+        <span class="sidebar-action-diamond" aria-hidden="true"></span>
+      </a>
+
+      <button
+        id="homeSyncButton"
+        class="character-switch sidebar-quick-action"
+        type="button"
+        aria-label="Synchroniser les données World of Warcraft"
+      >
+        <span class="sidebar-action-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M20 7v5h-5" />
+            <path d="M4 17v-5h5" />
+            <path d="M6.1 8.2A7 7 0 0 1 18.6 6L20 8" />
+            <path d="M17.9 15.8A7 7 0 0 1 5.4 18L4 16" />
+          </svg>
+        </span>
+        <span class="sidebar-action-label">Synchroniser WoW</span>
+        <span
+          id="homeSyncDiamond"
+          class="sidebar-action-diamond is-alert"
+          aria-hidden="true"
+        ></span>
+      </button>
+
+      <a
+        id="homeAddonButton"
+        href="/addon"
+        class="character-switch sidebar-quick-action"
+        aria-label="Installer Azer Companion Collector"
+      >
+        <span class="sidebar-action-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 3v12" />
+            <path d="m7 10 5 5 5-5" />
+            <path d="M5 19h14" />
+          </svg>
+        </span>
+        <span class="sidebar-action-label">Installer l'addon</span>
+        <span
+          id="homeAddonDiamond"
+          class="sidebar-action-diamond is-alert"
+          aria-hidden="true"
+        ></span>
+      </a>
+    </div>
 
     <div class="sidebar-dh-studio" aria-label="Une création de DH Studio">
       <small>Une création de</small>
@@ -159,8 +203,8 @@
               <div class="last-hero-avatar"><img id="homeHeroAvatar" alt="" hidden /></div>
             </div>
             <div class="last-hero-copy">
-              <h2 id="homeHeroName">Synchronisation...</h2>
-              <p><strong id="homeHeroClass">—</strong> · Niveau <span id="homeHeroLevel">—</span></p>
+              <h2 id="homeHeroName" data-active-character-name>Synchronisation...</h2>
+              <p><strong id="homeHeroClass">—</strong> · Niveau <span id="homeHeroLevel" data-active-character-level>—</span></p>
               <ul>
                 <li><svg><use href="#icon-location"></use></svg><span id="homeHeroLocation">Lieu non enregistré</span></li>
                 <li><svg><use href="#icon-clock"></use></svg><span id="homeHeroLastPlayed">Dernière session inconnue</span></li>
@@ -711,5 +755,10 @@
   ☰
 </button>
 
-<%- include('components/compass/compass_menu') %> <%- include('partials/footer')
-%>
+<%- include('components/compass/compass_menu') %>
+
+<!-- Personnage actif Azer Compagnion -->
+<script src="/js/active-character.js"></script>
+<script src="/js/carnet-active-character.js"></script>
+
+<%- include('partials/footer') %>

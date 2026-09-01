@@ -198,6 +198,11 @@ app.use("/api/carnet/context", carnetContextRouter);
 // ============================================================
 
 app.use("/api/collector-cloud", collectorCloudRouter);
+app.get("/addon", (_req, res) => {
+  res.render("addon", {
+    page_title: "Azer Companion Collector",
+  });
+});
 app.use("/", loadActiveCharacter, carnetRouter);
 
 // ============================================================

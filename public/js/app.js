@@ -252,16 +252,30 @@ function getProfileImageViewStorageKey(character, mode) {
   const key = character ? getCharacterKey(character) : "unknown";
   // v2 uniquement pour le portrait : on ignore les anciens zooms (ex. 600 %)
   // qui avaient été enregistrés lorsque le portrait utilisait le main-raw.
-  const storageMode = mode === "portrait" ? "portraitV2" : mode === "full-body" ? "fullBodyV10" : mode;
+  const storageMode =
+    mode === "portrait"
+      ? "portraitV2"
+      : mode === "full-body"
+        ? "fullBodyV10"
+        : mode;
   return scopedStorageKey(`azer.profileImageView.${key}.${storageMode}`);
 }
 
 function getProfileImageView(character, mode = profileImageMode) {
-  const fallback = PROFILE_IMAGE_DEFAULT_VIEW[mode] || PROFILE_IMAGE_DEFAULT_VIEW["full-body"];
+  const fallback =
+    PROFILE_IMAGE_DEFAULT_VIEW[mode] || PROFILE_IMAGE_DEFAULT_VIEW["full-body"];
 
   try {
-    const saved = JSON.parse(localStorage.getItem(getProfileImageViewStorageKey(character, mode)) || "null");
-    if (saved && Number.isFinite(saved.zoom) && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+    const saved = JSON.parse(
+      localStorage.getItem(getProfileImageViewStorageKey(character, mode)) ||
+        "null",
+    );
+    if (
+      saved &&
+      Number.isFinite(saved.zoom) &&
+      Number.isFinite(saved.x) &&
+      Number.isFinite(saved.y)
+    ) {
       return {
         zoom: Math.min(6, Math.max(0.65, saved.zoom)),
         x: Math.min(80, Math.max(-80, saved.x)),
@@ -314,7 +328,10 @@ function updateProfileImageView(patch) {
 
 function resetProfileImageView() {
   if (!profiledCharacter) return;
-  const defaults = { ...(PROFILE_IMAGE_DEFAULT_VIEW[profileImageMode] || PROFILE_IMAGE_DEFAULT_VIEW["full-body"]) };
+  const defaults = {
+    ...(PROFILE_IMAGE_DEFAULT_VIEW[profileImageMode] ||
+      PROFILE_IMAGE_DEFAULT_VIEW["full-body"]),
+  };
   saveProfileImageView(profiledCharacter, profileImageMode, defaults);
   applyProfileImageView();
 }
@@ -358,9 +375,7 @@ function getCharacterKey(character) {
 
 function hasCharacterMedia(character) {
   return Boolean(
-    character?.avatarUrl ||
-    character?.portraitUrl ||
-    character?.fullBodyUrl
+    character?.avatarUrl || character?.portraitUrl || character?.fullBodyUrl,
   );
 }
 
@@ -372,7 +387,9 @@ function isOwnedCharacterMedia(character) {
 
 function readSelectedCharacterKey() {
   try {
-    return localStorage.getItem(scopedStorageKey(selectedCharacterStorageKey)) || "";
+    return (
+      localStorage.getItem(scopedStorageKey(selectedCharacterStorageKey)) || ""
+    );
   } catch (error) {
     console.warn("Impossible de lire le personnage sélectionné.", error);
     return "";
@@ -381,7 +398,9 @@ function readSelectedCharacterKey() {
 
 function readCachedCharacterRoster() {
   try {
-    const rawValue = localStorage.getItem(scopedStorageKey(charactersRosterStorageKey));
+    const rawValue = localStorage.getItem(
+      scopedStorageKey(charactersRosterStorageKey),
+    );
     if (!rawValue) {
       return [];
     }
@@ -436,12 +455,13 @@ function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
     // média vide ne doit jamais effacer un portrait Battle.net déjà valide.
     const freshMediaIsOwned = isOwnedCharacterMedia(character);
     const previousMediaIsOwned = isOwnedCharacterMedia(previousCharacter);
-    const mediaSource = freshMediaIsOwned &&
+    const mediaSource =
+      freshMediaIsOwned &&
       (character.avatarUrl || character.portraitUrl || character.fullBodyUrl)
-      ? character
-      : previousMediaIsOwned
-        ? previousCharacter
-        : {};
+        ? character
+        : previousMediaIsOwned
+          ? previousCharacter
+          : {};
 
     const mergedCharacter = {
       ...previousCharacter,
@@ -453,11 +473,16 @@ function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
       media: mediaSource.media || null,
       mediaOwnerKey:
         mediaSource.mediaOwnerKey ||
-        ((mediaSource.avatarUrl || mediaSource.portraitUrl || mediaSource.fullBodyUrl)
+        (mediaSource.avatarUrl ||
+        mediaSource.portraitUrl ||
+        mediaSource.fullBodyUrl
           ? characterKey
           : null),
-      portraitSource: mediaSource.portraitSource || character.portraitSource || null,
-      isFallbackPortrait: Boolean(mediaSource.isFallbackPortrait || character.isFallbackPortrait),
+      portraitSource:
+        mediaSource.portraitSource || character.portraitSource || null,
+      isFallbackPortrait: Boolean(
+        mediaSource.isFallbackPortrait || character.isFallbackPortrait,
+      ),
     };
 
     mergedCharacters.set(characterKey, normalizeCharacter(mergedCharacter));
@@ -471,7 +496,10 @@ function mergeCharacterRosters(freshCharacters = [], previousCharacters = []) {
 
 function saveSelectedCharacterKey(characterKey) {
   try {
-    localStorage.setItem(scopedStorageKey(selectedCharacterStorageKey), characterKey);
+    localStorage.setItem(
+      scopedStorageKey(selectedCharacterStorageKey),
+      characterKey,
+    );
   } catch (error) {
     console.warn("Impossible de mémoriser le personnage sélectionné.", error);
   }
@@ -766,14 +794,23 @@ function getFactionIconMarkup(factionName) {
 
 function getWowClassIconUrl(iconName) {
   const slugs = {
-    warrior: "warrior", paladin: "paladin", hunter: "hunter", rogue: "rogue", priest: "priest",
-    "death-knight": "deathknight", shaman: "shaman", mage: "mage", warlock: "warlock", monk: "monk",
-    druid: "druid", "demon-hunter": "demonhunter", evoker: "evoker",
+    warrior: "warrior",
+    paladin: "paladin",
+    hunter: "hunter",
+    rogue: "rogue",
+    priest: "priest",
+    "death-knight": "deathknight",
+    shaman: "shaman",
+    mage: "mage",
+    warlock: "warlock",
+    monk: "monk",
+    druid: "druid",
+    "demon-hunter": "demonhunter",
+    evoker: "evoker",
   };
   const slug = slugs[iconName] || "warrior";
   return `https://wow.zamimg.com/images/wow/icons/medium/classicon_${slug}.jpg`;
 }
-
 
 function getWowIconUrl(iconName, size = "large") {
   const clean = String(iconName || "inv_misc_questionmark").toLowerCase();
@@ -783,32 +820,48 @@ function getWowIconUrl(iconName, size = "large") {
 function getWowRaceIconUrl(raceName = "") {
   const race = String(raceName).toLowerCase();
   const icons = {
-    "orc": "achievement_character_orc_male",
+    orc: "achievement_character_orc_male",
     "elfe de sang": "achievement_character_bloodelf_female",
-    "humain": "achievement_character_human_male",
-    "nain": "achievement_character_dwarf_male",
+    humain: "achievement_character_human_male",
+    nain: "achievement_character_dwarf_male",
     "elfe de la nuit": "achievement_character_nightelf_female",
     "mort-vivant": "achievement_character_undead_male",
-    "tauren": "achievement_character_tauren_male",
-    "gnome": "achievement_character_gnome_male",
-    "troll": "achievement_character_troll_male",
-    "gobelin": "achievement_character_goblin_male",
-    "draeneï": "achievement_character_draenei_male",
-    "worgen": "achievement_character_worgen_male",
-    "pandaren": "achievement_character_pandaren_male",
+    tauren: "achievement_character_tauren_male",
+    gnome: "achievement_character_gnome_male",
+    troll: "achievement_character_troll_male",
+    gobelin: "achievement_character_goblin_male",
+    draeneï: "achievement_character_draenei_male",
+    worgen: "achievement_character_worgen_male",
+    pandaren: "achievement_character_pandaren_male",
   };
   return getWowIconUrl(icons[race] || "inv_misc_questionmark");
 }
 
 function getWowRealmIconUrl(realmName = "") {
   const realm = String(realmName).toLowerCase();
-  if (realm.includes("silvermoon")) return getWowIconUrl("spell_arcane_teleportsilvermoon");
+  if (realm.includes("silvermoon"))
+    return getWowIconUrl("spell_arcane_teleportsilvermoon");
   return getWowIconUrl("inv_misc_map_01");
 }
 
 function getWowLevelIconUrl(level = 1) {
   const value = Number(level) || 1;
-  const tier = value >= 80 ? 80 : value >= 70 ? 70 : value >= 60 ? 60 : value >= 50 ? 50 : value >= 40 ? 40 : value >= 30 ? 30 : value >= 20 ? 20 : 10;
+  const tier =
+    value >= 80
+      ? 80
+      : value >= 70
+        ? 70
+        : value >= 60
+          ? 60
+          : value >= 50
+            ? 50
+            : value >= 40
+              ? 40
+              : value >= 30
+                ? 30
+                : value >= 20
+                  ? 20
+                  : 10;
   return getWowIconUrl(`achievement_level_${tier}`);
 }
 
@@ -952,18 +1005,31 @@ function normalizeCharacter(character) {
   const normalizedCharacter = {
     ...character,
     id: character.id,
-    realm: character.realm || character.realm_name || character.realm_slug || "",
+    realm:
+      character.realm || character.realm_name || character.realm_slug || "",
     realmSlug: character.realmSlug || character.realm_slug || "",
-    classId: character.classId ?? character.blizzard_class_id ?? character.class_id ?? null,
-    raceId: character.raceId ?? character.blizzard_race_id ?? character.race_id ?? null,
-    blizzardCharacterId: character.blizzardCharacterId ?? character.blizzard_character_id ?? null,
+    classId:
+      character.classId ??
+      character.blizzard_class_id ??
+      character.class_id ??
+      null,
+    raceId:
+      character.raceId ??
+      character.blizzard_race_id ??
+      character.race_id ??
+      null,
+    blizzardCharacterId:
+      character.blizzardCharacterId ?? character.blizzard_character_id ?? null,
     avatarUrl: character.avatarUrl || character.avatar_url || null,
     portraitUrl: character.portraitUrl || character.portrait_url || null,
     fullBodyUrl: character.fullBodyUrl || character.full_body_url || null,
   };
 
   const characterKey = getCharacterKey(normalizedCharacter);
-  if (hasCharacterMedia(normalizedCharacter) && !normalizedCharacter.mediaOwnerKey) {
+  if (
+    hasCharacterMedia(normalizedCharacter) &&
+    !normalizedCharacter.mediaOwnerKey
+  ) {
     normalizedCharacter.mediaOwnerKey = characterKey;
   }
   normalizedCharacter.characterKey = characterKey;
@@ -979,12 +1045,28 @@ function normalizeCharacter(character) {
     className: normalizedCharacter.class_name || classInfo.name,
     classColor: classInfo.color,
     classIcon: classInfo.icon,
-    raceName: normalizedCharacter.race_name || raceNames[normalizedCharacter.raceId] || (normalizedCharacter.raceId ? `Race ${normalizedCharacter.raceId}` : "Race inconnue"),
-    factionName: String(normalizedCharacter.faction || "Alliance").toUpperCase(),
-    genderName: normalizedCharacter.genderName || normalizedCharacter.gender?.name || normalizedCharacter.gender || "",
+    raceName:
+      normalizedCharacter.race_name ||
+      raceNames[normalizedCharacter.raceId] ||
+      (normalizedCharacter.raceId
+        ? `Race ${normalizedCharacter.raceId}`
+        : "Race inconnue"),
+    factionName: String(
+      normalizedCharacter.faction || "Alliance",
+    ).toUpperCase(),
+    genderName:
+      normalizedCharacter.genderName ||
+      normalizedCharacter.gender?.name ||
+      normalizedCharacter.gender ||
+      "",
     isShowcase: Boolean(normalizedCharacter.isShowcase),
-    portraitSource: normalizedCharacter.portraitSource || (normalizedCharacter.isFallbackPortrait ? "azer-fallback" : "blizzard"),
-    isFallbackPortrait: Boolean(normalizedCharacter.isFallbackPortrait || normalizedCharacter.portraitSource === "azer-fallback"),
+    portraitSource:
+      normalizedCharacter.portraitSource ||
+      (normalizedCharacter.isFallbackPortrait ? "azer-fallback" : "blizzard"),
+    isFallbackPortrait: Boolean(
+      normalizedCharacter.isFallbackPortrait ||
+      normalizedCharacter.portraitSource === "azer-fallback",
+    ),
   };
 
   normalizedResult.image = getCharacterImage(normalizedResult);
@@ -1253,27 +1335,41 @@ function renderCharacterUnavailable(message) {
 
 async function selectCharacter(character) {
   if (!character?.id) {
-    console.error("Identifiant PostgreSQL manquant pour le personnage.", character);
+    console.error(
+      "Identifiant PostgreSQL manquant pour le personnage.",
+      character,
+    );
     return;
   }
   try {
     const response = await fetch("/api/characters/active", {
       method: "POST",
       credentials: "same-origin",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ character_id: Number(character.id) }),
     });
     const data = await response.json().catch(() => null);
-    if (!response.ok || !data?.ok) throw new Error(data?.message || data?.error || "Sélection impossible");
+    if (!response.ok || !data?.ok)
+      throw new Error(data?.message || data?.error || "Sélection impossible");
 
     serverActiveCharacterId = String(data.character?.id || character.id);
     currentCharacterKey = getCharacterKey(character);
     saveSelectedCharacterKey(currentCharacterKey);
     document.querySelectorAll(".character-card").forEach((card) => {
-      card.classList.toggle("active-character", card.dataset.characterKey === currentCharacterKey);
+      card.classList.toggle(
+        "active-character",
+        card.dataset.characterKey === currentCharacterKey,
+      );
     });
     updateDashboardCharacter(character);
-    document.dispatchEvent(new CustomEvent("azer:active-character-changed", { detail: data.character }));
+    document.dispatchEvent(
+      new CustomEvent("azer:active-character-changed", {
+        detail: data.character,
+      }),
+    );
     openDashboardView();
   } catch (error) {
     console.error("Erreur sélection personnage :", error);
@@ -1292,7 +1388,6 @@ function renderBattleStatus(state, message) {
 // ======================================================
 // Chargement depuis Blizzard
 // ======================================================
-
 
 async function isBattleNetSessionConnected() {
   try {
@@ -1353,7 +1448,10 @@ async function loadCharacters(options = {}) {
   syncCharactersButton?.classList.add("is-syncing");
   syncCharactersButton?.setAttribute("disabled", "");
   syncCharactersButton?.setAttribute("aria-busy", "true");
-  renderBattleStatus("loading", isManualSync ? "Mise à jour en cours..." : "Synchronisation...");
+  renderBattleStatus(
+    "loading",
+    isManualSync ? "Mise à jour en cours..." : "Synchronisation...",
+  );
 
   if (!blizzardCharacters.length) {
     charactersList.innerHTML = `<div class="characters-loading">Chargement des personnages...</div>`;
@@ -1372,7 +1470,10 @@ async function loadCharacters(options = {}) {
         method: "POST",
         credentials: "same-origin",
         cache: "no-store",
-        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
       if (syncResponse.status === 401) {
         restoreCachedCharactersForExpiredSession();
@@ -1380,7 +1481,11 @@ async function loadCharacters(options = {}) {
       }
       if (!syncResponse.ok) {
         const payload = await syncResponse.json().catch(() => null);
-        throw new Error(payload?.message || payload?.error || `Synchronisation impossible (${syncResponse.status})`);
+        throw new Error(
+          payload?.message ||
+            payload?.error ||
+            `Synchronisation impossible (${syncResponse.status})`,
+        );
       }
     }
 
@@ -1398,30 +1503,48 @@ async function loadCharacters(options = {}) {
     if (!response.ok) throw new Error("Impossible de charger les personnages.");
 
     const data = await response.json();
-    if (!data?.ok) throw new Error(data?.message || "Réponse personnages invalide.");
+    if (!data?.ok)
+      throw new Error(data?.message || "Réponse personnages invalide.");
 
     const freshCharacters = (data.characters || []).map(normalizeCharacter);
-    const cachedCharacters = readCachedCharacterRoster().map(normalizeCharacter);
-    blizzardCharacters = mergeCharacterRosters(freshCharacters, cachedCharacters);
+    const cachedCharacters =
+      readCachedCharacterRoster().map(normalizeCharacter);
+    blizzardCharacters = mergeCharacterRosters(
+      freshCharacters,
+      cachedCharacters,
+    );
     saveCachedCharacterRoster(blizzardCharacters);
 
     let activeServerCharacter = null;
     try {
       const activeResponse = await fetch("/api/characters/active", {
-        credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" },
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
       });
       if (activeResponse.ok) {
         const activeData = await activeResponse.json();
         serverActiveCharacterId = String(activeData?.character?.id || "");
-        activeServerCharacter = blizzardCharacters.find((c) => String(c.id) === serverActiveCharacterId) || null;
+        activeServerCharacter =
+          blizzardCharacters.find(
+            (c) => String(c.id) === serverActiveCharacterId,
+          ) || null;
       }
     } catch (_error) {}
 
-    const collectorSelectedCharacter = findBattleNetCharacterFromCollector(blizzardCharacters);
+    const collectorSelectedCharacter =
+      findBattleNetCharacterFromCollector(blizzardCharacters);
     const savedSelectedCharacter = blizzardCharacters.find(
-      (character) => Boolean(currentCharacterKey) && getCharacterKey(character) === currentCharacterKey,
+      (character) =>
+        Boolean(currentCharacterKey) &&
+        getCharacterKey(character) === currentCharacterKey,
     );
-    const selectedCharacter = activeServerCharacter || collectorSelectedCharacter || savedSelectedCharacter || blizzardCharacters[0] || null;
+    const selectedCharacter =
+      activeServerCharacter ||
+      collectorSelectedCharacter ||
+      savedSelectedCharacter ||
+      blizzardCharacters[0] ||
+      null;
 
     if (selectedCharacter) {
       currentCharacterKey = getCharacterKey(selectedCharacter);
@@ -1429,9 +1552,17 @@ async function loadCharacters(options = {}) {
       updateDashboardCharacter(selectedCharacter);
     }
 
-    if (charactersCount) charactersCount.textContent = blizzardCharacters.length;
-    const syncTime = new Intl.DateTimeFormat("fr-CA", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
-    renderBattleStatus("connected", `${blizzardCharacters.length} personnage${blizzardCharacters.length > 1 ? "s" : ""} · ${syncTime}`);
+    if (charactersCount)
+      charactersCount.textContent = blizzardCharacters.length;
+    const syncTime = new Intl.DateTimeFormat("fr-CA", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(new Date());
+    renderBattleStatus(
+      "connected",
+      `${blizzardCharacters.length} personnage${blizzardCharacters.length > 1 ? "s" : ""} · ${syncTime}`,
+    );
 
     renderCharacters();
     renderHomeDashboardAccount(blizzardCharacters, null);
@@ -1450,10 +1581,230 @@ async function loadCharacters(options = {}) {
   }
 }
 
-syncCharactersButton?.addEventListener("click", () => {
-  loadCharacters({ manual: true });
+// ======================================================
+// Synchronisation complète Azer Compagnion
+// Battle.net + Azer Companion Collector
+// ======================================================
+
+async function importCollectorCloudFile(file) {
+  if (!file) {
+    return null;
+  }
+
+  const source = await file.text();
+
+  if (!source.trim()) {
+    throw new Error("Le fichier AzerCompanionCollector.lua est vide.");
+  }
+
+  const response = await fetch("/api/collector-cloud/import", {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "text/plain; charset=utf-8",
+    },
+    body: source,
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || !data?.ok) {
+    if (response.status === 401) {
+      throw new Error(
+        "Ta session Battle.net a expiré. Reconnecte-toi avant de synchroniser.",
+      );
+    }
+
+    throw new Error(
+      data?.message ||
+        data?.error ||
+        `Import du Collector impossible (${response.status}).`,
+    );
+  }
+
+  return data;
+}
+
+function chooseCollectorFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = ".lua,text/plain,text/x-lua";
+    input.hidden = true;
+
+    let resolved = false;
+
+    const cleanup = () => {
+      window.removeEventListener("focus", handleWindowFocus);
+      input.remove();
+    };
+
+    const finish = (file) => {
+      if (resolved) return;
+
+      resolved = true;
+      cleanup();
+      resolve(file || null);
+    };
+
+    const handleWindowFocus = () => {
+      // Lorsque le sélecteur Windows se ferme sans fichier,
+      // aucun événement "change" n'est envoyé.
+      setTimeout(() => {
+        if (!resolved && !input.files?.length) {
+          finish(null);
+        }
+      }, 500);
+    };
+
+    input.addEventListener(
+      "change",
+      () => {
+        finish(input.files?.[0] || null);
+      },
+      { once: true },
+    );
+
+    document.body.appendChild(input);
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    input.click();
+  });
+}
+
+async function synchronizeAzerCompagnion() {
+  if (!syncCharactersButton || charactersSyncInProgress) {
+    return;
+  }
+
+  const label = syncCharactersButton.querySelector(".characters-sync-label");
+
+  const originalLabel = label?.textContent || "Synchroniser";
+
+  try {
+    syncCharactersButton.classList.add("is-syncing");
+    syncCharactersButton.setAttribute("disabled", "");
+    syncCharactersButton.setAttribute("aria-busy", "true");
+
+    if (label) {
+      label.textContent = "Choisir le Collector...";
+    }
+
+    renderBattleStatus("loading", "Sélection du Collector...");
+
+    const collectorFile = await chooseCollectorFile();
+
+    if (!collectorFile) {
+      renderBattleStatus("connected", "Synchronisation annulée");
+
+      return;
+    }
+
+    if (collectorFile.name.toLowerCase() !== "azercompanioncollector.lua") {
+      throw new Error("Sélectionne le fichier AzerCompanionCollector.lua.");
+    }
+
+    if (label) {
+      label.textContent = "Import...";
+    }
+
+    renderBattleStatus("loading", "Import du Collector...");
+
+    const collectorResult = await importCollectorCloudFile(collectorFile);
+
+    console.info("Collector Cloud synchronisé :", collectorResult);
+
+    // Le Collector est maintenant dans PostgreSQL.
+    // On relance ensuite la synchronisation Battle.net existante.
+    if (label) {
+      label.textContent = "Battle.net...";
+    }
+
+    // On libère momentanément le verrou puisque loadCharacters()
+    // gère déjà lui-même son propre état de synchronisation.
+    charactersSyncInProgress = false;
+
+    await loadCharacters({
+      manual: true,
+    });
+
+    const characterCount = Number(collectorResult?.characters || 0);
+
+    renderBattleStatus(
+      "connected",
+      `${characterCount} personnage${
+        characterCount > 1 ? "s" : ""
+      } Collector · synchronisé`,
+    );
+  } catch (error) {
+    console.error("Synchronisation Azer Compagnion impossible :", error);
+
+    renderBattleStatus(
+      "disconnected",
+      error.message || "Synchronisation impossible",
+    );
+
+    window.alert(
+      error.message || "La synchronisation Azer Compagnion a échoué.",
+    );
+  } finally {
+    charactersSyncInProgress = false;
+
+    syncCharactersButton?.classList.remove("is-syncing");
+
+    syncCharactersButton?.removeAttribute("disabled");
+
+    syncCharactersButton?.removeAttribute("aria-busy");
+
+    if (label) {
+      label.textContent = originalLabel;
+    }
+  }
+}
+
+homeSyncButton?.addEventListener("click", async () => {
+  try {
+    homeSyncDiamond?.classList.remove(
+      "is-ok",
+      "is-alert",
+    );
+
+    homeSyncDiamond?.classList.add(
+      "is-loading",
+    );
+
+    await synchronizeAzerCompagnion();
+
+    homeSyncDiamond?.classList.remove(
+      "is-loading",
+      "is-alert",
+    );
+
+    homeSyncDiamond?.classList.add(
+      "is-ok",
+    );
+  } catch (error) {
+    console.error(
+      "Synchronisation depuis l'accueil impossible :",
+      error,
+    );
+
+    homeSyncDiamond?.classList.remove(
+      "is-loading",
+      "is-ok",
+    );
+
+    homeSyncDiamond?.classList.add(
+      "is-alert",
+    );
+  }
 });
 
+syncCharactersButton?.addEventListener("click", synchronizeAzerCompagnion);
 
 // ======================================================
 // Accueil du compte Azer Companion
@@ -1484,7 +1835,8 @@ function getCollectorSessions(character) {
   if (collectorCharacter?.latestSession) {
     const latestKey = `${collectorCharacter.latestSession.startedAt || 0}:${collectorCharacter.latestSession.endedAt || 0}`;
     const alreadyIncluded = sessions.some(
-      (session) => `${session.startedAt || 0}:${session.endedAt || 0}` === latestKey,
+      (session) =>
+        `${session.startedAt || 0}:${session.endedAt || 0}` === latestKey,
     );
 
     if (!alreadyIncluded) sessions.push(collectorCharacter.latestSession);
@@ -1539,7 +1891,9 @@ function renderHomeDashboardCharacter(character) {
   const avatar = document.getElementById("homeHeroAvatar");
   const heroMedallion = document.getElementById("homeHeroMedallion");
   const heroFactionFrame = document.getElementById("homeHeroFactionFrame");
-  const normalizedCharacterName = String(character.name || "").trim().toLowerCase();
+  const normalizedCharacterName = String(character.name || "")
+    .trim()
+    .toLowerCase();
   const isHorde = character.factionName === "HORDE";
 
   if (avatar) {
@@ -1550,7 +1904,10 @@ function renderHomeDashboardCharacter(character) {
   }
   if (heroMedallion) {
     heroMedallion.dataset.faction = isHorde ? "HORDE" : "ALLIANCE";
-    heroMedallion.style.setProperty("--home-class-color", character.classColor || "#4fa3ff");
+    heroMedallion.style.setProperty(
+      "--home-class-color",
+      character.classColor || "#4fa3ff",
+    );
   }
   if (heroFactionFrame) {
     heroFactionFrame.src = isHorde
@@ -1592,7 +1949,9 @@ function renderHomeHeroes(characters) {
 
   const displayedCharacters = characters
     .slice()
-    .sort((a, b) => Number(isCurrentCharacter(b)) - Number(isCurrentCharacter(a)))
+    .sort(
+      (a, b) => Number(isCurrentCharacter(b)) - Number(isCurrentCharacter(a)),
+    )
     .slice(0, 4);
 
   displayedCharacters.forEach((character) => {
@@ -1627,7 +1986,9 @@ function renderHomeHeroes(characters) {
 }
 
 function renderHomeDashboardAccount(characters, dashboardSummary = null) {
-  const realCharacters = characters.filter((character) => !character.isShowcase);
+  const realCharacters = characters.filter(
+    (character) => !character.isShowcase,
+  );
   const fallbackCollectorList = [...collectorCharacters.values()];
   const fallbackSessions = fallbackCollectorList.flatMap((character) =>
     Array.isArray(character?.sessions) ? character.sessions : [],
@@ -1721,7 +2082,10 @@ function journalEventPresentation(event) {
     return {
       icon: "icon-map",
       title: `${character} a voyagé`,
-      detail: from && location ? `${from} → ${location}` : location || from || "Déplacement enregistré",
+      detail:
+        from && location
+          ? `${from} → ${location}`
+          : location || from || "Déplacement enregistré",
     };
   }
 
@@ -1730,7 +2094,9 @@ function journalEventPresentation(event) {
     return {
       icon: "icon-clock",
       title: `${character} a terminé sa session`,
-      detail: [duration, location].filter(Boolean).join(" · ") || "Session enregistrée",
+      detail:
+        [duration, location].filter(Boolean).join(" · ") ||
+        "Session enregistrée",
     };
   }
 
@@ -1753,9 +2119,11 @@ function renderHomeJournal(events) {
     return;
   }
 
-  timeline.innerHTML = events.slice(0, 5).map((event) => {
-    const presentation = journalEventPresentation(event);
-    return `<div class="timeline-item">
+  timeline.innerHTML = events
+    .slice(0, 5)
+    .map((event) => {
+      const presentation = journalEventPresentation(event);
+      return `<div class="timeline-item">
       <time>${escapeHomeJournalText(formatJournalMoment(event.timestamp))}</time>
       <span class="timeline-icon"><svg><use href="#${presentation.icon}"></use></svg></span>
       <div>
@@ -1763,7 +2131,8 @@ function renderHomeJournal(events) {
         <small>${escapeHomeJournalText(presentation.detail)}</small>
       </div>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function renderHomeAchievements(achievements) {
@@ -1779,13 +2148,19 @@ function renderHomeAchievements(achievements) {
     return;
   }
 
-  container.innerHTML = achievements.slice(0, 3).map((achievement) => {
-    const detail = [
-      achievement.description,
-      achievement.characterName ? `Obtenu par ${achievement.characterName}` : "",
-    ].filter(Boolean).join(" · ");
+  container.innerHTML = achievements
+    .slice(0, 3)
+    .map((achievement) => {
+      const detail = [
+        achievement.description,
+        achievement.characterName
+          ? `Obtenu par ${achievement.characterName}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" · ");
 
-    return `<div class="achievement-row">
+      return `<div class="achievement-row">
       <span class="achievement-icon"><svg><use href="#icon-trophy"></use></svg></span>
       <div>
         <strong>${escapeHomeJournalText(achievement.name || "Haut fait obtenu")}</strong>
@@ -1793,7 +2168,8 @@ function renderHomeAchievements(achievements) {
       </div>
       <b>${escapeHomeJournalText(achievement.points || 0)}</b>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function renderHomeLocations(locations) {
@@ -1808,15 +2184,19 @@ function renderHomeLocations(locations) {
     return;
   }
 
-  map.innerHTML = locations.slice(0, 3).map((entry, index) => {
-    const label = [entry.location?.subZone, entry.location?.zone]
-      .filter(Boolean)
-      .join(" · ") || "Lieu enregistré";
-    return `<div class="map-pin pin-${["one", "two", "three"][index] || "one"}">
+  map.innerHTML = locations
+    .slice(0, 3)
+    .map((entry, index) => {
+      const label =
+        [entry.location?.subZone, entry.location?.zone]
+          .filter(Boolean)
+          .join(" · ") || "Lieu enregistré";
+      return `<div class="map-pin pin-${["one", "two", "three"][index] || "one"}">
       <svg><use href="#icon-location"></use></svg>
       <span>${label}</span>
     </div>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function openCurrentCharacterProfile() {
@@ -1832,12 +2212,10 @@ document
   .getElementById("viewAllHeroesButton")
   ?.addEventListener("click", openCharactersView);
 
-document
-  .getElementById("hallHeroesNav")
-  ?.addEventListener("click", (event) => {
-    event.preventDefault();
-    openCharactersView();
-  });
+document.getElementById("hallHeroesNav")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  openCharactersView();
+});
 
 // ======================================================
 // Navigation entre les vues
@@ -1942,11 +2320,13 @@ function normalizeProfileProfessions(professions = []) {
     type: profession.type || profession.category || "secondary",
     tiers: Array.isArray(profession.tiers)
       ? profession.tiers
-      : [{
-          name: "Progression actuelle",
-          skillPoints: Number(profession.skillLevel || 0),
-          maxSkillPoints: Number(profession.maxSkillLevel || 0),
-        }],
+      : [
+          {
+            name: "Progression actuelle",
+            skillPoints: Number(profession.skillLevel || 0),
+            maxSkillPoints: Number(profession.maxSkillLevel || 0),
+          },
+        ],
   }));
 }
 
@@ -1960,25 +2340,29 @@ function renderProfileProfessions(professions = [], message = "") {
     return;
   }
 
-  container.innerHTML = normalized.map((profession) => {
-    const tiers = profession.tiers.filter((tier) =>
-      Number(tier.skillPoints || 0) > 0 || Number(tier.maxSkillPoints || 0) > 0,
-    );
-    const renderTier = (tier) => {
-      const current = Number(tier.skillPoints || 0);
-      const maximum = Number(tier.maxSkillPoints || 0);
-      const progress = maximum > 0
-        ? Math.min(100, Math.max(0, (current / maximum) * 100))
-        : 0;
-      return `<div class="profile-profession-tier">
+  container.innerHTML = normalized
+    .map((profession) => {
+      const tiers = profession.tiers.filter(
+        (tier) =>
+          Number(tier.skillPoints || 0) > 0 ||
+          Number(tier.maxSkillPoints || 0) > 0,
+      );
+      const renderTier = (tier) => {
+        const current = Number(tier.skillPoints || 0);
+        const maximum = Number(tier.maxSkillPoints || 0);
+        const progress =
+          maximum > 0
+            ? Math.min(100, Math.max(0, (current / maximum) * 100))
+            : 0;
+        return `<div class="profile-profession-tier">
         <div><span>${escapeHtml(tier.name || "Progression")}</span><strong>${current}/${maximum || "—"}</strong></div>
         <span class="profile-profession-track" aria-hidden="true"><i style="width:${progress.toFixed(1)}%"></i></span>
       </div>`;
-    };
-    const visibleTiers = tiers.slice(0, 2);
-    const hiddenTiers = tiers.slice(2);
+      };
+      const visibleTiers = tiers.slice(0, 2);
+      const hiddenTiers = tiers.slice(2);
 
-    return `<section class="profile-profession-entry">
+      return `<section class="profile-profession-entry">
       <header>
         <span class="profile-profession-name">
           <img src="${getProfessionIconUrl(profession.name)}" alt="" loading="lazy">
@@ -1986,23 +2370,33 @@ function renderProfileProfessions(professions = [], message = "") {
         </span>
         <small>${profession.type === "primary" ? "Principal" : "Secondaire"}</small>
       </header>
-      ${visibleTiers.length
-        ? visibleTiers.map(renderTier).join("")
-        : '<p class="profile-progress-empty">Niveau non disponible</p>'}
-      ${hiddenTiers.length ? `<details class="profile-profession-more">
+      ${
+        visibleTiers.length
+          ? visibleTiers.map(renderTier).join("")
+          : '<p class="profile-progress-empty">Niveau non disponible</p>'
+      }
+      ${
+        hiddenTiers.length
+          ? `<details class="profile-profession-more">
         <summary>+${hiddenTiers.length} progression${hiddenTiers.length > 1 ? "s" : ""}</summary>
         ${hiddenTiers.map(renderTier).join("")}
-      </details>` : ""}
+      </details>`
+          : ""
+      }
     </section>`;
-  }).join("");
+    })
+    .join("");
 }
 
 function getCollectorAchievementSummary(character) {
-  const achievements = (getProfileCollectorCharacter(character)?.achievements || [])
+  const achievements = (
+    getProfileCollectorCharacter(character)?.achievements || []
+  )
     .filter((achievement) => achievement?.completed === true)
-    .sort((first, second) =>
-      Number(second.completedAt || second.observedEarnedAt || 0) -
-      Number(first.completedAt || first.observedEarnedAt || 0),
+    .sort(
+      (first, second) =>
+        Number(second.completedAt || second.observedEarnedAt || 0) -
+        Number(first.completedAt || first.observedEarnedAt || 0),
     );
 
   if (!achievements.length) return null;
@@ -2014,7 +2408,9 @@ function getCollectorAchievementSummary(character) {
     ),
     recent: achievements.slice(0, 3).map((achievement) => ({
       name: achievement.name,
-      completedAt: Number(achievement.completedAt || achievement.observedEarnedAt || 0),
+      completedAt: Number(
+        achievement.completedAt || achievement.observedEarnedAt || 0,
+      ),
     })),
   };
 }
@@ -2025,25 +2421,33 @@ function renderProfileAchievements(summary, message = "") {
   const recent = document.getElementById("profileAchievementRecent");
   if (!count || !points || !recent) return;
 
-  count.textContent = summary ? formatProfileNumber(summary.totalQuantity) : "—";
+  count.textContent = summary
+    ? formatProfileNumber(summary.totalQuantity)
+    : "—";
   points.textContent = summary ? formatProfileNumber(summary.totalPoints) : "—";
 
   const achievements = summary?.recent || [];
   recent.innerHTML = achievements.length
-    ? achievements.map((achievement) => {
-        const completedAt = Number(achievement.completedAt || 0);
-        const completedAtMs = completedAt > 0 && completedAt < 1e12
-          ? completedAt * 1000
-          : completedAt;
-        const date = completedAt
-          ? new Intl.DateTimeFormat("fr-CA", { day: "numeric", month: "short", year: "numeric" })
-              .format(new Date(completedAtMs))
-          : "Date inconnue";
-        return `<div class="profile-recent-achievement">
+    ? achievements
+        .map((achievement) => {
+          const completedAt = Number(achievement.completedAt || 0);
+          const completedAtMs =
+            completedAt > 0 && completedAt < 1e12
+              ? completedAt * 1000
+              : completedAt;
+          const date = completedAt
+            ? new Intl.DateTimeFormat("fr-CA", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }).format(new Date(completedAtMs))
+            : "Date inconnue";
+          return `<div class="profile-recent-achievement">
           <span aria-hidden="true">◆</span>
           <div><strong>${escapeHtml(achievement.name || "Haut fait obtenu")}</strong><small>${escapeHtml(date)}</small></div>
         </div>`;
-      }).join("")
+        })
+        .join("")
     : `<p class="profile-progress-empty">${escapeHtml(message || "Aucun haut fait attribué à ce personnage.")}</p>`;
 }
 
@@ -2068,7 +2472,8 @@ function getProfileCollectionMediaUrl(kind, item) {
 }
 
 function removeProfileCollectionImageBackground(image) {
-  if (!image?.naturalWidth || image.dataset.backgroundProcessed === "true") return;
+  if (!image?.naturalWidth || image.dataset.backgroundProcessed === "true")
+    return;
   image.dataset.backgroundProcessed = "true";
   const canvas = document.createElement("canvas");
   canvas.width = image.naturalWidth;
@@ -2083,29 +2488,45 @@ function removeProfileCollectionImageBackground(image) {
     const stepX = Math.max(1, Math.floor(canvas.width / 24));
     const stepY = Math.max(1, Math.floor(canvas.height / 24));
     for (let x = 0; x < canvas.width; x += stepX) {
-      samples.push((x * 4), ((canvas.height - 1) * canvas.width + x) * 4);
+      samples.push(x * 4, ((canvas.height - 1) * canvas.width + x) * 4);
     }
     for (let y = 0; y < canvas.height; y += stepY) {
-      samples.push((y * canvas.width) * 4, (y * canvas.width + canvas.width - 1) * 4);
+      samples.push(
+        y * canvas.width * 4,
+        (y * canvas.width + canvas.width - 1) * 4,
+      );
     }
 
-    const opaqueSamples = samples.filter((index) => pixels.data[index + 3] > 220);
-    if (opaqueSamples.length < samples.length * .75) {
+    const opaqueSamples = samples.filter(
+      (index) => pixels.data[index + 3] > 220,
+    );
+    if (opaqueSamples.length < samples.length * 0.75) {
       image.classList.remove("is-processing");
       return;
     }
-    const background = opaqueSamples.reduce((total, index) => {
-      total[0] += pixels.data[index];
-      total[1] += pixels.data[index + 1];
-      total[2] += pixels.data[index + 2];
-      return total;
-    }, [0, 0, 0]).map((value) => value / opaqueSamples.length);
-    const variation = Math.sqrt(opaqueSamples.reduce((total, index) => {
-      return total + ((pixels.data[index] - background[0]) ** 2) +
-        ((pixels.data[index + 1] - background[1]) ** 2) +
-        ((pixels.data[index + 2] - background[2]) ** 2);
-    }, 0) / opaqueSamples.length);
-    const luminance = background[0] * .2126 + background[1] * .7152 + background[2] * .0722;
+    const background = opaqueSamples
+      .reduce(
+        (total, index) => {
+          total[0] += pixels.data[index];
+          total[1] += pixels.data[index + 1];
+          total[2] += pixels.data[index + 2];
+          return total;
+        },
+        [0, 0, 0],
+      )
+      .map((value) => value / opaqueSamples.length);
+    const variation = Math.sqrt(
+      opaqueSamples.reduce((total, index) => {
+        return (
+          total +
+          (pixels.data[index] - background[0]) ** 2 +
+          (pixels.data[index + 1] - background[1]) ** 2 +
+          (pixels.data[index + 2] - background[2]) ** 2
+        );
+      }, 0) / opaqueSamples.length,
+    );
+    const luminance =
+      background[0] * 0.2126 + background[1] * 0.7152 + background[2] * 0.0722;
     if (variation > 24 || luminance > 95) {
       image.classList.remove("is-processing");
       return;
@@ -2113,9 +2534,9 @@ function removeProfileCollectionImageBackground(image) {
 
     for (let index = 0; index < pixels.data.length; index += 4) {
       const distance = Math.sqrt(
-        ((pixels.data[index] - background[0]) ** 2) +
-        ((pixels.data[index + 1] - background[1]) ** 2) +
-        ((pixels.data[index + 2] - background[2]) ** 2),
+        (pixels.data[index] - background[0]) ** 2 +
+          (pixels.data[index + 1] - background[1]) ** 2 +
+          (pixels.data[index + 2] - background[2]) ** 2,
       );
       if (distance <= 18) {
         pixels.data[index + 3] = 0;
@@ -2132,11 +2553,15 @@ function removeProfileCollectionImageBackground(image) {
         return;
       }
       const objectUrl = URL.createObjectURL(blob);
-      image.addEventListener("load", () => {
-        URL.revokeObjectURL(objectUrl);
-        image.classList.remove("is-processing");
-        image.classList.add("is-background-removed");
-      }, { once: true });
+      image.addEventListener(
+        "load",
+        () => {
+          URL.revokeObjectURL(objectUrl);
+          image.classList.remove("is-processing");
+          image.classList.add("is-background-removed");
+        },
+        { once: true },
+      );
       image.src = objectUrl;
     }, "image/png");
   } catch (_error) {
@@ -2150,7 +2575,11 @@ function prepareProfileCollectionImage(image) {
   if (image.complete && image.naturalWidth) {
     removeProfileCollectionImageBackground(image);
   } else {
-    image.addEventListener("load", () => removeProfileCollectionImageBackground(image), { once: true });
+    image.addEventListener(
+      "load",
+      () => removeProfileCollectionImageBackground(image),
+      { once: true },
+    );
   }
 }
 
@@ -2166,25 +2595,32 @@ function positionProfileCollectionTooltip(event) {
   let left = pointerX + gap;
   let top = pointerY + gap;
   if (left + width > window.innerWidth - 10) left = pointerX - width - gap;
-  if (top + height > window.innerHeight - 10) top = window.innerHeight - height - 10;
+  if (top + height > window.innerHeight - 10)
+    top = window.innerHeight - height - 10;
   tooltip.style.left = `${Math.max(10, left)}px`;
   tooltip.style.top = `${Math.max(10, top)}px`;
 }
 
 function getProfileCollectionTooltipMarkup(kind, item, detail = null) {
   const isMount = kind === "mount";
-  const quality = !isMount && item.quality
-    ? `<span class="profile-collection-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
-    : "";
-  const stats = !isMount && (item.health || item.power || item.speed)
-    ? `<div class="profile-tooltip-stats">
+  const quality =
+    !isMount && item.quality
+      ? `<span class="profile-collection-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
+      : "";
+  const stats =
+    !isMount && (item.health || item.power || item.speed)
+      ? `<div class="profile-tooltip-stats">
         <span>♥ ${formatProfileNumber(item.health)} Vie</span>
         <span>⚔ ${formatProfileNumber(item.power)} Puissance</span>
         <span>➤ ${formatProfileNumber(item.speed)} Vitesse</span>
       </div>`
+      : "";
+  const type =
+    detail?.type ||
+    (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
+  const source = detail?.source
+    ? `<p><strong>Source :</strong> ${escapeHtml(detail.source)}</p>`
     : "";
-  const type = detail?.type || (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
-  const source = detail?.source ? `<p><strong>Source :</strong> ${escapeHtml(detail.source)}</p>` : "";
   const description = detail?.description
     ? `<p class="profile-tooltip-description">${escapeHtml(detail.description)}</p>`
     : "";
@@ -2204,15 +2640,22 @@ function getProfileCollectionTooltipMarkup(kind, item, detail = null) {
 function bindProfileCollectionTooltipImageFallback(tooltip) {
   const image = tooltip.querySelector("img");
   prepareProfileCollectionImage(image);
-  image?.addEventListener("error", (event) => {
-    event.currentTarget.hidden = true;
-  }, { once: true });
+  image?.addEventListener(
+    "error",
+    (event) => {
+      event.currentTarget.hidden = true;
+    },
+    { once: true },
+  );
 }
 
 async function loadProfileCollectionDetail(kind, item) {
   const key = `${kind}:${item.id}`;
-  if (profileCollectionDetails.has(key)) return profileCollectionDetails.get(key);
-  const response = await fetch(`/api/ase/collection-detail/${kind}/${encodeURIComponent(item.id)}`);
+  if (profileCollectionDetails.has(key))
+    return profileCollectionDetails.get(key);
+  const response = await fetch(
+    `/api/ase/collection-detail/${kind}/${encodeURIComponent(item.id)}`,
+  );
   if (!response.ok) return null;
   const detail = await response.json();
   profileCollectionDetails.set(key, detail);
@@ -2224,7 +2667,11 @@ async function showProfileCollectionTooltip(event, kind, item) {
   if (!tooltip) return;
   const key = `${kind}:${item.id}`;
   activeProfileCollectionTooltipKey = key;
-  tooltip.innerHTML = getProfileCollectionTooltipMarkup(kind, item, profileCollectionDetails.get(key));
+  tooltip.innerHTML = getProfileCollectionTooltipMarkup(
+    kind,
+    item,
+    profileCollectionDetails.get(key),
+  );
   bindProfileCollectionTooltipImageFallback(tooltip);
   tooltip.hidden = false;
   positionProfileCollectionTooltip(event);
@@ -2250,17 +2697,21 @@ function hideProfileCollectionTooltip() {
 
 function getProfileCollectionModalMarkup(kind, item, detail = null) {
   const isMount = kind === "mount";
-  const type = detail?.type || (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
-  const stats = !isMount && (item.health || item.power || item.speed)
-    ? `<div class="profile-modal-stats">
+  const type =
+    detail?.type ||
+    (isMount ? "Monture" : item.speciesName || "Mascotte de combat");
+  const stats =
+    !isMount && (item.health || item.power || item.speed)
+      ? `<div class="profile-modal-stats">
         <span><b>♥</b><strong>${formatProfileNumber(item.health)}</strong><small>Vie</small></span>
         <span><b>⚔</b><strong>${formatProfileNumber(item.power)}</strong><small>Puissance</small></span>
         <span><b>➤</b><strong>${formatProfileNumber(item.speed)}</strong><small>Vitesse</small></span>
       </div>`
-    : "";
-  const quality = !isMount && item.quality
-    ? `<span class="profile-modal-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
-    : "";
+      : "";
+  const quality =
+    !isMount && item.quality
+      ? `<span class="profile-modal-quality ${getCollectionQualityClass(item.quality)}">${escapeHtml(item.quality)}</span>`
+      : "";
   const source = detail?.source
     ? `<div class="profile-modal-data"><small>Source</small><strong>${escapeHtml(detail.source)}</strong></div>`
     : `<div class="profile-modal-data"><small>Source</small><strong>Information non fournie</strong></div>`;
@@ -2295,10 +2746,14 @@ function getProfileCollectionModalMarkup(kind, item, detail = null) {
 function bindProfileCollectionModalImages(modal) {
   modal.querySelectorAll("img").forEach((image) => {
     prepareProfileCollectionImage(image);
-    image.addEventListener("error", () => {
-      image.hidden = true;
-      image.parentElement?.classList.add("is-image-missing");
-    }, { once: true });
+    image.addEventListener(
+      "error",
+      () => {
+        image.hidden = true;
+        image.parentElement?.classList.add("is-image-missing");
+      },
+      { once: true },
+    );
   });
 }
 
@@ -2310,15 +2765,22 @@ async function openProfileCollectionModal(trigger, kind, item) {
   profileCollectionModalTrigger = trigger;
   const key = `${kind}:${item.id}`;
   activeProfileCollectionModalKey = key;
-  body.innerHTML = getProfileCollectionModalMarkup(kind, item, profileCollectionDetails.get(key));
+  body.innerHTML = getProfileCollectionModalMarkup(
+    kind,
+    item,
+    profileCollectionDetails.get(key),
+  );
   bindProfileCollectionModalImages(body);
   modal.hidden = false;
   document.body.classList.add("is-collection-modal-open");
-  document.getElementById("profileCollectionModalClose")?.focus({ preventScroll: true });
+  document
+    .getElementById("profileCollectionModalClose")
+    ?.focus({ preventScroll: true });
 
   try {
     const detail = await loadProfileCollectionDetail(kind, item);
-    if (!detail || modal.hidden || activeProfileCollectionModalKey !== key) return;
+    if (!detail || modal.hidden || activeProfileCollectionModalKey !== key)
+      return;
     body.innerHTML = getProfileCollectionModalMarkup(kind, item, detail);
     bindProfileCollectionModalImages(body);
   } catch (_error) {
@@ -2337,16 +2799,31 @@ function closeProfileCollectionModal() {
 }
 
 function getProfilePaginationPages(currentPage, totalPages) {
-  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
-  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
-  return [...pages].filter((page) => page > 0 && page <= totalPages).sort((a, b) => a - b);
+  if (totalPages <= 5)
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const pages = new Set([
+    1,
+    totalPages,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+  ]);
+  return [...pages]
+    .filter((page) => page > 0 && page <= totalPages)
+    .sort((a, b) => a - b);
 }
 
 function renderProfileCollectionPagination(totalItems) {
   const pagination = document.getElementById("profileCollectionPagination");
   if (!pagination) return;
-  const totalPages = Math.max(1, Math.ceil(totalItems / PROFILE_COLLECTION_PAGE_SIZE));
-  profileCollectionPage = Math.min(totalPages, Math.max(1, profileCollectionPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalItems / PROFILE_COLLECTION_PAGE_SIZE),
+  );
+  profileCollectionPage = Math.min(
+    totalPages,
+    Math.max(1, profileCollectionPage),
+  );
   if (totalItems <= PROFILE_COLLECTION_PAGE_SIZE) {
     pagination.hidden = true;
     pagination.innerHTML = "";
@@ -2354,13 +2831,16 @@ function renderProfileCollectionPagination(totalItems) {
   }
   const pages = getProfilePaginationPages(profileCollectionPage, totalPages);
   let previousPage = 0;
-  const pageButtons = pages.map((page) => {
-    const separator = previousPage && page - previousPage > 1
-      ? '<span class="profile-pagination-gap" aria-hidden="true">…</span>'
-      : "";
-    previousPage = page;
-    return `${separator}<button type="button" data-profile-collection-page="${page}" class="${page === profileCollectionPage ? "is-active" : ""}" ${page === profileCollectionPage ? 'aria-current="page"' : ""}>${page}</button>`;
-  }).join("");
+  const pageButtons = pages
+    .map((page) => {
+      const separator =
+        previousPage && page - previousPage > 1
+          ? '<span class="profile-pagination-gap" aria-hidden="true">…</span>'
+          : "";
+      previousPage = page;
+      return `${separator}<button type="button" data-profile-collection-page="${page}" class="${page === profileCollectionPage ? "is-active" : ""}" ${page === profileCollectionPage ? 'aria-current="page"' : ""}>${page}</button>`;
+    })
+    .join("");
   pagination.hidden = false;
   pagination.innerHTML = `<div class="profile-pagination-heading">
       <span>Navigation</span>
@@ -2381,14 +2861,18 @@ function renderProfileCollectionList() {
 
   const collection = profileCollectionData?.[activeProfileCollectionTab];
   const items = Array.isArray(collection?.items) ? collection.items : [];
-  document.querySelectorAll("[data-profile-collection-tab]").forEach((button) => {
-    const selected = button.dataset.profileCollectionTab === activeProfileCollectionTab;
-    button.classList.toggle("is-active", selected);
-    button.setAttribute("aria-selected", String(selected));
-  });
+  document
+    .querySelectorAll("[data-profile-collection-tab]")
+    .forEach((button) => {
+      const selected =
+        button.dataset.profileCollectionTab === activeProfileCollectionTab;
+      button.classList.toggle("is-active", selected);
+      button.setAttribute("aria-selected", String(selected));
+    });
 
   if (!collection?.available || !items.length) {
-    const label = activeProfileCollectionTab === "mounts" ? "monture" : "mascotte";
+    const label =
+      activeProfileCollectionTab === "mounts" ? "monture" : "mascotte";
     list.innerHTML = `<p class="profile-progress-empty">${collection?.available ? `Aucune ${label} trouvée.` : "Cette collection est indisponible."}</p>`;
     pagination.hidden = true;
     hideProfileCollectionTooltip();
@@ -2398,10 +2882,17 @@ function renderProfileCollectionList() {
   const kind = activeProfileCollectionTab === "mounts" ? "mount" : "pet";
   const start = (profileCollectionPage - 1) * PROFILE_COLLECTION_PAGE_SIZE;
   const visibleItems = items.slice(start, start + PROFILE_COLLECTION_PAGE_SIZE);
-  list.innerHTML = visibleItems.map((item) => {
-    const typeLabel = kind === "mount" ? "Monture" : (item.speciesName || "Mascotte de combat");
-    const metaLabel = kind === "pet" && item.level ? `Niveau ${item.level}` : (item.favorite ? "Favori" : "Collection");
-    return `<button
+  list.innerHTML = visibleItems
+    .map((item) => {
+      const typeLabel =
+        kind === "mount" ? "Monture" : item.speciesName || "Mascotte de combat";
+      const metaLabel =
+        kind === "pet" && item.level
+          ? `Niveau ${item.level}`
+          : item.favorite
+            ? "Favori"
+            : "Collection";
+      return `<button
       class="profile-collection-tile collection-card ${item.favorite ? "is-favorite" : ""}"
       type="button"
       aria-label="${escapeHtml(item.name)}"
@@ -2420,22 +2911,33 @@ function renderProfileCollectionList() {
       </span>
       ${item.favorite ? '<span class="profile-tile-favorite" aria-hidden="true">★</span>' : ""}
     </button>`;
-  }).join("");
+    })
+    .join("");
 
   list.querySelectorAll(".profile-collection-tile").forEach((tile) => {
     const item = items[Number(tile.dataset.profileCollectionIndex)];
-    tile.addEventListener("mouseenter", (event) => showProfileCollectionTooltip(event, kind, item));
+    tile.addEventListener("mouseenter", (event) =>
+      showProfileCollectionTooltip(event, kind, item),
+    );
     tile.addEventListener("mousemove", positionProfileCollectionTooltip);
     tile.addEventListener("mouseleave", hideProfileCollectionTooltip);
-    tile.addEventListener("focus", (event) => showProfileCollectionTooltip(event, kind, item));
+    tile.addEventListener("focus", (event) =>
+      showProfileCollectionTooltip(event, kind, item),
+    );
     tile.addEventListener("blur", hideProfileCollectionTooltip);
-    tile.addEventListener("click", () => openProfileCollectionModal(tile, kind, item));
+    tile.addEventListener("click", () =>
+      openProfileCollectionModal(tile, kind, item),
+    );
     const image = tile.querySelector("img");
     prepareProfileCollectionImage(image);
-    image?.addEventListener("error", (event) => {
-      event.currentTarget.hidden = true;
-      event.currentTarget.parentElement?.classList.add("is-fallback");
-    }, { once: true });
+    image?.addEventListener(
+      "error",
+      (event) => {
+        event.currentTarget.hidden = true;
+        event.currentTarget.parentElement?.classList.add("is-fallback");
+      },
+      { once: true },
+    );
   });
   renderProfileCollectionPagination(items.length);
 }
@@ -2454,18 +2956,28 @@ function renderProfileCollections(collections, message = "") {
     ? formatProfileNumber(collections.mounts.count)
     : "—";
   petCount.textContent = collections?.pets?.available
-    ? formatProfileNumber(collections.pets.uniqueSpecies || collections.pets.count)
+    ? formatProfileNumber(
+        collections.pets.uniqueSpecies || collections.pets.count,
+      )
     : "—";
 
   const details = [];
   if (collections?.mounts?.available && collections.mounts.favorites > 0) {
-    details.push(`${formatProfileNumber(collections.mounts.favorites)} favorites`);
+    details.push(
+      `${formatProfileNumber(collections.mounts.favorites)} favorites`,
+    );
   }
   if (collections?.pets?.available && collections.pets.maxLevel > 0) {
-    details.push(`${formatProfileNumber(collections.pets.maxLevel)} mascottes niveau 25`);
+    details.push(
+      `${formatProfileNumber(collections.pets.maxLevel)} mascottes niveau 25`,
+    );
   }
-  status.textContent = details.join(" · ") || message ||
-    (collections ? "Collections Battle.net synchronisées" : "Collections indisponibles");
+  status.textContent =
+    details.join(" · ") ||
+    message ||
+    (collections
+      ? "Collections Battle.net synchronisées"
+      : "Collections indisponibles");
   renderProfileCollectionList();
 }
 
@@ -2477,15 +2989,21 @@ async function loadCharacterProgression(character) {
 
   renderProfileProfessions(
     collectorProfessions,
-    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des métiers...",
+    character.isShowcase
+      ? "Aucune donnée pour le personnage de démonstration."
+      : "Chargement des métiers...",
   );
   renderProfileAchievements(
     collectorAchievements,
-    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des hauts faits...",
+    character.isShowcase
+      ? "Aucune donnée pour le personnage de démonstration."
+      : "Chargement des hauts faits...",
   );
   renderProfileCollections(
     null,
-    character.isShowcase ? "Aucune donnée pour le personnage de démonstration." : "Chargement des collections...",
+    character.isShowcase
+      ? "Aucune donnée pour le personnage de démonstration."
+      : "Chargement des collections...",
   );
 
   if (character.isShowcase) return;
@@ -2498,16 +3016,29 @@ async function loadCharacterProgression(character) {
       { headers: { Accept: "application/json" } },
     );
 
-    if (!profiledCharacter || getCharacterKey(profiledCharacter) !== requestedCharacterKey) return;
+    if (
+      !profiledCharacter ||
+      getCharacterKey(profiledCharacter) !== requestedCharacterKey
+    )
+      return;
 
     if (response.status === 401) {
       if (!collectorProfessions.length) {
-        renderProfileProfessions([], "Reconnecte Battle.net pour actualiser les métiers.");
+        renderProfileProfessions(
+          [],
+          "Reconnecte Battle.net pour actualiser les métiers.",
+        );
       }
       if (!collectorAchievements) {
-        renderProfileAchievements(null, "Lance /azer scan pour importer les hauts faits.");
+        renderProfileAchievements(
+          null,
+          "Lance /azer scan pour importer les hauts faits.",
+        );
       }
-      renderProfileCollections(null, "Reconnecte Battle.net pour charger les collections.");
+      renderProfileCollections(
+        null,
+        "Reconnecte Battle.net pour charger les collections.",
+      );
       return;
     }
     if (!response.ok) throw new Error("Progression indisponible.");
@@ -2530,9 +3061,15 @@ async function loadCharacterProgression(character) {
     );
   } catch (error) {
     console.warn(error.message || error);
-    if (!profiledCharacter || getCharacterKey(profiledCharacter) !== requestedCharacterKey) return;
-    if (!collectorProfessions.length) renderProfileProfessions([], "Les métiers sont indisponibles.");
-    if (!collectorAchievements) renderProfileAchievements(null, "Les hauts faits sont indisponibles.");
+    if (
+      !profiledCharacter ||
+      getCharacterKey(profiledCharacter) !== requestedCharacterKey
+    )
+      return;
+    if (!collectorProfessions.length)
+      renderProfileProfessions([], "Les métiers sont indisponibles.");
+    if (!collectorAchievements)
+      renderProfileAchievements(null, "Les hauts faits sont indisponibles.");
     renderProfileCollections(null, "Les collections sont indisponibles.");
   }
 }
@@ -2556,9 +3093,7 @@ function renderCharacterProfileImage(character, requestedMode = "full-body") {
 
   if (profileImage) {
     profileImage.src =
-      profileImageMode === "full-body"
-        ? fullBodyImage
-        : portraitImage;
+      profileImageMode === "full-body" ? fullBodyImage : portraitImage;
     profileImage.alt =
       profileImageMode === "full-body"
         ? `Vue en pied de ${character.name}`
@@ -2593,30 +3128,79 @@ function renderCharacterProfileImage(character, requestedMode = "full-body") {
   applyProfileImageView();
 }
 
-
-
 const HERO_EQUIPMENT_SLOT_LAYOUT = {
-  left: ["head", "neck", "shoulder", "back", "chest", "shirt", "tabard", "wrist"],
-  right: ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"],
+  left: [
+    "head",
+    "neck",
+    "shoulder",
+    "back",
+    "chest",
+    "shirt",
+    "tabard",
+    "wrist",
+  ],
+  right: [
+    "hands",
+    "waist",
+    "legs",
+    "feet",
+    "finger1",
+    "finger2",
+    "trinket1",
+    "trinket2",
+  ],
   weapons: ["mainHand", "offHand"],
 };
 
 const HERO_EQUIPMENT_SLOT_LABELS = {
-  head: "Tête", neck: "Cou", shoulder: "Épaules", back: "Dos",
-  chest: "Torse", shirt: "Chemise", tabard: "Tabard", wrist: "Poignets",
-  hands: "Mains", waist: "Taille", legs: "Jambes", feet: "Pieds",
-  finger1: "Anneau 1", finger2: "Anneau 2", trinket1: "Bijou 1", trinket2: "Bijou 2",
-  mainHand: "Main droite", offHand: "Main gauche",
+  head: "Tête",
+  neck: "Cou",
+  shoulder: "Épaules",
+  back: "Dos",
+  chest: "Torse",
+  shirt: "Chemise",
+  tabard: "Tabard",
+  wrist: "Poignets",
+  hands: "Mains",
+  waist: "Taille",
+  legs: "Jambes",
+  feet: "Pieds",
+  finger1: "Anneau 1",
+  finger2: "Anneau 2",
+  trinket1: "Bijou 1",
+  trinket2: "Bijou 2",
+  mainHand: "Main droite",
+  offHand: "Main gauche",
 };
 
 const HERO_EQUIPMENT_SLOT_GLYPHS = {
-  head: "♕", neck: "◇", shoulder: "◢", back: "⌁", chest: "♜", shirt: "▱",
-  tabard: "⚑", wrist: "▰", hands: "✦", waist: "═", legs: "Ⅱ", feet: "⌄",
-  finger1: "○", finger2: "○", trinket1: "✧", trinket2: "✧", mainHand: "⚔", offHand: "🛡",
+  head: "♕",
+  neck: "◇",
+  shoulder: "◢",
+  back: "⌁",
+  chest: "♜",
+  shirt: "▱",
+  tabard: "⚑",
+  wrist: "▰",
+  hands: "✦",
+  waist: "═",
+  legs: "Ⅱ",
+  feet: "⌄",
+  finger1: "○",
+  finger2: "○",
+  trinket1: "✧",
+  trinket2: "✧",
+  mainHand: "⚔",
+  offHand: "🛡",
 };
 
 const HERO_ITEM_QUALITY_CLASS = {
-  0: "poor", 1: "common", 2: "uncommon", 3: "rare", 4: "epic", 5: "legendary",
+  0: "poor",
+  1: "common",
+  2: "uncommon",
+  3: "rare",
+  4: "epic",
+  5: "legendary",
 };
 
 function getHeroEquipmentKey(character) {
@@ -2625,7 +3209,8 @@ function getHeroEquipmentKey(character) {
 
 function getHeroEquipmentIconUrl(item) {
   const direct = item?.iconUrl || item?.textureUrl;
-  if (typeof direct === "string" && /^(https?:|\/)/i.test(direct)) return direct;
+  if (typeof direct === "string" && /^(https?:|\/)/i.test(direct))
+    return direct;
   const itemId = Number(item?.itemId || 0);
   return itemId ? `/api/ase/item-icon/${itemId}` : "";
 }
@@ -2657,8 +3242,10 @@ function formatHeroEquipmentTooltip(slotName, item) {
 
   const colorStyle = (color) => {
     if (!color || typeof color !== "object") return "";
-    const r = Number(color.r), g = Number(color.g), b = Number(color.b);
-    if (![r,g,b].every(Number.isFinite)) return "";
+    const r = Number(color.r),
+      g = Number(color.g),
+      b = Number(color.b);
+    if (![r, g, b].every(Number.isFinite)) return "";
     const rr = Math.round(Math.max(0, Math.min(1, r)) * 255);
     const gg = Math.round(Math.max(0, Math.min(1, g)) * 255);
     const bb = Math.round(Math.max(0, Math.min(1, b)) * 255);
@@ -2671,7 +3258,8 @@ function formatHeroEquipmentTooltip(slotName, item) {
     ITEM_MOD_AGILITY_SHORT: "Agility",
     ITEM_MOD_INTELLECT_SHORT: "Intellect",
     ITEM_MOD_AGILITY_INTELLECT_SHORT: "[Agility or Intellect]",
-    ITEM_MOD_AGILITY_STRENGTH_INTELLECT_SHORT: "[Agility, Strength or Intellect]",
+    ITEM_MOD_AGILITY_STRENGTH_INTELLECT_SHORT:
+      "[Agility, Strength or Intellect]",
     ITEM_MOD_CRIT_RATING_SHORT: "Critical Strike",
     ITEM_MOD_HASTE_RATING_SHORT: "Haste",
     ITEM_MOD_MASTERY_RATING_SHORT: "Mastery",
@@ -2689,17 +3277,29 @@ function formatHeroEquipmentTooltip(slotName, item) {
     ITEM_MOD_ARMOR_SHORT: "Armor",
   };
   const secondaryStats = new Set([
-    "ITEM_MOD_CRIT_RATING_SHORT", "ITEM_MOD_HASTE_RATING_SHORT",
-    "ITEM_MOD_MASTERY_RATING_SHORT", "ITEM_MOD_VERSATILITY",
-    "ITEM_MOD_VERSATILITY_SHORT", "ITEM_MOD_LIFESTEAL_SHORT",
-    "ITEM_MOD_CR_LIFESTEAL_SHORT", "ITEM_MOD_AVOIDANCE_SHORT",
-    "ITEM_MOD_CR_AVOIDANCE_SHORT", "ITEM_MOD_SPEED_SHORT",
+    "ITEM_MOD_CRIT_RATING_SHORT",
+    "ITEM_MOD_HASTE_RATING_SHORT",
+    "ITEM_MOD_MASTERY_RATING_SHORT",
+    "ITEM_MOD_VERSATILITY",
+    "ITEM_MOD_VERSATILITY_SHORT",
+    "ITEM_MOD_LIFESTEAL_SHORT",
+    "ITEM_MOD_CR_LIFESTEAL_SHORT",
+    "ITEM_MOD_AVOIDANCE_SHORT",
+    "ITEM_MOD_CR_AVOIDANCE_SHORT",
+    "ITEM_MOD_SPEED_SHORT",
     "ITEM_MOD_CR_SPEED_SHORT",
   ]);
-  const bindLabels = { 1: "Binds when picked up", 2: "Binds when equipped", 3: "Binds when used", 4: "Quest Item" };
+  const bindLabels = {
+    1: "Binds when picked up",
+    2: "Binds when equipped",
+    3: "Binds when used",
+    4: "Quest Item",
+  };
   const stats = Object.entries(item.stats || {});
   const armor = stats.find(([key]) => key === "ITEM_MOD_ARMOR_SHORT");
-  const primary = stats.filter(([key]) => key !== "ITEM_MOD_ARMOR_SHORT" && !secondaryStats.has(key));
+  const primary = stats.filter(
+    ([key]) => key !== "ITEM_MOD_ARMOR_SHORT" && !secondaryStats.has(key),
+  );
   const secondary = stats.filter(([key]) => secondaryStats.has(key));
   const sell = Number(item.sellPrice || 0);
   const gold = Math.floor(sell / 10000);
@@ -2712,7 +3312,9 @@ function formatHeroEquipmentTooltip(slotName, item) {
 
   const slotLabel = HERO_EQUIPMENT_SLOT_LABELS[slotName] || slotName;
   const typeLabel = item.itemSubType || item.itemType || "";
-  const sourceName = cleanWowTooltipText(item.sourceName || item.droppedBy || "");
+  const sourceName = cleanWowTooltipText(
+    item.sourceName || item.droppedBy || "",
+  );
   const dropChance = Number(item.dropChance || 0);
 
   const formatStatName = (key) => {
@@ -2724,7 +3326,10 @@ function formatHeroEquipmentTooltip(slotName, item) {
       .replace(/(^|_)\w/g, (match) => match.replace("_", " ").toUpperCase());
   };
 
-  const row = (left, right = "", css = "") => !left && !right ? "" : `
+  const row = (left, right = "", css = "") =>
+    !left && !right
+      ? ""
+      : `
     <div class="wow-tooltip-line${css ? ` ${css}` : ""}"><span>${escapeHtml(left)}</span>${right ? `<span class="wow-tooltip-line-right">${escapeHtml(right)}</span>` : ""}</div>`;
 
   const nativeRow = (line) => `
@@ -2733,12 +3338,15 @@ function formatHeroEquipmentTooltip(slotName, item) {
       ${line.right ? `<span class="wow-tooltip-line-right"${colorStyle(line.rightColor)}>${escapeHtml(line.right)}</span>` : ""}
     </div>`;
 
-  const compact = (value) => String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[\s,.\u00a0]/g, "");
-  const statValues = stats.map(([, value]) => Number(value)).filter(Number.isFinite);
+  const compact = (value) =>
+    String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[\s,.\u00a0]/g, "");
+  const statValues = stats
+    .map(([, value]) => Number(value))
+    .filter(Number.isFinite);
   const itemLevel = Number(item.itemLevel || 0);
   const durabilityCurrent = Number(item.durabilityCurrent || 0);
   const durabilityMax = Number(item.durabilityMax || 0);
@@ -2754,13 +3362,19 @@ function formatHeroEquipmentTooltip(slotName, item) {
     const right = compact(line.right);
     const combined = `${left}${right}`;
     if (!combined) return false;
-    if ((left.includes("itemlevel") || left.includes("niveaudobjet")) && (!itemLevel || left.includes(String(itemLevel)))) return false;
-    if (/bindswhen|liequand|lieal|objetdequete|questitem/.test(left)) return false;
+    if (
+      (left.includes("itemlevel") || left.includes("niveaudobjet")) &&
+      (!itemLevel || left.includes(String(itemLevel)))
+    )
+      return false;
+    if (/bindswhen|liequand|lieal|objetdequete|questitem/.test(left))
+      return false;
     if (left === slotKey && (!typeKey || right === typeKey)) return false;
     if (/durability|durabilite/.test(left)) return false;
     if (/requireslevel|niveaurequis/.test(left)) return false;
     if (/sellprice|prixdevente/.test(left)) return false;
-    if (statValues.some((value) => combined.includes(`+${value}`))) return false;
+    if (statValues.some((value) => combined.includes(`+${value}`)))
+      return false;
     return true;
   });
 
@@ -2768,7 +3382,9 @@ function formatHeroEquipmentTooltip(slotName, item) {
   const title = titleLine?.left || item.itemName || "Objet équipé";
   const footerRows = [
     durabilityCurrent > 0
-      ? row(`Durability ${durabilityCurrent} / ${durabilityMax || durabilityCurrent}`)
+      ? row(
+          `Durability ${durabilityCurrent} / ${durabilityMax || durabilityCurrent}`,
+        )
       : "",
     minLevel > 0 ? row(`Requires Level ${minLevel}`) : "",
     sell > 0 ? row(`Sell Price: ${sellParts.join(" ")}`) : "",
@@ -2780,8 +3396,8 @@ function formatHeroEquipmentTooltip(slotName, item) {
     ${bindLabels[Number(item.bindType || 0)] ? row(bindLabels[Number(item.bindType || 0)]) : ""}
     ${row(slotLabel, typeLabel)}
     ${armor ? row(`${Number(armor[1]) || armor[1]} Armor`) : ""}
-    ${primary.map(([key,value]) => row(`+${Number(value) || value} ${formatStatName(key)}`)).join("")}
-    ${secondary.map(([key,value]) => row(`+${Number(value) || value} ${formatStatName(key)}`, "", "is-stat-secondary")).join("")}
+    ${primary.map(([key, value]) => row(`+${Number(value) || value} ${formatStatName(key)}`)).join("")}
+    ${secondary.map(([key, value]) => row(`+${Number(value) || value} ${formatStatName(key)}`, "", "is-stat-secondary")).join("")}
     ${supplementalNativeLines.map(nativeRow).join("")}
     ${footerRows.length ? '<div class="wow-tooltip-spacer"></div>' : ""}
     ${footerRows.join("")}
@@ -2796,14 +3412,22 @@ function positionHeroEquipmentTooltip(event) {
   const margin = 16;
   const rect = tooltip.getBoundingClientRect();
   const targetRect = event.currentTarget?.getBoundingClientRect?.();
-  const hasPointerPosition = Number.isFinite(event.clientX) && Number.isFinite(event.clientY)
-    && (event.clientX !== 0 || event.clientY !== 0);
-  const anchorX = hasPointerPosition ? event.clientX : (targetRect?.right || margin);
-  const anchorY = hasPointerPosition ? event.clientY : (targetRect?.top || margin);
+  const hasPointerPosition =
+    Number.isFinite(event.clientX) &&
+    Number.isFinite(event.clientY) &&
+    (event.clientX !== 0 || event.clientY !== 0);
+  const anchorX = hasPointerPosition
+    ? event.clientX
+    : targetRect?.right || margin;
+  const anchorY = hasPointerPosition
+    ? event.clientY
+    : targetRect?.top || margin;
   let left = anchorX + 18;
   let top = anchorY + 18;
-  if (left + rect.width > window.innerWidth - margin) left = anchorX - rect.width - 18;
-  if (top + rect.height > window.innerHeight - margin) top = anchorY - rect.height - 18;
+  if (left + rect.width > window.innerWidth - margin)
+    left = anchorX - rect.width - 18;
+  if (top + rect.height > window.innerHeight - margin)
+    top = anchorY - rect.height - 18;
   tooltip.style.left = `${Math.max(margin, left)}px`;
   tooltip.style.top = `${Math.max(margin, top)}px`;
 }
@@ -2829,7 +3453,12 @@ function createHeroEquipmentSlot(slotName, item) {
   button.className = `hero-equipment-slot is-${equipped ? "equipped" : "empty"} quality-${qualityClass}`;
   button.dataset.slotName = slotName;
   button.setAttribute("aria-describedby", "heroEquipmentTooltip");
-  button.setAttribute("aria-label", equipped ? `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} : ${item.itemName}` : `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} vide`);
+  button.setAttribute(
+    "aria-label",
+    equipped
+      ? `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} : ${item.itemName}`
+      : `${HERO_EQUIPMENT_SLOT_LABELS[slotName]} vide`,
+  );
 
   const icon = document.createElement("span");
   icon.className = "hero-equipment-slot-icon";
@@ -2839,10 +3468,14 @@ function createHeroEquipmentSlot(slotName, item) {
     image.src = iconUrl;
     image.alt = "";
     image.loading = "lazy";
-    image.addEventListener("error", () => {
-      image.remove();
-      icon.textContent = HERO_EQUIPMENT_SLOT_GLYPHS[slotName] || "◇";
-    }, { once: true });
+    image.addEventListener(
+      "error",
+      () => {
+        image.remove();
+        icon.textContent = HERO_EQUIPMENT_SLOT_GLYPHS[slotName] || "◇";
+      },
+      { once: true },
+    );
     icon.appendChild(image);
   } else {
     icon.textContent = HERO_EQUIPMENT_SLOT_GLYPHS[slotName] || "◇";
@@ -2854,10 +3487,14 @@ function createHeroEquipmentSlot(slotName, item) {
 
   button.append(icon, label);
   // Le descriptif de l'objet est volontairement affiche uniquement au survol.
-  button.addEventListener("mouseenter", (event) => showHeroEquipmentTooltip(event, slotName, item));
+  button.addEventListener("mouseenter", (event) =>
+    showHeroEquipmentTooltip(event, slotName, item),
+  );
   button.addEventListener("mousemove", positionHeroEquipmentTooltip);
   button.addEventListener("mouseleave", hideHeroEquipmentTooltip);
-  button.addEventListener("focus", (event) => showHeroEquipmentTooltip(event, slotName, item));
+  button.addEventListener("focus", (event) =>
+    showHeroEquipmentTooltip(event, slotName, item),
+  );
   button.addEventListener("blur", hideHeroEquipmentTooltip);
   return button;
 }
@@ -2877,14 +3514,27 @@ function renderHeroEquipment(hero) {
   left.innerHTML = "";
   right.innerHTML = "";
   weapons.innerHTML = "";
-  HERO_EQUIPMENT_SLOT_LAYOUT.left.forEach((slotName) => left.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
-  HERO_EQUIPMENT_SLOT_LAYOUT.right.forEach((slotName) => right.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
-  HERO_EQUIPMENT_SLOT_LAYOUT.weapons.forEach((slotName) => weapons.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])));
+  HERO_EQUIPMENT_SLOT_LAYOUT.left.forEach((slotName) =>
+    left.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])),
+  );
+  HERO_EQUIPMENT_SLOT_LAYOUT.right.forEach((slotName) =>
+    right.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])),
+  );
+  HERO_EQUIPMENT_SLOT_LAYOUT.weapons.forEach((slotName) =>
+    weapons.appendChild(createHeroEquipmentSlot(slotName, slots[slotName])),
+  );
 
   const equippedCount = Number(equipment.equippedCount || 0);
-  if (count) count.textContent = `${equippedCount} pièce${equippedCount > 1 ? "s" : ""} équipée${equippedCount > 1 ? "s" : ""}`;
-  if (itemLevel) itemLevel.textContent = Number(equipment.calculatedItemLevel || equipment.equippedItemLevel || 0).toFixed(1);
-  if (status) status.textContent = equippedCount ? "Équipement synchronisé par le Collector" : "Aucun équipement capturé";
+  if (count)
+    count.textContent = `${equippedCount} pièce${equippedCount > 1 ? "s" : ""} équipée${equippedCount > 1 ? "s" : ""}`;
+  if (itemLevel)
+    itemLevel.textContent = Number(
+      equipment.calculatedItemLevel || equipment.equippedItemLevel || 0,
+    ).toFixed(1);
+  if (status)
+    status.textContent = equippedCount
+      ? "Équipement synchronisé par le Collector"
+      : "Aucun équipement capturé";
   if (heroName) heroName.textContent = hero?.identity?.name || "Héros";
 }
 
@@ -2908,7 +3558,8 @@ async function loadHeroEquipment(character) {
     );
 
     if (response.status === 401) {
-      if (status) status.textContent = "Reconnecte Battle.net pour charger l’équipement.";
+      if (status)
+        status.textContent = "Reconnecte Battle.net pour charger l’équipement.";
       return;
     }
 
@@ -2917,7 +3568,11 @@ async function loadHeroEquipment(character) {
     }
 
     const payload = await response.json();
-    if (!profiledCharacter || String(profiledCharacter.id) !== String(character.id)) return;
+    if (
+      !profiledCharacter ||
+      String(profiledCharacter.id) !== String(character.id)
+    )
+      return;
 
     if (!payload?.hero) {
       throw new Error("Équipement Battle.net introuvable");
@@ -2926,7 +3581,8 @@ async function loadHeroEquipment(character) {
     renderHeroEquipment(payload.hero);
   } catch (error) {
     console.warn("Battle.net Equipment:", error);
-    if (status) status.textContent = "Équipement Battle.net temporairement indisponible.";
+    if (status)
+      status.textContent = "Équipement Battle.net temporairement indisponible.";
   }
 }
 
@@ -2942,11 +3598,17 @@ function openCharacterProfile(character) {
   );
   const profileLevel = document.getElementById("profileCharacterLevel");
   const profileLevelIcon = document.getElementById("profileCharacterLevelIcon");
-  const profileClassFactIcon = document.getElementById("profileCharacterClassFactIcon");
+  const profileClassFactIcon = document.getElementById(
+    "profileCharacterClassFactIcon",
+  );
   const profileRaceIcon = document.getElementById("profileCharacterRaceIcon");
-  const profileFactionFactIcon = document.getElementById("profileCharacterFactionFactIcon");
+  const profileFactionFactIcon = document.getElementById(
+    "profileCharacterFactionFactIcon",
+  );
   const profileRealmIcon = document.getElementById("profileCharacterRealmIcon");
-  const profileLocationIcon = document.getElementById("profileCharacterLocationIcon");
+  const profileLocationIcon = document.getElementById(
+    "profileCharacterLocationIcon",
+  );
   const selectProfileCharacter = document.getElementById(
     "selectProfileCharacter",
   );
@@ -2991,7 +3653,9 @@ function openCharacterProfile(character) {
   }
 
   if (profileFactionFactIcon) {
-    profileFactionFactIcon.innerHTML = getFactionIconMarkup(character.factionName);
+    profileFactionFactIcon.innerHTML = getFactionIconMarkup(
+      character.factionName,
+    );
   }
 
   if (profileRealmIcon) {
@@ -3070,7 +3734,7 @@ document.getElementById("backToCharacters")?.addEventListener("click", () => {
 document.querySelectorAll("[data-profile-collection-tab]").forEach((button) => {
   button.addEventListener("click", () => {
     const tab = button.dataset.profileCollectionTab;
-    if (!['mounts', 'pets'].includes(tab)) return;
+    if (!["mounts", "pets"].includes(tab)) return;
     activeProfileCollectionTab = tab;
     profileCollectionPage = 1;
     hideProfileCollectionTooltip();
@@ -3078,17 +3742,25 @@ document.querySelectorAll("[data-profile-collection-tab]").forEach((button) => {
   });
 });
 
-document.getElementById("profileCollectionPagination")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-profile-collection-page]");
-  if (!button || button.disabled) return;
-  profileCollectionPage = Number(button.dataset.profileCollectionPage || 1);
-  hideProfileCollectionTooltip();
-  renderProfileCollectionList();
-  document.getElementById("profileCollectionList")?.focus({ preventScroll: true });
-});
+document
+  .getElementById("profileCollectionPagination")
+  ?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-profile-collection-page]");
+    if (!button || button.disabled) return;
+    profileCollectionPage = Number(button.dataset.profileCollectionPage || 1);
+    hideProfileCollectionTooltip();
+    renderProfileCollectionList();
+    document
+      .getElementById("profileCollectionList")
+      ?.focus({ preventScroll: true });
+  });
 
-document.getElementById("profileCollectionModalClose")?.addEventListener("click", closeProfileCollectionModal);
-document.querySelector(".profile-collection-modal-backdrop")?.addEventListener("click", closeProfileCollectionModal);
+document
+  .getElementById("profileCollectionModalClose")
+  ?.addEventListener("click", closeProfileCollectionModal);
+document
+  .querySelector(".profile-collection-modal-backdrop")
+  ?.addEventListener("click", closeProfileCollectionModal);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeProfileCollectionModal();
 });
@@ -3112,7 +3784,6 @@ document.querySelectorAll("[data-profile-image-mode]").forEach((button) => {
   });
 });
 
-
 document.querySelectorAll("[data-profile-zoom]").forEach((button) => {
   button.addEventListener("click", () => {
     if (!profiledCharacter) return;
@@ -3129,16 +3800,22 @@ document.querySelectorAll("[data-profile-zoom]").forEach((button) => {
   });
 });
 
-const profileImageWindow = document.querySelector(".character-profile-image-window");
+const profileImageWindow = document.querySelector(
+  ".character-profile-image-window",
+);
 
-profileImageWindow?.addEventListener("wheel", (event) => {
-  if (!profiledCharacter) return;
-  event.preventDefault();
+profileImageWindow?.addEventListener(
+  "wheel",
+  (event) => {
+    if (!profiledCharacter) return;
+    event.preventDefault();
 
-  const current = getProfileImageView(profiledCharacter, profileImageMode);
-  const step = event.deltaY < 0 ? 0.14 : -0.14;
-  updateProfileImageView({ zoom: current.zoom + step });
-}, { passive: false });
+    const current = getProfileImageView(profiledCharacter, profileImageMode);
+    const step = event.deltaY < 0 ? 0.14 : -0.14;
+    updateProfileImageView({ zoom: current.zoom + step });
+  },
+  { passive: false },
+);
 
 profileImageWindow?.addEventListener("dblclick", (event) => {
   event.preventDefault();
@@ -3162,11 +3839,21 @@ profileImageWindow?.addEventListener("pointerdown", (event) => {
 });
 
 profileImageWindow?.addEventListener("pointermove", (event) => {
-  if (!profileImageDragState || profileImageDragState.pointerId !== event.pointerId) return;
+  if (
+    !profileImageDragState ||
+    profileImageDragState.pointerId !== event.pointerId
+  )
+    return;
 
   const bounds = profileImageWindow.getBoundingClientRect();
-  const dx = ((event.clientX - profileImageDragState.startX) / Math.max(bounds.width, 1)) * 100;
-  const dy = ((event.clientY - profileImageDragState.startY) / Math.max(bounds.height, 1)) * 100;
+  const dx =
+    ((event.clientX - profileImageDragState.startX) /
+      Math.max(bounds.width, 1)) *
+    100;
+  const dy =
+    ((event.clientY - profileImageDragState.startY) /
+      Math.max(bounds.height, 1)) *
+    100;
 
   updateProfileImageView({
     x: profileImageDragState.imageX + dx,
@@ -3175,7 +3862,11 @@ profileImageWindow?.addEventListener("pointermove", (event) => {
 });
 
 function finishProfileImageDrag(event) {
-  if (!profileImageDragState || profileImageDragState.pointerId !== event.pointerId) return;
+  if (
+    !profileImageDragState ||
+    profileImageDragState.pointerId !== event.pointerId
+  )
+    return;
   profileImageWindow?.releasePointerCapture?.(event.pointerId);
   profileImageWindow?.classList.remove("is-dragging");
   profileImageDragState = null;
@@ -3238,7 +3929,9 @@ async function updateBattleNetAuthButton() {
 
   try {
     const response = await fetch("/api/auth/me", {
-      credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" },
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
     });
     const isConnected = response.ok;
     authButton.classList.toggle("is-online", isConnected);
@@ -3251,7 +3944,11 @@ async function updateBattleNetAuthButton() {
       authButton.onclick = async (event) => {
         event.preventDefault();
         try {
-          await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin", headers: { Accept: "application/json" } });
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { Accept: "application/json" },
+          });
         } finally {
           window.location.reload();
         }
@@ -3316,7 +4013,10 @@ function escapeHtml(value) {
 }
 
 function questCharacterKey(character) {
-  return String(character?.identityKey || `${character?.name || ""}-${character?.realm || ""}`)
+  return String(
+    character?.identityKey ||
+      `${character?.name || ""}-${character?.realm || ""}`,
+  )
     .normalize("NFKC")
     .toLowerCase();
 }
@@ -3336,10 +4036,14 @@ function getSelectedQuestCharacter() {
   }
 
   const characters = questsState.payload?.characters || [];
-  return characters.find((character) => questCharacterKey(character) === questsState.selectedKey)
-    || characters[0]
-    || questsState.payload?.account
-    || null;
+  return (
+    characters.find(
+      (character) => questCharacterKey(character) === questsState.selectedKey,
+    ) ||
+    characters[0] ||
+    questsState.payload?.account ||
+    null
+  );
 }
 
 function findLastConnectedQuestCharacter() {
@@ -3350,12 +4054,17 @@ function findLastConnectedQuestCharacter() {
   const lastName = normalizeCollectorIdentity(lastCharacter.name);
   const lastRealm = normalizeCollectorIdentity(lastCharacter.realm);
 
-  return characters.find((character) =>
-    normalizeCollectorIdentity(character?.name) === lastName
-      && normalizeCollectorIdentity(character?.realm) === lastRealm,
-  ) || characters.find((character) =>
-    normalizeCollectorIdentity(character?.name) === lastName,
-  ) || null;
+  return (
+    characters.find(
+      (character) =>
+        normalizeCollectorIdentity(character?.name) === lastName &&
+        normalizeCollectorIdentity(character?.realm) === lastRealm,
+    ) ||
+    characters.find(
+      (character) => normalizeCollectorIdentity(character?.name) === lastName,
+    ) ||
+    null
+  );
 }
 
 function selectLastConnectedQuestCharacter() {
@@ -3367,24 +4076,37 @@ function selectLastConnectedQuestCharacter() {
 }
 
 function getQuestCharacterVisual(character) {
-  const roster = typeof readCachedCharacterRoster === "function" ? readCachedCharacterRoster() : [];
+  const roster =
+    typeof readCachedCharacterRoster === "function"
+      ? readCachedCharacterRoster()
+      : [];
   const name = normalizeCollectorIdentity(character?.name);
   const realm = normalizeCollectorIdentity(character?.realm);
-  const match = roster.find((entry) =>
-    normalizeCollectorIdentity(entry?.name) === name
-      && normalizeCollectorIdentity(entry?.realm) === realm,
-  ) || roster.find((entry) => normalizeCollectorIdentity(entry?.name) === name);
+  const match =
+    roster.find(
+      (entry) =>
+        normalizeCollectorIdentity(entry?.name) === name &&
+        normalizeCollectorIdentity(entry?.realm) === realm,
+    ) ||
+    roster.find((entry) => normalizeCollectorIdentity(entry?.name) === name);
 
   if (!match) return { image: "", className: "", classColor: "" };
   let image = "";
   try {
-    image = typeof getCharacterPortraitImage === "function" ? getCharacterPortraitImage(match) : "";
+    image =
+      typeof getCharacterPortraitImage === "function"
+        ? getCharacterPortraitImage(match)
+        : "";
   } catch (_error) {
     image = match.portraitUrl || match.avatarUrl || "";
   }
   return {
     image,
-    className: match.className || match.characterClassName || match.playableClass?.name || "",
+    className:
+      match.className ||
+      match.characterClassName ||
+      match.playableClass?.name ||
+      "",
     classColor: match.classColor || "",
   };
 }
@@ -3400,18 +4122,30 @@ function renderQuestCharacterPicker(characters = []) {
 
   const entries = [...characters];
   if (questsState.payload?.account) {
-    entries.push({ identityKey: "__account__", name: "Bande de guerre", realm: "Compte", isAccountPicker: true });
+    entries.push({
+      identityKey: "__account__",
+      name: "Bande de guerre",
+      realm: "Compte",
+      isAccountPicker: true,
+    });
   }
 
-  const selected = entries.find((entry) =>
-    (entry.isAccountPicker ? "__account__" : questCharacterKey(entry)) === questsState.selectedKey,
-  ) || entries[0];
+  const selected =
+    entries.find(
+      (entry) =>
+        (entry.isAccountPicker ? "__account__" : questCharacterKey(entry)) ===
+        questsState.selectedKey,
+    ) || entries[0];
 
-  const selectedVisual = selected?.isAccountPicker ? { image: "", className: "Compte", classColor: "" } : getQuestCharacterVisual(selected);
+  const selectedVisual = selected?.isAccountPicker
+    ? { image: "", className: "Compte", classColor: "" }
+    : getQuestCharacterVisual(selected);
   name.textContent = selected?.name || "Personnage";
   realm.textContent = selected?.isAccountPicker
     ? "Progression partagée"
-    : [selectedVisual.className, selected?.realm].filter(Boolean).join(" · ") || selected?.realm || "Royaume";
+    : [selectedVisual.className, selected?.realm].filter(Boolean).join(" · ") ||
+      selected?.realm ||
+      "Royaume";
 
   if (avatar) {
     if (selectedVisual.image) {
@@ -3424,21 +4158,34 @@ function renderQuestCharacterPicker(characters = []) {
       avatar.hidden = true;
     }
   }
-  button.style.setProperty("--quest-character-color", selectedVisual.classColor || "#d8aa43");
+  button.style.setProperty(
+    "--quest-character-color",
+    selectedVisual.classColor || "#d8aa43",
+  );
 
-  menu.innerHTML = entries.map((entry) => {
-    const key = entry.isAccountPicker ? "__account__" : questCharacterKey(entry);
-    const visual = entry.isAccountPicker ? { image: "", className: "Compte", classColor: "#d8aa43" } : getQuestCharacterVisual(entry);
-    const active = key === questsState.selectedKey;
-    const portrait = visual.image
-      ? `<img src="${escapeHtml(visual.image)}" alt="" loading="lazy">`
-      : `<span class="quests-character-initial">${escapeHtml(String(entry.name || "?").slice(0, 1).toUpperCase())}</span>`;
-    return `<button type="button" class="quests-character-option ${active ? "is-selected" : ""}" role="option" aria-selected="${active}" data-quest-character-key="${escapeHtml(key)}" style="--quest-character-color:${escapeHtml(visual.classColor || "#d8aa43")}">
+  menu.innerHTML = entries
+    .map((entry) => {
+      const key = entry.isAccountPicker
+        ? "__account__"
+        : questCharacterKey(entry);
+      const visual = entry.isAccountPicker
+        ? { image: "", className: "Compte", classColor: "#d8aa43" }
+        : getQuestCharacterVisual(entry);
+      const active = key === questsState.selectedKey;
+      const portrait = visual.image
+        ? `<img src="${escapeHtml(visual.image)}" alt="" loading="lazy">`
+        : `<span class="quests-character-initial">${escapeHtml(
+            String(entry.name || "?")
+              .slice(0, 1)
+              .toUpperCase(),
+          )}</span>`;
+      return `<button type="button" class="quests-character-option ${active ? "is-selected" : ""}" role="option" aria-selected="${active}" data-quest-character-key="${escapeHtml(key)}" style="--quest-character-color:${escapeHtml(visual.classColor || "#d8aa43")}">
       <span class="quests-character-option-avatar">${portrait}</span>
       <span class="quests-character-option-copy"><strong>${escapeHtml(entry.name || "Compte")}</strong><small>${escapeHtml(entry.isAccountPicker ? "Bande de guerre" : [visual.className, entry.realm].filter(Boolean).join(" · "))}</small></span>
       <span class="quests-character-option-check" aria-hidden="true">${active ? "✓" : ""}</span>
     </button>`;
-  }).join("");
+    })
+    .join("");
 
   menu.querySelectorAll("[data-quest-character-key]").forEach((option) => {
     option.addEventListener("click", () => {
@@ -3460,7 +4207,9 @@ function renderQuestCharacterOptions() {
   if (!select) return;
 
   const characters = [...(questsState.payload?.characters || [])].sort((a, b) =>
-    String(a.name || "").localeCompare(String(b.name || ""), "fr", { sensitivity: "base" }),
+    String(a.name || "").localeCompare(String(b.name || ""), "fr", {
+      sensitivity: "base",
+    }),
   );
 
   const characterOptions = characters
@@ -3482,11 +4231,15 @@ function renderQuestCharacterOptions() {
     questsState.selectedKey = "__account__";
   }
 
-  const validValues = new Set([...select.options].map((option) => option.value));
+  const validValues = new Set(
+    [...select.options].map((option) => option.value),
+  );
   if (!validValues.has(questsState.selectedKey)) {
     questsState.selectedKey = characters[0]
       ? questCharacterKey(characters[0])
-      : questsState.payload?.account ? "__account__" : "";
+      : questsState.payload?.account
+        ? "__account__"
+        : "";
   }
   select.value = questsState.selectedKey;
   renderQuestCharacterPicker(characters);
@@ -3533,11 +4286,14 @@ function groupQuestHistoryByTitle(quests = []) {
       ids: group.ids.sort((a, b) => a - b),
       variantCount: group.ids.length || group.quests.length,
     }))
-    .sort((a, b) => a.title.localeCompare(b.title, "fr", { sensitivity: "base" }));
+    .sort((a, b) =>
+      a.title.localeCompare(b.title, "fr", { sensitivity: "base" }),
+    );
 }
 
 function getQuestTypeLabel(quest, isAccountView = false) {
-  if (isAccountView || quest?.scope === "account" || quest?.isAccountQuest) return "Bande de guerre";
+  if (isAccountView || quest?.scope === "account" || quest?.isAccountQuest)
+    return "Bande de guerre";
   if (quest?.isPetBattleQuest) return "Combat de mascottes";
   if (quest?.isWorldQuest) return "Quête mondiale";
   if (quest?.campaignID) return "Campagne";
@@ -3555,7 +4311,6 @@ function closeQuestDetails() {
   document.body.classList.remove("quest-details-open");
 }
 
-
 async function loadQuestDatabase() {
   if (questsState.database) return questsState.database;
   if (questsState.databasePromise) return questsState.databasePromise;
@@ -3565,11 +4320,15 @@ async function loadQuestDatabase() {
     cache: "no-cache",
   })
     .then((response) => {
-      if (!response.ok) throw new Error(`Quest Database indisponible (${response.status})`);
+      if (!response.ok)
+        throw new Error(`Quest Database indisponible (${response.status})`);
       return response.json();
     })
     .then((payload) => {
-      questsState.database = payload?.quests && typeof payload.quests === "object" ? payload.quests : {};
+      questsState.database =
+        payload?.quests && typeof payload.quests === "object"
+          ? payload.quests
+          : {};
       return questsState.database;
     })
     .catch((error) => {
@@ -3582,29 +4341,66 @@ async function loadQuestDatabase() {
 }
 
 function firstUsefulValue(...values) {
-  return values.find((value) => value !== undefined && value !== null && value !== "");
+  return values.find(
+    (value) => value !== undefined && value !== null && value !== "",
+  );
 }
 
 function mergeQuestKnowledge(liveQuest = {}, databaseQuest = {}) {
-  const liveRewards = liveQuest.rewards && typeof liveQuest.rewards === "object" ? liveQuest.rewards : {};
-  const databaseRewards = databaseQuest.rewards && typeof databaseQuest.rewards === "object" ? databaseQuest.rewards : {};
+  const liveRewards =
+    liveQuest.rewards && typeof liveQuest.rewards === "object"
+      ? liveQuest.rewards
+      : {};
+  const databaseRewards =
+    databaseQuest.rewards && typeof databaseQuest.rewards === "object"
+      ? databaseQuest.rewards
+      : {};
 
   return {
     ...databaseQuest,
     ...liveQuest,
     title: firstUsefulValue(liveQuest.title, databaseQuest.title),
-    description: firstUsefulValue(liveQuest.description, liveQuest.questDescription, liveQuest.logDescription, databaseQuest.description),
-    objectiveText: firstUsefulValue(liveQuest.objectiveText, liveQuest.objectivesText, databaseQuest.objectiveText),
-    completionText: firstUsefulValue(liveQuest.completionText, databaseQuest.completionText),
+    description: firstUsefulValue(
+      liveQuest.description,
+      liveQuest.questDescription,
+      liveQuest.logDescription,
+      databaseQuest.description,
+    ),
+    objectiveText: firstUsefulValue(
+      liveQuest.objectiveText,
+      liveQuest.objectivesText,
+      databaseQuest.objectiveText,
+    ),
+    completionText: firstUsefulValue(
+      liveQuest.completionText,
+      databaseQuest.completionText,
+    ),
     mapName: firstUsefulValue(liveQuest.mapName, databaseQuest.mapName),
     rewards: {
       ...databaseRewards,
       ...liveRewards,
-      experience: Number(liveRewards.experience || databaseRewards.experience || 0),
+      experience: Number(
+        liveRewards.experience || databaseRewards.experience || 0,
+      ),
       money: Number(liveRewards.money || databaseRewards.money || 0),
-      items: Array.isArray(liveRewards.items) && liveRewards.items.length ? liveRewards.items : (Array.isArray(databaseRewards.items) ? databaseRewards.items : []),
-      choices: Array.isArray(liveRewards.choices) && liveRewards.choices.length ? liveRewards.choices : (Array.isArray(databaseRewards.choices) ? databaseRewards.choices : []),
-      currencies: Array.isArray(liveRewards.currencies) && liveRewards.currencies.length ? liveRewards.currencies : (Array.isArray(databaseRewards.currencies) ? databaseRewards.currencies : []),
+      items:
+        Array.isArray(liveRewards.items) && liveRewards.items.length
+          ? liveRewards.items
+          : Array.isArray(databaseRewards.items)
+            ? databaseRewards.items
+            : [],
+      choices:
+        Array.isArray(liveRewards.choices) && liveRewards.choices.length
+          ? liveRewards.choices
+          : Array.isArray(databaseRewards.choices)
+            ? databaseRewards.choices
+            : [],
+      currencies:
+        Array.isArray(liveRewards.currencies) && liveRewards.currencies.length
+          ? liveRewards.currencies
+          : Array.isArray(databaseRewards.currencies)
+            ? databaseRewards.currencies
+            : [],
     },
     knowledgeSource: databaseQuest.source || "",
   };
@@ -3616,9 +4412,18 @@ function formatQuestMoney(totalCopper) {
   const silver = Math.floor((total % 10000) / 100);
   const copper = total % 100;
   const parts = [];
-  if (gold) parts.push(`<span class="quest-money-part"><span class="quest-money-icon gold">●</span>${gold}</span>`);
-  if (silver) parts.push(`<span class="quest-money-part"><span class="quest-money-icon silver">●</span>${silver}</span>`);
-  if (copper || !parts.length) parts.push(`<span class="quest-money-part"><span class="quest-money-icon copper">●</span>${copper}</span>`);
+  if (gold)
+    parts.push(
+      `<span class="quest-money-part"><span class="quest-money-icon gold">●</span>${gold}</span>`,
+    );
+  if (silver)
+    parts.push(
+      `<span class="quest-money-part"><span class="quest-money-icon silver">●</span>${silver}</span>`,
+    );
+  if (copper || !parts.length)
+    parts.push(
+      `<span class="quest-money-part"><span class="quest-money-icon copper">●</span>${copper}</span>`,
+    );
   return parts.join("");
 }
 
@@ -3633,11 +4438,14 @@ function questRewardTypeLabel(item = {}) {
 function renderQuestRewardItem(item, options = {}) {
   const quality = Math.max(0, Math.min(7, Number(item?.quality || 0)));
   const quantity = Math.max(1, Number(item?.quantity || 1));
-  const name = item?.name || (item?.itemID ? `Objet #${item.itemID}` : "Objet de récompense");
+  const name =
+    item?.name ||
+    (item?.itemID ? `Objet #${item.itemID}` : "Objet de récompense");
   const texture = item?.iconUrl || item?.texture;
-  const icon = typeof texture === "string" && /^(https?:|\/)/i.test(texture)
-    ? `<img src="${escapeHtml(texture)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
-    : `<span class="quest-reward-icon-fallback">◆</span>`;
+  const icon =
+    typeof texture === "string" && /^(https?:|\/)/i.test(texture)
+      ? `<img src="${escapeHtml(texture)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+      : `<span class="quest-reward-icon-fallback">◆</span>`;
   const typeLabel = questRewardTypeLabel(item);
   const choiceClass = options.isChoice ? " is-choice" : "";
 
@@ -3656,22 +4464,47 @@ function renderQuestRewards(rewards = {}) {
   const money = Math.max(0, Number(rewards.money || 0));
   const items = Array.isArray(rewards.items) ? rewards.items : [];
   const choices = Array.isArray(rewards.choices) ? rewards.choices : [];
-  const currencies = Array.isArray(rewards.currencies) ? rewards.currencies : [];
-  const spell = rewards.spell && typeof rewards.spell === "object" ? rewards.spell : null;
+  const currencies = Array.isArray(rewards.currencies)
+    ? rewards.currencies
+    : [];
+  const spell =
+    rewards.spell && typeof rewards.spell === "object" ? rewards.spell : null;
   const artifactXP = Math.max(0, Number(rewards.artifactXP || 0));
   const summary = [];
   const groups = [];
 
-  if (experience > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp"><img src="https://wow.zamimg.com/images/wow/icons/large/achievement_level_10.jpg" alt="" loading="lazy"></span><span><strong>${experience.toLocaleString("fr-CA")} XP</strong><small>Expérience</small></span></div>`);
-  if (money > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol coins"><img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="" loading="lazy"></span><span><strong class="quest-money">${formatQuestMoney(money)}</strong><small>Argent</small></span></div>`);
-  if (artifactXP > 0) summary.push(`<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">◆</span><span><strong>${artifactXP.toLocaleString("fr-CA")}</strong><small>Puissance prodigieuse</small></span></div>`);
+  if (experience > 0)
+    summary.push(
+      `<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp"><img src="https://wow.zamimg.com/images/wow/icons/large/achievement_level_10.jpg" alt="" loading="lazy"></span><span><strong>${experience.toLocaleString("fr-CA")} XP</strong><small>Expérience</small></span></div>`,
+    );
+  if (money > 0)
+    summary.push(
+      `<div class="quest-reward-summary-item"><span class="quest-reward-symbol coins"><img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="" loading="lazy"></span><span><strong class="quest-money">${formatQuestMoney(money)}</strong><small>Argent</small></span></div>`,
+    );
+  if (artifactXP > 0)
+    summary.push(
+      `<div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">◆</span><span><strong>${artifactXP.toLocaleString("fr-CA")}</strong><small>Puissance prodigieuse</small></span></div>`,
+    );
 
-  if (items.length) groups.push(`<div class="quest-reward-group"><h5>Récompenses garanties</h5><div class="quest-reward-items">${items.map((item) => renderQuestRewardItem(item)).join("")}</div></div>`);
-  if (choices.length) groups.push(`<div class="quest-reward-group"><h5>Choisis une récompense</h5><div class="quest-reward-choice-grid">${choices.map((item) => renderQuestRewardItem(item, { isChoice: true })).join("")}</div></div>`);
-  if (currencies.length) groups.push(`<div class="quest-reward-group"><h5>Monnaies</h5><div class="quest-reward-items">${currencies.map((currency) => renderQuestRewardItem({ ...currency, itemID: currency.currencyID })).join("")}</div></div>`);
-  if (spell?.name) groups.push(`<div class="quest-reward-group"><h5>Apprentissage</h5><div class="quest-reward-items"><div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">✧</span><span><strong>${escapeHtml(spell.name)}</strong><small>Sort ou technique appris</small></span></div></div></div>`);
+  if (items.length)
+    groups.push(
+      `<div class="quest-reward-group"><h5>Récompenses garanties</h5><div class="quest-reward-items">${items.map((item) => renderQuestRewardItem(item)).join("")}</div></div>`,
+    );
+  if (choices.length)
+    groups.push(
+      `<div class="quest-reward-group"><h5>Choisis une récompense</h5><div class="quest-reward-choice-grid">${choices.map((item) => renderQuestRewardItem(item, { isChoice: true })).join("")}</div></div>`,
+    );
+  if (currencies.length)
+    groups.push(
+      `<div class="quest-reward-group"><h5>Monnaies</h5><div class="quest-reward-items">${currencies.map((currency) => renderQuestRewardItem({ ...currency, itemID: currency.currencyID })).join("")}</div></div>`,
+    );
+  if (spell?.name)
+    groups.push(
+      `<div class="quest-reward-group"><h5>Apprentissage</h5><div class="quest-reward-items"><div class="quest-reward-summary-item"><span class="quest-reward-symbol xp">✧</span><span><strong>${escapeHtml(spell.name)}</strong><small>Sort ou technique appris</small></span></div></div></div>`,
+    );
 
-  if (!summary.length && !groups.length) return '<p class="quest-details-muted">Aucune récompense détaillée fournie par WoW pour cette quête.</p>';
+  if (!summary.length && !groups.length)
+    return '<p class="quest-details-muted">Aucune récompense détaillée fournie par WoW pour cette quête.</p>';
   return `<div class="quest-rewards-premium">${summary.length ? `<div class="quest-reward-summary">${summary.join("")}</div>` : ""}${groups.join("")}</div>`;
 }
 
@@ -3702,11 +4535,26 @@ function cleanQuestObjectiveText(value, total = 0) {
 
 function parseQuestObjectiveProgress(objective = {}) {
   const rawText = String(objective.text || "Objectif");
-  let current = Number(firstUsefulValue(objective.current, objective.fulfilled, objective.numFulfilled));
-  let total = Number(firstUsefulValue(objective.total, objective.required, objective.numRequired));
+  let current = Number(
+    firstUsefulValue(
+      objective.current,
+      objective.fulfilled,
+      objective.numFulfilled,
+    ),
+  );
+  let total = Number(
+    firstUsefulValue(
+      objective.total,
+      objective.required,
+      objective.numRequired,
+    ),
+  );
   const progressMatch = rawText.match(/(\d+)\s*\/\s*(\d+)/);
 
-  if ((!Number.isFinite(current) || !Number.isFinite(total) || total <= 0) && progressMatch) {
+  if (
+    (!Number.isFinite(current) || !Number.isFinite(total) || total <= 0) &&
+    progressMatch
+  ) {
     current = Number(progressMatch[1]);
     total = Number(progressMatch[2]);
   }
@@ -3723,10 +4571,16 @@ function parseQuestObjectiveProgress(objective = {}) {
 
 function renderQuestObjective(objective = {}) {
   const progress = parseQuestObjectiveProgress(objective);
-  const done = Boolean(objective.finished || (progress.total > 0 && progress.current >= progress.total));
-  const ratio = progress.total > 0
-    ? Math.min(100, Math.max(0, (progress.current / progress.total) * 100))
-    : (done ? 100 : 0);
+  const done = Boolean(
+    objective.finished ||
+    (progress.total > 0 && progress.current >= progress.total),
+  );
+  const ratio =
+    progress.total > 0
+      ? Math.min(100, Math.max(0, (progress.current / progress.total) * 100))
+      : done
+        ? 100
+        : 0;
 
   return `<li class="quest-details-objective ${done ? "done" : ""}">
     <span class="quest-objective-check" aria-hidden="true">${done ? "✓" : ""}</span>
@@ -3738,12 +4592,23 @@ function renderQuestObjective(objective = {}) {
 }
 
 function renderQuestTravel(quest, location) {
-  const coordinates = quest.coordinates || quest.coords || quest.position || null;
+  const coordinates =
+    quest.coordinates || quest.coords || quest.position || null;
   const x = Number(firstUsefulValue(coordinates?.x, quest.x, quest.mapX));
   const y = Number(firstUsefulValue(coordinates?.y, quest.y, quest.mapY));
-  const hasCoordinates = Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0;
-  const giver = firstUsefulValue(quest.giverName, quest.questGiver, quest.startNpcName, quest.npcName);
-  const turnIn = firstUsefulValue(quest.turnInName, quest.endNpcName, quest.completionNpcName);
+  const hasCoordinates =
+    Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0;
+  const giver = firstUsefulValue(
+    quest.giverName,
+    quest.questGiver,
+    quest.startNpcName,
+    quest.npcName,
+  );
+  const turnIn = firstUsefulValue(
+    quest.turnInName,
+    quest.endNpcName,
+    quest.completionNpcName,
+  );
 
   return `<section class="quest-details-section quest-travel-section">
     <h4>Où aller</h4>
@@ -3758,7 +4623,11 @@ function renderQuestTravel(quest, location) {
 }
 
 function renderQuestBlizzardData({ ids, typeLabel, level, location, quest }) {
-  const category = firstUsefulValue(quest.category, quest.questCategory, "Normale");
+  const category = firstUsefulValue(
+    quest.category,
+    quest.questCategory,
+    "Normale",
+  );
   const expansion = firstUsefulValue(quest.expansionName, quest.expansion);
   const faction = firstUsefulValue(quest.factionName, quest.faction);
   const knownLocation = location && location !== "Zone non précisée";
@@ -3767,10 +4636,18 @@ function renderQuestBlizzardData({ ids, typeLabel, level, location, quest }) {
     `<div><dt>Type</dt><dd>${escapeHtml(typeLabel)}</dd></div>`,
     `<div><dt>Niveau</dt><dd>${level > 0 ? level : "Adaptatif"}</dd></div>`,
     `<div><dt>Catégorie</dt><dd>${escapeHtml(String(category))}</dd></div>`,
-    expansion ? `<div><dt>Extension</dt><dd>${escapeHtml(String(expansion))}</dd></div>` : "",
-    faction ? `<div><dt>Faction</dt><dd>${escapeHtml(String(faction))}</dd></div>` : "",
-    knownLocation ? `<div class="wide"><dt>Zone</dt><dd>${escapeHtml(location)}</dd></div>` : "",
-  ].filter(Boolean).join("");
+    expansion
+      ? `<div><dt>Extension</dt><dd>${escapeHtml(String(expansion))}</dd></div>`
+      : "",
+    faction
+      ? `<div><dt>Faction</dt><dd>${escapeHtml(String(faction))}</dd></div>`
+      : "",
+    knownLocation
+      ? `<div class="wide"><dt>Zone</dt><dd>${escapeHtml(location)}</dd></div>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
 
   return `<section class="quest-details-section quest-details-technical">
     <h4>Informations Blizzard</h4>
@@ -3786,20 +4663,30 @@ async function openQuestDetails(detailKey) {
   if (!detail || !panel || !backdrop || !content) return;
 
   const liveQuest = detail.quest || {};
-  const ids = Array.isArray(detail.ids) ? detail.ids : [Number(liveQuest.id || 0)].filter(Boolean);
+  const ids = Array.isArray(detail.ids)
+    ? detail.ids
+    : [Number(liveQuest.id || 0)].filter(Boolean);
   const database = await loadQuestDatabase();
-  const databaseQuest = ids.map((id) => database[String(id)]).find(Boolean) || {};
+  const databaseQuest =
+    ids.map((id) => database[String(id)]).find(Boolean) || {};
   const quest = mergeQuestKnowledge(liveQuest, databaseQuest);
   const objectives = Array.isArray(quest.objectives) ? quest.objectives : [];
   const location = quest.mapName || detail.mapName || "Zone non précisée";
   const typeLabel = getQuestTypeLabel(quest, detail.isAccountView);
   const level = Number(quest.level || 0);
   const suggestedGroup = Number(quest.suggestedGroup || 0);
-  const description = quest.description || quest.questDescription || quest.logDescription || "";
+  const description =
+    quest.description || quest.questDescription || quest.logDescription || "";
   const objectiveText = quest.objectiveText || quest.objectivesText || "";
   const completionText = quest.completionText || "";
-  const status = quest.worldStatus || (quest.isComplete ? "completed" : "active");
-  const statusLabel = status === "completed" ? "Terminée" : status === "todo" ? "À faire" : "En cours";
+  const status =
+    quest.worldStatus || (quest.isComplete ? "completed" : "active");
+  const statusLabel =
+    status === "completed"
+      ? "Terminée"
+      : status === "todo"
+        ? "À faire"
+        : "En cours";
 
   content.innerHTML = `
     <header class="quest-details-docked-head">
@@ -3817,7 +4704,7 @@ async function openQuestDetails(detailKey) {
 
     <section class="quest-details-section quest-details-intro">
       ${objectiveText ? `<p class="quest-details-copy quest-objective-summary">${escapeHtml(objectiveText)}</p>` : ""}
-      ${objectives.length ? `<ul class="quest-details-objectives">${objectives.map(renderQuestObjective).join("")}</ul>` : (objectiveText ? "" : '<p class="quest-details-muted">Aucun objectif détaillé disponible.</p>')}
+      ${objectives.length ? `<ul class="quest-details-objectives">${objectives.map(renderQuestObjective).join("")}</ul>` : objectiveText ? "" : '<p class="quest-details-muted">Aucun objectif détaillé disponible.</p>'}
     </section>
 
     <section class="quest-details-section">
@@ -3834,18 +4721,24 @@ async function openQuestDetails(detailKey) {
     ${renderQuestTravel(quest, location)}
   `;
 
-  content.querySelector("[data-quest-coordinates]")?.addEventListener("click", async (event) => {
-    const value = event.currentTarget.dataset.questCoordinates;
-    try {
-      await navigator.clipboard.writeText(value);
-      event.currentTarget.textContent = "Coordonnées copiées ✓";
-    } catch {
-      event.currentTarget.textContent = value;
-    }
-  });
+  content
+    .querySelector("[data-quest-coordinates]")
+    ?.addEventListener("click", async (event) => {
+      const value = event.currentTarget.dataset.questCoordinates;
+      try {
+        await navigator.clipboard.writeText(value);
+        event.currentTarget.textContent = "Coordonnées copiées ✓";
+      } catch {
+        event.currentTarget.textContent = value;
+      }
+    });
 
-  document.querySelectorAll(".quest-world-row.is-selected").forEach((row) => row.classList.remove("is-selected"));
-  document.querySelector(`[data-quest-detail-key="${CSS.escape(detailKey)}"]`)?.classList.add("is-selected");
+  document
+    .querySelectorAll(".quest-world-row.is-selected")
+    .forEach((row) => row.classList.remove("is-selected"));
+  document
+    .querySelector(`[data-quest-detail-key="${CSS.escape(detailKey)}"]`)
+    ?.classList.add("is-selected");
   panel.setAttribute("aria-hidden", "false");
 
   if (window.matchMedia("(max-width: 1050px)").matches) {
@@ -3870,20 +4763,25 @@ function bindQuestDetailsTriggers(root) {
 }
 
 function getQuestCatalogEntries() {
-  return Object.values(questsState.database || {}).filter((quest) => quest && Number(quest.id || 0));
+  return Object.values(questsState.database || {}).filter(
+    (quest) => quest && Number(quest.id || 0),
+  );
 }
 
 async function loadQuestCatalog() {
   if (questsState.questCatalog) return questsState.questCatalog;
   if (questsState.questCatalogPromise) return questsState.questCatalogPromise;
 
-  questsState.questCatalogPromise = fetch("/data/quests/quest-catalog.json", { cache: "no-store" })
+  questsState.questCatalogPromise = fetch("/data/quests/quest-catalog.json", {
+    cache: "no-store",
+  })
     .then((response) => {
       if (!response.ok) throw new Error("Quest Catalog indisponible.");
       return response.json();
     })
     .then((payload) => {
-      questsState.questCatalog = payload && payload.regions ? payload : { regions: {} };
+      questsState.questCatalog =
+        payload && payload.regions ? payload : { regions: {} };
       return questsState.questCatalog;
     })
     .catch((error) => {
@@ -3898,9 +4796,12 @@ async function loadQuestCatalog() {
 async function loadClassQuests() {
   if (questsState.classQuests) return questsState.classQuests;
   if (questsState.classQuestsPromise) return questsState.classQuestsPromise;
-  questsState.classQuestsPromise = fetch("/data/quests/class-quests.json", { cache: "no-store" })
+  questsState.classQuestsPromise = fetch("/data/quests/class-quests.json", {
+    cache: "no-store",
+  })
     .then((response) => {
-      if (!response.ok) throw new Error("Catalogue des quêtes de classe indisponible.");
+      if (!response.ok)
+        throw new Error("Catalogue des quêtes de classe indisponible.");
       return response.json();
     })
     .then((payload) => {
@@ -3917,14 +4818,23 @@ async function loadClassQuests() {
 
 async function loadHunterHybridRoadmap() {
   if (questsState.hunterHybridRoadmap) return questsState.hunterHybridRoadmap;
-  if (questsState.hunterHybridRoadmapPromise) return questsState.hunterHybridRoadmapPromise;
-  questsState.hunterHybridRoadmapPromise = fetch("/data/quests/hunter-hybrid-beast-roadmap.json", { cache: "no-store" })
+  if (questsState.hunterHybridRoadmapPromise)
+    return questsState.hunterHybridRoadmapPromise;
+  questsState.hunterHybridRoadmapPromise = fetch(
+    "/data/quests/hunter-hybrid-beast-roadmap.json",
+    { cache: "no-store" },
+  )
     .then((response) => {
-      if (!response.ok) throw new Error("Feuille de route du Tome de la bête hybride indisponible.");
+      if (!response.ok)
+        throw new Error(
+          "Feuille de route du Tome de la bête hybride indisponible.",
+        );
       return response.json();
     })
     .then((payload) => {
-      questsState.hunterHybridRoadmap = payload?.stages ? payload : { stages: [] };
+      questsState.hunterHybridRoadmap = payload?.stages
+        ? payload
+        : { stages: [] };
       return questsState.hunterHybridRoadmap;
     })
     .catch((error) => {
@@ -3937,14 +4847,21 @@ async function loadHunterHybridRoadmap() {
 
 async function loadHunterTamingRoadmaps() {
   if (questsState.hunterTamingRoadmaps) return questsState.hunterTamingRoadmaps;
-  if (questsState.hunterTamingRoadmapsPromise) return questsState.hunterTamingRoadmapsPromise;
-  questsState.hunterTamingRoadmapsPromise = fetch("/data/quests/hunter-taming-roadmaps.json", { cache: "no-store" })
+  if (questsState.hunterTamingRoadmapsPromise)
+    return questsState.hunterTamingRoadmapsPromise;
+  questsState.hunterTamingRoadmapsPromise = fetch(
+    "/data/quests/hunter-taming-roadmaps.json",
+    { cache: "no-store" },
+  )
     .then((response) => {
-      if (!response.ok) throw new Error("Feuilles de route d'apprivoisement indisponibles.");
+      if (!response.ok)
+        throw new Error("Feuilles de route d'apprivoisement indisponibles.");
       return response.json();
     })
     .then((payload) => {
-      questsState.hunterTamingRoadmaps = payload?.roadmaps ? payload : { roadmaps: {} };
+      questsState.hunterTamingRoadmaps = payload?.roadmaps
+        ? payload
+        : { roadmaps: {} };
       return questsState.hunterTamingRoadmaps;
     })
     .catch((error) => {
@@ -3957,14 +4874,21 @@ async function loadHunterTamingRoadmaps() {
 
 async function loadHunterSpecialPets() {
   if (questsState.hunterSpecialPets) return questsState.hunterSpecialPets;
-  if (questsState.hunterSpecialPetsPromise) return questsState.hunterSpecialPetsPromise;
-  questsState.hunterSpecialPetsPromise = fetch("/data/quests/hunter-special-pets.json", { cache: "no-store" })
+  if (questsState.hunterSpecialPetsPromise)
+    return questsState.hunterSpecialPetsPromise;
+  questsState.hunterSpecialPetsPromise = fetch(
+    "/data/quests/hunter-special-pets.json",
+    { cache: "no-store" },
+  )
     .then((response) => {
-      if (!response.ok) throw new Error("Bestiaire spécial du Chasseur indisponible.");
+      if (!response.ok)
+        throw new Error("Bestiaire spécial du Chasseur indisponible.");
       return response.json();
     })
     .then((payload) => {
-      questsState.hunterSpecialPets = payload?.classes ? payload : { classes: {} };
+      questsState.hunterSpecialPets = payload?.classes
+        ? payload
+        : { classes: {} };
       return questsState.hunterSpecialPets;
     })
     .catch((error) => {
@@ -3976,21 +4900,41 @@ async function loadHunterSpecialPets() {
 }
 
 function normalizeClassQuestSlug(value) {
-  return String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function getClassQuestDefinition(character) {
   const classes = questsState.classQuests?.classes || {};
   const visual = getQuestCharacterVisual(character);
-  const candidates = [character?.classSlug, character?.className, visual.className].map(normalizeClassQuestSlug).filter(Boolean);
-  return Object.values(classes).find((entry) => Number(entry.classId || 0) === Number(character?.classId || 0))
-    || Object.entries(classes).find(([slug]) => candidates.includes(normalizeClassQuestSlug(slug)))?.[1]
-    || null;
+  const candidates = [
+    character?.classSlug,
+    character?.className,
+    visual.className,
+  ]
+    .map(normalizeClassQuestSlug)
+    .filter(Boolean);
+  return (
+    Object.values(classes).find(
+      (entry) => Number(entry.classId || 0) === Number(character?.classId || 0),
+    ) ||
+    Object.entries(classes).find(([slug]) =>
+      candidates.includes(normalizeClassQuestSlug(slug)),
+    )?.[1] ||
+    null
+  );
 }
 
 function getClassQuestStatus(entry, character, model) {
-  const raceSlug = normalizeClassQuestSlug(character?.raceSlug || character?.raceName);
-  if ((entry.raceExceptions || []).map(normalizeClassQuestSlug).includes(raceSlug)) {
+  const raceSlug = normalizeClassQuestSlug(
+    character?.raceSlug || character?.raceName,
+  );
+  if (
+    (entry.raceExceptions || []).map(normalizeClassQuestSlug).includes(raceSlug)
+  ) {
     return { key: "completed", label: "Débloqué (racial)" };
   }
 
@@ -4001,15 +4945,22 @@ function getClassQuestStatus(entry, character, model) {
       : { key: "available", label: "À obtenir" };
   }
 
-  const ids = [entry.questId, entry.completionFlagQuestId].map(Number).filter(Boolean);
-  if (ids.some((id) => model.completedIds.has(id))) return { key: "completed", label: "Débloqué" };
-  if (ids.some((id) => model.activeIds.has(id))) return { key: "active", label: "En cours" };
+  const ids = [entry.questId, entry.completionFlagQuestId]
+    .map(Number)
+    .filter(Boolean);
+  if (ids.some((id) => model.completedIds.has(id)))
+    return { key: "completed", label: "Débloqué" };
+  if (ids.some((id) => model.activeIds.has(id)))
+    return { key: "active", label: "En cours" };
   return { key: "unknown", label: "Inconnu" };
 }
 
 function getHunterPetCollection(character) {
   const payload = character?.hunterPets || {};
-  const raw = payload.pets && typeof payload.pets === "object" ? Object.values(payload.pets) : [];
+  const raw =
+    payload.pets && typeof payload.pets === "object"
+      ? Object.values(payload.pets)
+      : [];
   const pets = raw
     .filter((pet) => pet && typeof pet === "object")
     .map((pet, index) => ({
@@ -4034,12 +4985,19 @@ function getHunterCatalogEntries() {
   const hunterCatalog = questsState.hunterSpecialPets?.classes?.hunter;
   if (!hunterCatalog) return [];
   return (hunterCatalog.categories || []).flatMap((category) =>
-    (category.entries || []).map((entry) => ({ ...entry, _categoryName: category.name || "Bestiaire spécial" }))
+    (category.entries || []).map((entry) => ({
+      ...entry,
+      _categoryName: category.name || "Bestiaire spécial",
+    })),
   );
 }
 
 function getHunterCatalogByCreatureId() {
-  return new Map(getHunterCatalogEntries().map((entry) => [Number(entry.creatureId || 0), entry]).filter(([id]) => id));
+  return new Map(
+    getHunterCatalogEntries()
+      .map((entry) => [Number(entry.creatureId || 0), entry])
+      .filter(([id]) => id),
+  );
 }
 
 function buildCollectedHunterPetEntry(pet, catalogByCreatureId) {
@@ -4062,30 +5020,52 @@ function buildCollectedHunterPetEntry(pet, catalogByCreatureId) {
     family: pet.familyName || "Familier de chasseur",
     zone: pet.source === "active" ? "Familier actif" : "Écurie",
     expansion: "Collection personnelle",
-    special: pet.isExotic === true
-      ? "Bête exotique enregistrée par le Collector."
-      : "Familier enregistré directement depuis l'écurie du Chasseur.",
+    special:
+      pet.isExotic === true
+        ? "Bête exotique enregistrée par le Collector."
+        : "Familier enregistré directement depuis l'écurie du Chasseur.",
     beastMastery: pet.isExotic === true,
-    image: { localPath: pet.icon ? `/api/media/file/${Number(pet.icon)}` : "", fallback: "/assets/hero-hinterlands.jpg" },
-    requirements: pet.isExotic === true
-      ? [{ type: "specialization", label: "Maîtrise des bêtes", detail: "Bête exotique : spécialisation Maîtrise des bêtes requise." }]
-      : [],
+    image: {
+      localPath: pet.icon ? `/api/media/file/${Number(pet.icon)}` : "",
+      fallback: "/assets/hero-hinterlands.jpg",
+    },
+    requirements:
+      pet.isExotic === true
+        ? [
+            {
+              type: "specialization",
+              label: "Maîtrise des bêtes",
+              detail:
+                "Bête exotique : spécialisation Maîtrise des bêtes requise.",
+            },
+          ]
+        : [],
     collectorPet: pet,
     collected: true,
   };
 }
 
 function renderHunterPetCard(entry, statusKey, statusLabel) {
-  const imagePath = entry.image?.localPath || entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const imagePath =
+    entry.image?.localPath ||
+    entry.image?.fallback ||
+    "/assets/hero-hinterlands.jpg";
   const fallbackPath = entry.image?.fallback || "/assets/hero-hinterlands.jpg";
   const pet = entry.collectorPet || null;
   const badges = [];
   if (pet?.source === "active") badges.push("Actif");
-  if (pet?.isExotic === true || entry.beastMastery === true) badges.push("Exotique");
+  if (pet?.isExotic === true || entry.beastMastery === true)
+    badges.push("Exotique");
   if (pet?.isFavorite === true) badges.push("Favori");
   if (!pet && entry.collected !== true) badges.push("Rare / spécial");
-  const badgeHtml = badges.map((badge) => `<span class="hunter-pet-badge">${escapeHtml(badge)}</span>`).join("");
-  const levelHtml = pet?.level ? `<span>Niv. ${escapeHtml(pet.level)}</span>` : "";
+  const badgeHtml = badges
+    .map(
+      (badge) => `<span class="hunter-pet-badge">${escapeHtml(badge)}</span>`,
+    )
+    .join("");
+  const levelHtml = pet?.level
+    ? `<span>Niv. ${escapeHtml(pet.level)}</span>`
+    : "";
   return `<article class="hunter-bestiary-card is-${statusKey}" data-hunter-pet-status="${escapeHtml(statusKey)}" data-hunter-pet-id="${escapeHtml(entry.id)}">
     <div class="hunter-pet-visual"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(entry.name)}" loading="lazy" onerror="if(this.dataset.fallback!=='1'){this.dataset.fallback='1';this.src='${escapeHtml(fallbackPath)}';}"><span class="hunter-pet-status is-${escapeHtml(statusKey)}">${escapeHtml(statusLabel)}</span></div>
     <div class="hunter-pet-body">
@@ -4096,27 +5076,42 @@ function renderHunterPetCard(entry, statusKey, statusLabel) {
   </article>`;
 }
 function renderHunterSpecialPets(character) {
-  if (Number(character?.classId || 0) !== 3) return { html: "", collected: 0, total: 0 };
+  if (Number(character?.classId || 0) !== 3)
+    return { html: "", collected: 0, total: 0 };
   const hunterCatalog = questsState.hunterSpecialPets?.classes?.hunter;
   if (!hunterCatalog) return { html: "", collected: 0, total: 0 };
 
   const collection = getHunterPetCollection(character);
   const catalogEntries = getHunterCatalogEntries();
   const catalogByCreatureId = getHunterCatalogByCreatureId();
-  const collectedEntries = collection.pets.map((pet) => buildCollectedHunterPetEntry(pet, catalogByCreatureId));
+  const collectedEntries = collection.pets.map((pet) =>
+    buildCollectedHunterPetEntry(pet, catalogByCreatureId),
+  );
   const collectedSpecialIds = new Set(
     collectedEntries
       .filter((entry) => catalogByCreatureId.has(Number(entry.creatureId || 0)))
-      .map((entry) => Number(entry.creatureId || 0))
+      .map((entry) => Number(entry.creatureId || 0)),
   );
-  const remainingEntries = catalogEntries.filter((entry) => !collection.creatureIds.has(Number(entry.creatureId || 0)));
+  const remainingEntries = catalogEntries.filter(
+    (entry) => !collection.creatureIds.has(Number(entry.creatureId || 0)),
+  );
 
   const collectedCards = collectedEntries.length
-    ? collectedEntries.map((entry) => renderHunterPetCard(entry, "completed", "Apprivoisé")).join("")
+    ? collectedEntries
+        .map((entry) => renderHunterPetCard(entry, "completed", "Apprivoisé"))
+        .join("")
     : `<div class="hunter-bestiary-empty">Aucune bête n'a encore été remontée par le Collector pour ce personnage.</div>`;
 
   const remainingCards = remainingEntries.length
-    ? remainingEntries.map((entry) => renderHunterPetCard(entry, collection.supported ? "available" : "unknown", collection.supported ? "À apprivoiser" : "Inconnu")).join("")
+    ? remainingEntries
+        .map((entry) =>
+          renderHunterPetCard(
+            entry,
+            collection.supported ? "available" : "unknown",
+            collection.supported ? "À apprivoiser" : "Inconnu",
+          ),
+        )
+        .join("")
     : `<div class="hunter-bestiary-empty">Toutes les bêtes rares cataloguées ont été apprivoisées.</div>`;
 
   const collectedSection = `<section class="class-quests-category hunter-bestiary-category">
@@ -4150,8 +5145,12 @@ function normalizeRoadmapTitle(value) {
 function buildRoadmapQuestIndex(model) {
   const activeByTitle = new Map();
   const completedByTitle = new Map();
-  (model?.active || []).forEach((quest) => activeByTitle.set(normalizeRoadmapTitle(quest?.title), quest));
-  (model?.history || []).forEach((quest) => completedByTitle.set(normalizeRoadmapTitle(quest?.title), quest));
+  (model?.active || []).forEach((quest) =>
+    activeByTitle.set(normalizeRoadmapTitle(quest?.title), quest),
+  );
+  (model?.history || []).forEach((quest) =>
+    completedByTitle.set(normalizeRoadmapTitle(quest?.title), quest),
+  );
   return { activeByTitle, completedByTitle };
 }
 
@@ -4166,65 +5165,125 @@ function getRoadmapEntryStatus(entry, character, model, index) {
   }
   const questId = Number(entry.questId || 0);
   if (questId && model?.completedIds?.has(questId)) {
-    return { key: "completed", label: "Terminé", quest: (model.history || []).find((q) => Number(q.id) === questId) || null };
+    return {
+      key: "completed",
+      label: "Terminé",
+      quest:
+        (model.history || []).find((q) => Number(q.id) === questId) || null,
+    };
   }
   if (questId && model?.activeIds?.has(questId)) {
-    return { key: "active", label: "En cours", quest: (model.active || []).find((q) => Number(q.id) === questId) || null };
+    return {
+      key: "active",
+      label: "En cours",
+      quest: (model.active || []).find((q) => Number(q.id) === questId) || null,
+    };
   }
-  const names = [entry.title, ...(entry.aliases || [])].map(normalizeRoadmapTitle).filter(Boolean);
+  const names = [entry.title, ...(entry.aliases || [])]
+    .map(normalizeRoadmapTitle)
+    .filter(Boolean);
   for (const name of names) {
-    if (index.completedByTitle.has(name)) return { key: "completed", label: "Terminé", quest: index.completedByTitle.get(name) };
+    if (index.completedByTitle.has(name))
+      return {
+        key: "completed",
+        label: "Terminé",
+        quest: index.completedByTitle.get(name),
+      };
   }
   for (const name of names) {
-    if (index.activeByTitle.has(name)) return { key: "active", label: "En cours", quest: index.activeByTitle.get(name) };
+    if (index.activeByTitle.has(name))
+      return {
+        key: "active",
+        label: "En cours",
+        quest: index.activeByTitle.get(name),
+      };
   }
   return { key: "todo", label: "À venir", quest: null };
 }
 
 function roadmapObjectiveText(quest) {
   const objectives = Array.isArray(quest?.objectives) ? quest.objectives : [];
-  const unfinished = objectives.find((objective) => objective && objective.finished !== true) || objectives[0];
+  const unfinished =
+    objectives.find((objective) => objective && objective.finished !== true) ||
+    objectives[0];
   return unfinished?.text || quest?.objectiveText || "";
 }
 
 function renderHunterTamingRoadmap(character, model, roadmap) {
-  if (Number(character?.classId || 0) !== 3 || !roadmap?.stages?.length) return { html: "", completed: 0, total: 0, percent: 0 };
+  if (Number(character?.classId || 0) !== 3 || !roadmap?.stages?.length)
+    return { html: "", completed: 0, total: 0, percent: 0 };
   const index = buildRoadmapQuestIndex(model);
   const rows = [];
-  const filter = ["all", "completed", "todo"].includes(questsState.hunterRoadmapFilter) ? questsState.hunterRoadmapFilter : "todo";
-  const stageHtml = roadmap.stages.map((stage) => {
-    const statuses = (stage.entries || []).map((entry) => {
-      const status = getRoadmapEntryStatus(entry, character, model, index);
-      rows.push({ entry, status, stage });
-      return { entry, status };
-    });
-    const done = statuses.filter(({ status }) => status.key === "completed").length;
-    const active = statuses.filter(({ status }) => status.key === "active").length;
-    const visibleStatuses = statuses.filter(({ status }) => filter === "all" || (filter === "completed" ? status.key === "completed" : status.key !== "completed"));
-    if (!visibleStatuses.length) return "";
-    const entriesHtml = visibleStatuses.map(({ entry, status }) => {
-      const objective = status.key === "active" ? roadmapObjectiveText(status.quest) : "";
-      const note = objective || (status.key !== "completed" ? entry.note || "" : "");
-      return `<li class="hybrid-roadmap-item is-${escapeHtml(status.key)}">
+  const filter = ["all", "completed", "todo"].includes(
+    questsState.hunterRoadmapFilter,
+  )
+    ? questsState.hunterRoadmapFilter
+    : "todo";
+  const stageHtml = roadmap.stages
+    .map((stage) => {
+      const statuses = (stage.entries || []).map((entry) => {
+        const status = getRoadmapEntryStatus(entry, character, model, index);
+        rows.push({ entry, status, stage });
+        return { entry, status };
+      });
+      const done = statuses.filter(
+        ({ status }) => status.key === "completed",
+      ).length;
+      const active = statuses.filter(
+        ({ status }) => status.key === "active",
+      ).length;
+      const visibleStatuses = statuses.filter(
+        ({ status }) =>
+          filter === "all" ||
+          (filter === "completed"
+            ? status.key === "completed"
+            : status.key !== "completed"),
+      );
+      if (!visibleStatuses.length) return "";
+      const entriesHtml = visibleStatuses
+        .map(({ entry, status }) => {
+          const objective =
+            status.key === "active" ? roadmapObjectiveText(status.quest) : "";
+          const note =
+            objective || (status.key !== "completed" ? entry.note || "" : "");
+          return `<li class="hybrid-roadmap-item is-${escapeHtml(status.key)}">
         <span class="hybrid-roadmap-check" aria-hidden="true">${status.key === "completed" ? "✓" : status.key === "active" ? "◆" : "○"}</span>
         <span class="hybrid-roadmap-copy"><strong>${escapeHtml(entry.title)}</strong>${note ? `<small>${escapeHtml(note)}</small>` : ""}</span>
         <span class="hybrid-roadmap-status">${escapeHtml(status.label)}</span>
       </li>`;
-    }).join("");
-    const stageState = done === statuses.length && statuses.length ? "completed" : active ? "active" : "todo";
-    return `<details class="hybrid-roadmap-stage is-${stageState}" ${active || filter !== "all" ? "open" : ""}>
+        })
+        .join("");
+      const stageState =
+        done === statuses.length && statuses.length
+          ? "completed"
+          : active
+            ? "active"
+            : "todo";
+      return `<details class="hybrid-roadmap-stage is-${stageState}" ${active || filter !== "all" ? "open" : ""}>
       <summary><span><strong>${escapeHtml(stage.name)}</strong><small>${escapeHtml(stage.description || "")}</small></span><b>${done} / ${statuses.length}</b></summary>
       <ul>${entriesHtml}</ul>
     </details>`;
-  }).join("");
-  const completed = rows.filter(({ status }) => status.key === "completed").length;
+    })
+    .join("");
+  const completed = rows.filter(
+    ({ status }) => status.key === "completed",
+  ).length;
   const total = rows.length;
   const todo = total - completed;
   const percent = total ? Math.round((completed / total) * 100) : 0;
-  const current = rows.find(({ status }) => status.key === "active") || rows.find(({ status }) => status.key === "todo");
-  const currentText = current ? `${current.stage.name} · ${current.entry.title}` : "Objectif atteint — apprivoisement débloqué";
-  const filterButton = (key, label, count) => `<button type="button" class="hybrid-roadmap-filter${filter === key ? " is-active" : ""}" data-roadmap-filter="${key}">${label}<span>${count}</span></button>`;
-  return { completed, total, percent, html: `<section class="class-quests-category hybrid-roadmap-category">
+  const current =
+    rows.find(({ status }) => status.key === "active") ||
+    rows.find(({ status }) => status.key === "todo");
+  const currentText = current
+    ? `${current.stage.name} · ${current.entry.title}`
+    : "Objectif atteint — apprivoisement débloqué";
+  const filterButton = (key, label, count) =>
+    `<button type="button" class="hybrid-roadmap-filter${filter === key ? " is-active" : ""}" data-roadmap-filter="${key}">${label}<span>${count}</span></button>`;
+  return {
+    completed,
+    total,
+    percent,
+    html: `<section class="class-quests-category hybrid-roadmap-category">
     <div class="hybrid-roadmap-hero"><div><span class="characters-kicker">OBJECTIF CHASSEUR</span><h4>${escapeHtml(roadmap.title || "Déblocage d'apprivoisement")}</h4><p>${escapeHtml(roadmap.subtitle || "")}</p></div>
     <div class="hybrid-roadmap-percent"><strong>${percent}%</strong><span>${completed} / ${total}</span></div></div>
     <div class="hybrid-roadmap-track" aria-label="Progression ${percent}%"><i style="width:${percent}%"></i></div>
@@ -4234,7 +5293,8 @@ function renderHunterTamingRoadmap(character, model, roadmap) {
       ${filterButton("completed", "Terminées", completed)}
       ${filterButton("todo", "À faire", todo)}
     </div>
-    <div class="hybrid-roadmap-stages">${stageHtml}</div></section>` };
+    <div class="hybrid-roadmap-stages">${stageHtml}</div></section>`,
+  };
 }
 function getHunterRoadmap(entry) {
   if (!entry) return null;
@@ -4244,43 +5304,71 @@ function getHunterRoadmap(entry) {
 
 function renderHunterHybridRoadmap(character, model) {
   const definition = getClassQuestDefinition(character);
-  const entries = (definition?.categories || []).flatMap((category) => category.entries || []);
-  const selected = entries.find((entry) => entry.id === questsState.hunterSelectedRoadmapId) || entries.find((entry) => entry.id === "feathermane");
-  return renderHunterTamingRoadmap(character, model, getHunterRoadmap(selected));
+  const entries = (definition?.categories || []).flatMap(
+    (category) => category.entries || [],
+  );
+  const selected =
+    entries.find((entry) => entry.id === questsState.hunterSelectedRoadmapId) ||
+    entries.find((entry) => entry.id === "feathermane");
+  return renderHunterTamingRoadmap(
+    character,
+    model,
+    getHunterRoadmap(selected),
+  );
 }
 
 function renderClassQuests(character, model) {
   const section = document.getElementById("classQuestsSection");
   const categoriesHost = document.getElementById("classQuestsCategories");
   if (!section || !categoriesHost) return;
-  const definition = character && questsState.selectedKey !== "__account__" ? getClassQuestDefinition(character) : null;
+  const definition =
+    character && questsState.selectedKey !== "__account__"
+      ? getClassQuestDefinition(character)
+      : null;
   if (!definition) {
     section.hidden = true;
     categoriesHost.innerHTML = "";
     return;
   }
   section.hidden = false;
-  document.getElementById("classQuestsTitle").textContent = `Progression de classe · ${definition.name || character.className || "Héros"}`;
+  document.getElementById("classQuestsTitle").textContent =
+    `Progression de classe · ${definition.name || character.className || "Héros"}`;
   const statuses = [];
-  const unlockHtml = (definition.categories || []).map((category) => {
-    const cards = (category.entries || []).map((entry) => {
-      const status = getClassQuestStatus(entry, character, model); statuses.push(status);
-      return `<article class="class-quest-card is-${escapeHtml(status.key)}${entry.id === questsState.hunterSelectedRoadmapId ? " is-roadmap-selected" : ""}" data-hunter-roadmap-id="${escapeHtml(entry.id)}" role="button" tabindex="0" aria-label="Voir la progression ${escapeHtml(entry.name)}">
+  const unlockHtml = (definition.categories || [])
+    .map((category) => {
+      const cards = (category.entries || [])
+        .map((entry) => {
+          const status = getClassQuestStatus(entry, character, model);
+          statuses.push(status);
+          return `<article class="class-quest-card is-${escapeHtml(status.key)}${entry.id === questsState.hunterSelectedRoadmapId ? " is-roadmap-selected" : ""}" data-hunter-roadmap-id="${escapeHtml(entry.id)}" role="button" tabindex="0" aria-label="Voir la progression ${escapeHtml(entry.name)}">
         <div class="class-quest-card-top"><h4>${escapeHtml(entry.name)}</h4><span class="class-quest-status">${escapeHtml(status.label)}</span></div>
         <div class="class-quest-unlock"><strong>${escapeHtml(entry.unlock || "Déblocage de classe")}</strong> · ${escapeHtml(entry.expansion || "")}</div>
         <p>${escapeHtml(entry.requirement || "")}</p>
       </article>`;
-    }).join("");
-    return `<section class="class-quests-category"><h4 class="class-quests-category-title">${escapeHtml(category.name)}</h4><div class="class-quests-grid">${cards}</div></section>`;
-  }).join("");
+        })
+        .join("");
+      return `<section class="class-quests-category"><h4 class="class-quests-category-title">${escapeHtml(category.name)}</h4><div class="class-quests-grid">${cards}</div></section>`;
+    })
+    .join("");
   const roadmap = renderHunterHybridRoadmap(character, model);
   const bestiary = renderHunterSpecialPets(character);
   categoriesHost.innerHTML = roadmap.html + unlockHtml + bestiary.html;
-  categoriesHost.querySelectorAll("[data-hunter-roadmap-id]").forEach((card) => {
-    const select = () => { questsState.hunterSelectedRoadmapId = card.dataset.hunterRoadmapId || "feathermane"; renderClassQuests(character, model); };
-    card.addEventListener("click", select);
-    card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(); } });
-  });
+  categoriesHost
+    .querySelectorAll("[data-hunter-roadmap-id]")
+    .forEach((card) => {
+      const select = () => {
+        questsState.hunterSelectedRoadmapId =
+          card.dataset.hunterRoadmapId || "feathermane";
+        renderClassQuests(character, model);
+      };
+      card.addEventListener("click", select);
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          select();
+        }
+      });
+    });
   categoriesHost.querySelectorAll("[data-roadmap-filter]").forEach((button) => {
     button.addEventListener("click", () => {
       questsState.hunterRoadmapFilter = button.dataset.roadmapFilter || "todo";
@@ -4291,23 +5379,32 @@ function renderClassQuests(character, model) {
   document.getElementById("classQuestsKnownCount").textContent = String(known);
   const summary = document.getElementById("classQuestsSummary");
   if (summary) {
-    const roadmapPart = roadmap.total ? ` · Tome hybride ${roadmap.percent}%` : "";
-    const petPart = bestiary.total ? ` · ${bestiary.collected} familiers détectés · ${bestiary.collectedSpecial || 0} / ${bestiary.total} rares cataloguées` : "";
+    const roadmapPart = roadmap.total
+      ? ` · Tome hybride ${roadmap.percent}%`
+      : "";
+    const petPart = bestiary.total
+      ? ` · ${bestiary.collected} familiers détectés · ${bestiary.collectedSpecial || 0} / ${bestiary.total} rares cataloguées`
+      : "";
     summary.textContent = `${known} / ${statuses.length} débloqués${roadmapPart}${petPart}`;
   }
 }
 
 function findHunterSpecialPet(petId) {
   const catalogEntries = getHunterCatalogEntries();
-  const catalogEntry = catalogEntries.find((item) => String(item.id) === String(petId));
+  const catalogEntry = catalogEntries.find(
+    (item) => String(item.id) === String(petId),
+  );
   if (catalogEntry) return catalogEntry;
 
   if (String(petId || "").startsWith("collected:")) {
     const character = getSelectedQuestCharacter() || null;
     const collection = getHunterPetCollection(character);
     const collectorKey = String(petId).slice("collected:".length);
-    const pet = collection.pets.find((item) => String(item._collectorKey) === collectorKey);
-    if (pet) return buildCollectedHunterPetEntry(pet, getHunterCatalogByCreatureId());
+    const pet = collection.pets.find(
+      (item) => String(item._collectorKey) === collectorKey,
+    );
+    if (pet)
+      return buildCollectedHunterPetEntry(pet, getHunterCatalogByCreatureId());
   }
   return null;
 }
@@ -4322,12 +5419,32 @@ function openHunterPetSheet(petId) {
   const character = getSelectedQuestCharacter() || null;
   const collection = getHunterPetCollection(character);
   const owned = collection.creatureIds.has(Number(entry.creatureId || 0));
-  const statusKey = owned ? "completed" : (collection.supported ? "available" : "unknown");
-  const statusLabel = owned ? "Apprivoisé" : (collection.supported ? "À apprivoiser" : "Inconnu");
-  const imagePath = entry.image?.localPath || entry.image?.fallback || "/assets/hero-hinterlands.jpg";
+  const statusKey = owned
+    ? "completed"
+    : collection.supported
+      ? "available"
+      : "unknown";
+  const statusLabel = owned
+    ? "Apprivoisé"
+    : collection.supported
+      ? "À apprivoiser"
+      : "Inconnu";
+  const imagePath =
+    entry.image?.localPath ||
+    entry.image?.fallback ||
+    "/assets/hero-hinterlands.jpg";
   const fallbackPath = entry.image?.fallback || "/assets/hero-hinterlands.jpg";
-  const requirements = Array.isArray(entry.requirements) ? entry.requirements : [];
-  const requirementHtml = requirements.length ? requirements.map((r) => `<div class="hunter-sheet-info"><span>${escapeHtml(r.label || "Prérequis")}</span><strong>${escapeHtml(r.detail || "")}</strong></div>`).join("") : `<div class="hunter-sheet-info"><span>Prérequis</span><strong>Aucun apprentissage spécial catalogué.</strong></div>`;
+  const requirements = Array.isArray(entry.requirements)
+    ? entry.requirements
+    : [];
+  const requirementHtml = requirements.length
+    ? requirements
+        .map(
+          (r) =>
+            `<div class="hunter-sheet-info"><span>${escapeHtml(r.label || "Prérequis")}</span><strong>${escapeHtml(r.detail || "")}</strong></div>`,
+        )
+        .join("")
+    : `<div class="hunter-sheet-info"><span>Prérequis</span><strong>Aucun apprentissage spécial catalogué.</strong></div>`;
   closeHunterPetSheet();
   const host = document.createElement("div");
   host.className = "hunter-pet-sheet-backdrop";
@@ -4350,15 +5467,30 @@ function openHunterPetSheet(petId) {
 
 document.addEventListener("click", (event) => {
   const openButton = event.target.closest("[data-hunter-pet-open]");
-  if (openButton) { openHunterPetSheet(openButton.dataset.hunterPetOpen); return; }
-  if (event.target.closest(".hunter-pet-sheet-close") || (event.target.classList.contains("hunter-pet-sheet-backdrop"))) { closeHunterPetSheet(); return; }
+  if (openButton) {
+    openHunterPetSheet(openButton.dataset.hunterPetOpen);
+    return;
+  }
+  if (
+    event.target.closest(".hunter-pet-sheet-close") ||
+    event.target.classList.contains("hunter-pet-sheet-backdrop")
+  ) {
+    closeHunterPetSheet();
+    return;
+  }
   const filterButton = event.target.closest(".hunter-bestiary-filter");
   if (!filterButton) return;
   const category = filterButton.closest(".hunter-bestiary-category");
   if (!category) return;
   const filter = filterButton.dataset.hunterFilter || "all";
-  category.querySelectorAll(".hunter-bestiary-filter").forEach((button) => button.classList.toggle("is-active", button === filterButton));
-  category.querySelectorAll(".hunter-bestiary-card").forEach((card) => { card.hidden = filter !== "all" && card.dataset.hunterPetStatus !== filter; });
+  category
+    .querySelectorAll(".hunter-bestiary-filter")
+    .forEach((button) =>
+      button.classList.toggle("is-active", button === filterButton),
+    );
+  category.querySelectorAll(".hunter-bestiary-card").forEach((card) => {
+    card.hidden = filter !== "all" && card.dataset.hunterPetStatus !== filter;
+  });
 });
 
 function getQuestCatalogRegion(continentName, regionName) {
@@ -4373,12 +5505,20 @@ function buildQuestCatalogSelection(regionCatalog, activeIds, completedIds) {
   const target = raw.length;
   if (!target || !raw.length) return raw.slice();
 
-  const byId = new Map(raw.map((quest) => [Number(quest.id || 0), quest]).filter(([id]) => id));
+  const byId = new Map(
+    raw.map((quest) => [Number(quest.id || 0), quest]).filter(([id]) => id),
+  );
   const selected = [];
   const selectedIds = new Set();
   const pushId = (id) => {
     id = Number(id || 0);
-    if (!id || selectedIds.has(id) || !byId.has(id) || selected.length >= target) return;
+    if (
+      !id ||
+      selectedIds.has(id) ||
+      !byId.has(id) ||
+      selected.length >= target
+    )
+      return;
     selectedIds.add(id);
     selected.push(byId.get(id));
   };
@@ -4405,13 +5545,18 @@ async function loadQuestWorldCatalog() {
   if (questsState.worldCatalog) return questsState.worldCatalog;
   if (questsState.worldCatalogPromise) return questsState.worldCatalogPromise;
 
-  questsState.worldCatalogPromise = fetch("/data/quests/world-catalog.json", { cache: "no-store" })
+  questsState.worldCatalogPromise = fetch("/data/quests/world-catalog.json", {
+    cache: "no-store",
+  })
     .then((response) => {
       if (!response.ok) throw new Error("Catalogue mondial indisponible.");
       return response.json();
     })
     .then((payload) => {
-      questsState.worldCatalog = payload && Array.isArray(payload.continents) ? payload : { continents: [] };
+      questsState.worldCatalog =
+        payload && Array.isArray(payload.continents)
+          ? payload
+          : { continents: [] };
       return questsState.worldCatalog;
     })
     .catch((error) => {
@@ -4434,7 +5579,9 @@ function normalizeQuestWorldKey(value) {
 }
 
 function buildQuestWorldLookup() {
-  const continents = Array.isArray(questsState.worldCatalog?.continents) ? questsState.worldCatalog.continents : [];
+  const continents = Array.isArray(questsState.worldCatalog?.continents)
+    ? questsState.worldCatalog.continents
+    : [];
   const continentByAlias = new Map();
   const regionByAlias = new Map();
 
@@ -4457,8 +5604,16 @@ function getWorldCatalogRegionMeta(continentName, regionName) {
   const lookup = buildQuestWorldLookup();
   const direct = lookup.regionByAlias.get(normalizeQuestWorldKey(regionName));
   if (direct) return direct.region;
-  const continent = lookup.continentByAlias.get(normalizeQuestWorldKey(continentName));
-  return continent?.regions?.find((region) => normalizeQuestWorldKey(region.name) === normalizeQuestWorldKey(regionName)) || null;
+  const continent = lookup.continentByAlias.get(
+    normalizeQuestWorldKey(continentName),
+  );
+  return (
+    continent?.regions?.find(
+      (region) =>
+        normalizeQuestWorldKey(region.name) ===
+        normalizeQuestWorldKey(regionName),
+    ) || null
+  );
 }
 
 function normalizeWorldLabel(value, fallback) {
@@ -4482,13 +5637,20 @@ function getCurrentQuestWorldLocation() {
   for (const label of candidates) {
     const match = lookup.regionByAlias.get(normalizeQuestWorldKey(label));
     if (match) {
-      return { continent: match.continent.name, region: match.region.name, labels: candidates };
+      return {
+        continent: match.continent.name,
+        region: match.region.name,
+        labels: candidates,
+      };
     }
   }
 
   for (const label of candidates) {
-    const continent = lookup.continentByAlias.get(normalizeQuestWorldKey(label));
-    if (continent) return { continent: continent.name, region: "", labels: candidates };
+    const continent = lookup.continentByAlias.get(
+      normalizeQuestWorldKey(label),
+    );
+    if (continent)
+      return { continent: continent.name, region: "", labels: candidates };
   }
 
   return { continent: "", region: candidates[0] || "", labels: candidates };
@@ -4504,25 +5666,35 @@ function questWorldStatus(quest, activeIds, completedIds) {
 function buildQuestWorldModel(character) {
   const active = [...(character?.active || [])];
   const history = [...(character?.completedHistory || [])];
-  const activeIds = new Set(active.map((quest) => Number(quest.id || 0)).filter(Boolean));
-  const completedIds = new Set(history.map((quest) => Number(quest.id || 0)).filter(Boolean));
+  const activeIds = new Set(
+    active.map((quest) => Number(quest.id || 0)).filter(Boolean),
+  );
+  const completedIds = new Set(
+    history.map((quest) => Number(quest.id || 0)).filter(Boolean),
+  );
   const byId = new Map();
   const knownById = new Map();
-  getQuestCatalogEntries().forEach((quest) => knownById.set(Number(quest.id), quest));
+  getQuestCatalogEntries().forEach((quest) =>
+    knownById.set(Number(quest.id), quest),
+  );
   history.forEach((quest) => {
     const id = Number(quest.id || 0);
-    if (id) knownById.set(id, mergeQuestKnowledge(quest, knownById.get(id) || {}));
+    if (id)
+      knownById.set(id, mergeQuestKnowledge(quest, knownById.get(id) || {}));
   });
   active.forEach((quest) => {
     const id = Number(quest.id || 0);
-    if (id) knownById.set(id, mergeQuestKnowledge(quest, knownById.get(id) || {}));
+    if (id)
+      knownById.set(id, mergeQuestKnowledge(quest, knownById.get(id) || {}));
   });
   const worldLookup = buildQuestWorldLookup();
   const continents = new Map();
   const continentMeta = new Map();
   const regionMeta = new Map();
 
-  const worldContinents = Array.isArray(questsState.worldCatalog?.continents) ? questsState.worldCatalog.continents : [];
+  const worldContinents = Array.isArray(questsState.worldCatalog?.continents)
+    ? questsState.worldCatalog.continents
+    : [];
   worldContinents
     .slice()
     .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
@@ -4542,7 +5714,9 @@ function buildQuestWorldModel(character) {
   const catalogRegionIndex = new Map();
   const catalogRegions = questsState.questCatalog?.regions || {};
   Object.values(catalogRegions).forEach((regionCatalog) => {
-    const rawCatalogQuests = Array.isArray(regionCatalog?.quests) ? regionCatalog.quests : [];
+    const rawCatalogQuests = Array.isArray(regionCatalog?.quests)
+      ? regionCatalog.quests
+      : [];
     rawCatalogQuests.forEach((quest) => {
       const id = Number(quest.id || 0);
       if (!id) return;
@@ -4553,23 +5727,30 @@ function buildQuestWorldModel(character) {
       });
     });
 
-    const selectedCatalogQuests = buildQuestCatalogSelection(regionCatalog, activeIds, completedIds);
+    const selectedCatalogQuests = buildQuestCatalogSelection(
+      regionCatalog,
+      activeIds,
+      completedIds,
+    );
     selectedCatalogQuests.forEach((quest) => {
       const id = Number(quest.id || 0);
       if (!id) return;
       const existing = knownById.get(id) || {};
       const catalogKey = `catalog:${regionCatalog.continentName}:${regionCatalog.regionName}:${id}`;
-      byId.set(catalogKey, mergeQuestKnowledge(existing, {
-        ...quest,
-        id,
-        title: existing.title || quest.title || `Quête #${id}`,
-        continentName: regionCatalog.continentName,
-        regionName: regionCatalog.regionName,
-        mapID: regionCatalog.mapID,
-        mapName: regionCatalog.regionName,
-        catalogEntry: true,
-        catalogTitlePending: !existing.title && !quest.title,
-      }));
+      byId.set(
+        catalogKey,
+        mergeQuestKnowledge(existing, {
+          ...quest,
+          id,
+          title: existing.title || quest.title || `Quête #${id}`,
+          continentName: regionCatalog.continentName,
+          regionName: regionCatalog.regionName,
+          mapID: regionCatalog.mapID,
+          mapName: regionCatalog.regionName,
+          catalogEntry: true,
+          catalogTitlePending: !existing.title && !quest.title,
+        }),
+      );
     });
   });
 
@@ -4581,7 +5762,8 @@ function buildQuestWorldModel(character) {
   [...byId.values()].forEach((quest) => {
     const catalogLocation = catalogRegionIndex.get(Number(quest.id || 0));
     if (catalogLocation && !quest.catalogEntry) {
-      quest.continentName = catalogLocation.continentName || quest.continentName;
+      quest.continentName =
+        catalogLocation.continentName || quest.continentName;
       quest.regionName = catalogLocation.regionName || quest.regionName;
       quest.mapID = catalogLocation.mapID || quest.mapID;
       quest.mapName = catalogLocation.regionName || quest.mapName;
@@ -4598,12 +5780,21 @@ function buildQuestWorldModel(character) {
       ),
       "Historique non classé",
     );
-    const matchedRegion = worldLookup.regionByAlias.get(normalizeQuestWorldKey(rawRegion));
-    const rawContinent = firstUsefulValue(quest.continentName, quest.continent, quest.worldName);
-    const matchedContinent = worldLookup.continentByAlias.get(normalizeQuestWorldKey(rawContinent));
-    const continent = matchedRegion?.continent?.name
-      || matchedContinent?.name
-      || normalizeWorldLabel(rawContinent, "Azeroth");
+    const matchedRegion = worldLookup.regionByAlias.get(
+      normalizeQuestWorldKey(rawRegion),
+    );
+    const rawContinent = firstUsefulValue(
+      quest.continentName,
+      quest.continent,
+      quest.worldName,
+    );
+    const matchedContinent = worldLookup.continentByAlias.get(
+      normalizeQuestWorldKey(rawContinent),
+    );
+    const continent =
+      matchedRegion?.continent?.name ||
+      matchedContinent?.name ||
+      normalizeWorldLabel(rawContinent, "Azeroth");
     const region = matchedRegion?.region?.name || rawRegion;
     const status = questWorldStatus(quest, activeIds, completedIds);
     quest.worldStatus = status;
@@ -4612,27 +5803,53 @@ function buildQuestWorldModel(character) {
 
     if (!continents.has(continent)) {
       continents.set(continent, new Map());
-      continentMeta.set(continent, { name: continent, order: 999, image: "/assets/home-hero-azeroth-sharp.jpg", expansion: "Découvert par le Collector" });
+      continentMeta.set(continent, {
+        name: continent,
+        order: 999,
+        image: "/assets/home-hero-azeroth-sharp.jpg",
+        expansion: "Découvert par le Collector",
+      });
     }
     const regions = continents.get(continent);
     if (!regions.has(region)) {
       regions.set(region, []);
-      regionMeta.set(`${continent}::${region}`, { name: region, order: 999, image: getQuestRegionImage([quest]), catalogQuestCount: 0, discovered: true });
+      regionMeta.set(`${continent}::${region}`, {
+        name: region,
+        order: 999,
+        image: getQuestRegionImage([quest]),
+        catalogQuestCount: 0,
+        discovered: true,
+      });
     }
     regions.get(region).push(quest);
   });
 
   const currentLocation = getCurrentQuestWorldLocation();
-  return { continents, active, history, activeIds, completedIds, continentMeta, regionMeta, currentLocation };
+  return {
+    continents,
+    active,
+    history,
+    activeIds,
+    completedIds,
+    continentMeta,
+    regionMeta,
+    currentLocation,
+  };
 }
 
 function getRegionStats(quests = [], regionMeta = null) {
   const knownTotal = quests.length;
   const catalogTotal = Math.max(0, Number(regionMeta?.catalogQuestCount || 0));
   const total = Math.max(knownTotal, catalogTotal);
-  const completed = quests.filter((quest) => quest.worldStatus === "completed").length;
-  const active = quests.filter((quest) => quest.worldStatus === "active").length;
-  const detailedTodo = quests.filter((quest) => quest.worldStatus === "todo").length;
+  const completed = quests.filter(
+    (quest) => quest.worldStatus === "completed",
+  ).length;
+  const active = quests.filter(
+    (quest) => quest.worldStatus === "active",
+  ).length;
+  const detailedTodo = quests.filter(
+    (quest) => quest.worldStatus === "todo",
+  ).length;
   const todo = Math.max(detailedTodo, total - completed - active);
   const percent = total ? Math.round((completed / total) * 100) : 0;
   return { total, knownTotal, catalogTotal, completed, active, todo, percent };
@@ -4640,8 +5857,12 @@ function getRegionStats(quests = [], regionMeta = null) {
 
 function getContinentStats(regions, model, continentName) {
   const allQuests = [...regions.values()].flat();
-  const completed = allQuests.filter((quest) => quest.worldStatus === "completed").length;
-  const active = allQuests.filter((quest) => quest.worldStatus === "active").length;
+  const completed = allQuests.filter(
+    (quest) => quest.worldStatus === "completed",
+  ).length;
+  const active = allQuests.filter(
+    (quest) => quest.worldStatus === "active",
+  ).length;
   let total = 0;
   regions.forEach((quests, regionName) => {
     const meta = model.regionMeta?.get(`${continentName}::${regionName}`);
@@ -4669,19 +5890,42 @@ function getQuestContinentArt(meta = null) {
 }
 
 function getQuestRegionFallbackImage(quests = [], meta = null) {
-  const sample = quests.find((quest) => quest.regionImage || quest.image || quest.mediaUrl);
-  return firstUsefulValue(sample?.regionImage, sample?.image, sample?.mediaUrl, meta?.image, "/assets/home-hero-azeroth-sharp.jpg");
+  const sample = quests.find(
+    (quest) => quest.regionImage || quest.image || quest.mediaUrl,
+  );
+  return firstUsefulValue(
+    sample?.regionImage,
+    sample?.image,
+    sample?.mediaUrl,
+    meta?.image,
+    "/assets/home-hero-azeroth-sharp.jpg",
+  );
 }
 
 function getQuestRegionMapID(quests = [], meta = null) {
-  const sample = quests.find((quest) => Number(quest.mapID || quest.uiMapID || 0));
+  const sample = quests.find((quest) =>
+    Number(quest.mapID || quest.uiMapID || 0),
+  );
   // The world catalog is authoritative for a continent/region illustration.
   // Using a quest first made Kalimdor show that quest's zone instead of map 12.
-  return Number(firstUsefulValue(meta?.mapID, meta?.uiMapID, sample?.mapID, sample?.uiMapID, 0)) || 0;
+  return (
+    Number(
+      firstUsefulValue(
+        meta?.mapID,
+        meta?.uiMapID,
+        sample?.mapID,
+        sample?.uiMapID,
+        0,
+      ),
+    ) || 0
+  );
 }
 
 function getQuestRegionImage(quests = [], meta = null) {
-  return firstUsefulValue(getQuestMapArtUrl(getQuestRegionMapID(quests, meta)), getQuestRegionFallbackImage(quests, meta));
+  return firstUsefulValue(
+    getQuestMapArtUrl(getQuestRegionMapID(quests, meta)),
+    getQuestRegionFallbackImage(quests, meta),
+  );
 }
 
 function renderQuestWorldNavigation(model) {
@@ -4697,36 +5941,50 @@ function renderQuestWorldNavigation(model) {
     if (b === currentContinent && a !== currentContinent) return 1;
     const ma = model.continentMeta?.get(a);
     const mb = model.continentMeta?.get(b);
-    return (Number(ma?.order || 999) - Number(mb?.order || 999)) || a.localeCompare(b, "fr");
+    return (
+      Number(ma?.order || 999) - Number(mb?.order || 999) ||
+      a.localeCompare(b, "fr")
+    );
   });
   if (!continentNames.length) {
     continentNav.innerHTML = "";
-    regionsGrid.innerHTML = '<div class="quest-empty"><strong>Aucune région connue</strong><br><small>Le Collector et le catalogue Azer Companion alimenteront cette carte.</small></div>';
+    regionsGrid.innerHTML =
+      '<div class="quest-empty"><strong>Aucune région connue</strong><br><small>Le Collector et le catalogue Azer Companion alimenteront cette carte.</small></div>';
     return;
   }
 
-  if (!questsState.selectedContinent || !model.continents.has(questsState.selectedContinent)) {
-    questsState.selectedContinent = currentContinent && model.continents.has(currentContinent)
-      ? currentContinent
-      : continentNames[0];
+  if (
+    !questsState.selectedContinent ||
+    !model.continents.has(questsState.selectedContinent)
+  ) {
+    questsState.selectedContinent =
+      currentContinent && model.continents.has(currentContinent)
+        ? currentContinent
+        : continentNames[0];
     questsState.selectedRegion = "";
   }
 
-  continentNav.innerHTML = continentNames.map((name) => {
-    const regions = model.continents.get(name);
-    const allQuests = [...regions.values()].flat();
-    const stats = getContinentStats(regions, model, name);
-    const meta = model.continentMeta?.get(name);
-    const image = firstUsefulValue(getQuestContinentArt(meta), getQuestRegionImage(allQuests, meta));
-    const regionCount = regions.size;
-    const fallbackImage = getQuestRegionFallbackImage(allQuests, meta);
-    return `<button type="button" class="quest-continent-tab ${name === questsState.selectedContinent ? "is-active" : ""}" data-quest-continent="${escapeHtml(name)}" aria-pressed="${name === questsState.selectedContinent}" style="--quest-card-image:url('${escapeHtml(image)}');--quest-card-fallback-image:url('${escapeHtml(fallbackImage)}')">
+  continentNav.innerHTML = continentNames
+    .map((name) => {
+      const regions = model.continents.get(name);
+      const allQuests = [...regions.values()].flat();
+      const stats = getContinentStats(regions, model, name);
+      const meta = model.continentMeta?.get(name);
+      const image = firstUsefulValue(
+        getQuestContinentArt(meta),
+        getQuestRegionImage(allQuests, meta),
+      );
+      const regionCount = regions.size;
+      const fallbackImage = getQuestRegionFallbackImage(allQuests, meta);
+      return `<button type="button" class="quest-continent-tab ${name === questsState.selectedContinent ? "is-active" : ""}" data-quest-continent="${escapeHtml(name)}" aria-pressed="${name === questsState.selectedContinent}" style="--quest-card-image:url('${escapeHtml(image)}');--quest-card-fallback-image:url('${escapeHtml(fallbackImage)}')">
       <span class="quest-nav-art" aria-hidden="true"></span>
       <span class="quest-nav-copy"><strong>${escapeHtml(name)}</strong><small>${stats.completed} / ${stats.total} (${stats.percent}%)</small><em>${regionCount} régions · ${escapeHtml(meta?.expansion || "")}</em></span>
     </button>`;
-  }).join("");
+    })
+    .join("");
 
-  const selectedRegions = model.continents.get(questsState.selectedContinent) || new Map();
+  const selectedRegions =
+    model.continents.get(questsState.selectedContinent) || new Map();
   const regionEntries = [...selectedRegions.entries()].sort(([a], [b]) => {
     if (questsState.selectedContinent === currentContinent) {
       if (a === currentRegion && b !== currentRegion) return -1;
@@ -4734,30 +5992,48 @@ function renderQuestWorldNavigation(model) {
     }
     const ma = model.regionMeta?.get(`${questsState.selectedContinent}::${a}`);
     const mb = model.regionMeta?.get(`${questsState.selectedContinent}::${b}`);
-    return (Number(ma?.order || 999) - Number(mb?.order || 999)) || a.localeCompare(b, "fr");
+    return (
+      Number(ma?.order || 999) - Number(mb?.order || 999) ||
+      a.localeCompare(b, "fr")
+    );
   });
-  if (!questsState.selectedRegion || !selectedRegions.has(questsState.selectedRegion)) {
-    const currentExists = questsState.selectedContinent === currentContinent && currentRegion && selectedRegions.has(currentRegion);
+  if (
+    !questsState.selectedRegion ||
+    !selectedRegions.has(questsState.selectedRegion)
+  ) {
+    const currentExists =
+      questsState.selectedContinent === currentContinent &&
+      currentRegion &&
+      selectedRegions.has(currentRegion);
     const withQuests = regionEntries.find(([, quests]) => quests.length > 0);
-    questsState.selectedRegion = currentExists ? currentRegion : (withQuests?.[0] || regionEntries[0]?.[0] || "");
+    questsState.selectedRegion = currentExists
+      ? currentRegion
+      : withQuests?.[0] || regionEntries[0]?.[0] || "";
   }
-  if (regionColumnTitle) regionColumnTitle.textContent = `RÉGIONS · ${questsState.selectedContinent}`;
+  if (regionColumnTitle)
+    regionColumnTitle.textContent = `RÉGIONS · ${questsState.selectedContinent}`;
 
-  regionsGrid.innerHTML = regionEntries.map(([name, quests]) => {
-    const meta = model.regionMeta?.get(`${questsState.selectedContinent}::${name}`);
-    const stats = getRegionStats(quests, meta);
-    const image = getQuestRegionImage(quests, meta);
-    const emptyClass = stats.total === 0 ? "is-catalog-empty" : "";
-    const isCurrentRegion = questsState.selectedContinent === currentContinent && name === currentRegion;
-    const fallbackImage = getQuestRegionFallbackImage(quests, meta);
-    return `<button class="quest-region-card ${name === questsState.selectedRegion ? "is-selected" : ""} ${isCurrentRegion ? "is-current" : ""} ${emptyClass}" type="button" data-quest-region="${escapeHtml(name)}" aria-pressed="${name === questsState.selectedRegion}" style="--quest-region-image:url('${escapeHtml(image)}');--quest-region-fallback-image:url('${escapeHtml(fallbackImage)}')">
+  regionsGrid.innerHTML = regionEntries
+    .map(([name, quests]) => {
+      const meta = model.regionMeta?.get(
+        `${questsState.selectedContinent}::${name}`,
+      );
+      const stats = getRegionStats(quests, meta);
+      const image = getQuestRegionImage(quests, meta);
+      const emptyClass = stats.total === 0 ? "is-catalog-empty" : "";
+      const isCurrentRegion =
+        questsState.selectedContinent === currentContinent &&
+        name === currentRegion;
+      const fallbackImage = getQuestRegionFallbackImage(quests, meta);
+      return `<button class="quest-region-card ${name === questsState.selectedRegion ? "is-selected" : ""} ${isCurrentRegion ? "is-current" : ""} ${emptyClass}" type="button" data-quest-region="${escapeHtml(name)}" aria-pressed="${name === questsState.selectedRegion}" style="--quest-region-image:url('${escapeHtml(image)}');--quest-region-fallback-image:url('${escapeHtml(fallbackImage)}')">
       <span class="quest-region-thumb" aria-hidden="true"></span>
       <span class="quest-region-content">
         <strong>${escapeHtml(name)}</strong>
         <small>${stats.total ? `${stats.completed} / ${stats.total} (${stats.percent}%)` : "Catalogue à alimenter"}</small>
       </span>
     </button>`;
-  }).join("");
+    })
+    .join("");
 
   continentNav.querySelectorAll("[data-quest-continent]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -4790,26 +6066,49 @@ function renderRegionQuestList(model, character, isAccountView) {
   }
 
   detail.hidden = false;
-  const regionMeta = model.regionMeta?.get(`${questsState.selectedContinent}::${questsState.selectedRegion}`);
+  const regionMeta = model.regionMeta?.get(
+    `${questsState.selectedContinent}::${questsState.selectedRegion}`,
+  );
   const stats = getRegionStats(quests, regionMeta);
   const hero = document.getElementById("questsRegionHero");
   if (hero) {
-    hero.style.setProperty("--quest-region-hero-image", `url('${getQuestRegionImage(quests, regionMeta)}')`);
-    hero.style.setProperty("--quest-region-hero-fallback-image", `url('${getQuestRegionFallbackImage(quests, regionMeta)}')`);
+    hero.style.setProperty(
+      "--quest-region-hero-image",
+      `url('${getQuestRegionImage(quests, regionMeta)}')`,
+    );
+    hero.style.setProperty(
+      "--quest-region-hero-fallback-image",
+      `url('${getQuestRegionFallbackImage(quests, regionMeta)}')`,
+    );
   }
-  document.getElementById("questsRegionTitle").textContent = questsState.selectedRegion;
-  document.getElementById("questsRegionSubtitle").textContent = questsState.selectedContinent;
-  document.getElementById("questsRegionPercent").textContent = `${stats.percent}%`;
-  document.getElementById("questsRegionProgressBar").style.width = `${stats.percent}%`;
-  document.getElementById("questsRegionProgressText").textContent = `${stats.completed} terminées · ${stats.active} en cours · ${stats.todo} à faire`;
-  document.getElementById("questsRegionCompletedText").textContent = `${stats.completed} / ${stats.total} quêtes terminées`;
-  document.getElementById("questsFilterAllCount").textContent = String(stats.total);
-  document.getElementById("questsFilterActiveCount").textContent = String(stats.active);
-  document.getElementById("questsFilterCompletedCount").textContent = String(stats.completed);
-  document.getElementById("questsFilterTodoCount").textContent = String(stats.todo);
+  document.getElementById("questsRegionTitle").textContent =
+    questsState.selectedRegion;
+  document.getElementById("questsRegionSubtitle").textContent =
+    questsState.selectedContinent;
+  document.getElementById("questsRegionPercent").textContent =
+    `${stats.percent}%`;
+  document.getElementById("questsRegionProgressBar").style.width =
+    `${stats.percent}%`;
+  document.getElementById("questsRegionProgressText").textContent =
+    `${stats.completed} terminées · ${stats.active} en cours · ${stats.todo} à faire`;
+  document.getElementById("questsRegionCompletedText").textContent =
+    `${stats.completed} / ${stats.total} quêtes terminées`;
+  document.getElementById("questsFilterAllCount").textContent = String(
+    stats.total,
+  );
+  document.getElementById("questsFilterActiveCount").textContent = String(
+    stats.active,
+  );
+  document.getElementById("questsFilterCompletedCount").textContent = String(
+    stats.completed,
+  );
+  document.getElementById("questsFilterTodoCount").textContent = String(
+    stats.todo,
+  );
 
   detail.querySelectorAll("[data-quest-status-filter]").forEach((button) => {
-    const isActive = button.dataset.questStatusFilter === questsState.statusFilter;
+    const isActive =
+      button.dataset.questStatusFilter === questsState.statusFilter;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
     button.onclick = () => {
@@ -4819,28 +6118,55 @@ function renderRegionQuestList(model, character, isAccountView) {
   });
 
   const visible = quests
-    .filter((quest) => questsState.statusFilter === "all" || quest.worldStatus === questsState.statusFilter)
+    .filter(
+      (quest) =>
+        questsState.statusFilter === "all" ||
+        quest.worldStatus === questsState.statusFilter,
+    )
     .sort((a, b) => {
       const rank = { active: 0, completed: 1, todo: 2 };
-      return (rank[a.worldStatus] - rank[b.worldStatus]) || String(a.title || "").localeCompare(String(b.title || ""), "fr");
+      return (
+        rank[a.worldStatus] - rank[b.worldStatus] ||
+        String(a.title || "").localeCompare(String(b.title || ""), "fr")
+      );
     });
 
-  document.getElementById("questsListCount").textContent = `Quêtes (${visible.length})`;
+  document.getElementById("questsListCount").textContent =
+    `Quêtes (${visible.length})`;
   let firstDetailKey = "";
-  grid.innerHTML = visible.length ? visible.map((quest, index) => {
-    const id = Number(quest.id || 0);
-    const status = quest.worldStatus;
-    const statusLabel = status === "completed" ? "Terminée" : status === "active" ? "En cours" : "À faire";
-    const detailKey = `world:${id}:${index}`;
-    if (!firstDetailKey) firstDetailKey = detailKey;
-    questsState.detailIndex.set(detailKey, { quest, title: quest.title || `Quête #${id}`, ids: id ? [id] : [], mapName: quest.mapName || questsState.selectedRegion, isAccountView });
-    const objectives = Array.isArray(quest.objectives) ? quest.objectives : [];
-    const objective = quest.catalogTitlePending
-      ? `QuestID ${id} · fiche Blizzard à enrichir`
-      : (quest.objectiveText || objectives[0]?.text || quest.description || "Détails disponibles au clic.");
-    const level = Number(quest.level || 0);
-    const stateMark = status === "completed" ? "✓" : status === "active" ? "!" : "!";
-    return `<article class="quest-world-row is-${status}" data-quest-detail-key="${escapeHtml(detailKey)}" tabindex="0" role="button">
+  grid.innerHTML = visible.length
+    ? visible
+        .map((quest, index) => {
+          const id = Number(quest.id || 0);
+          const status = quest.worldStatus;
+          const statusLabel =
+            status === "completed"
+              ? "Terminée"
+              : status === "active"
+                ? "En cours"
+                : "À faire";
+          const detailKey = `world:${id}:${index}`;
+          if (!firstDetailKey) firstDetailKey = detailKey;
+          questsState.detailIndex.set(detailKey, {
+            quest,
+            title: quest.title || `Quête #${id}`,
+            ids: id ? [id] : [],
+            mapName: quest.mapName || questsState.selectedRegion,
+            isAccountView,
+          });
+          const objectives = Array.isArray(quest.objectives)
+            ? quest.objectives
+            : [];
+          const objective = quest.catalogTitlePending
+            ? `QuestID ${id} · fiche Blizzard à enrichir`
+            : quest.objectiveText ||
+              objectives[0]?.text ||
+              quest.description ||
+              "Détails disponibles au clic.";
+          const level = Number(quest.level || 0);
+          const stateMark =
+            status === "completed" ? "✓" : status === "active" ? "!" : "!";
+          return `<article class="quest-world-row is-${status}" data-quest-detail-key="${escapeHtml(detailKey)}" tabindex="0" role="button">
       <span class="quest-world-state" aria-hidden="true"><i>${stateMark}</i></span>
       <span class="quest-world-copy">
         <span class="quest-world-title-line"><strong>${escapeHtml(quest.title || `Quête #${id}`)}</strong><small class="quest-world-status-label">${escapeHtml(statusLabel)}</small></span>
@@ -4849,10 +6175,13 @@ function renderRegionQuestList(model, character, isAccountView) {
       <span class="quest-world-meta"><b>${level > 0 ? `Niveau ${level}` : ""}</b><small>${escapeHtml(getQuestTypeLabel(quest, isAccountView))}</small></span>
       <span class="quest-world-arrow" aria-hidden="true">›</span>
     </article>`;
-  }).join("") : `<div class="quest-empty quest-catalog-empty"><strong>${stats.total ? "Catalogue détaillé en cours d’enrichissement" : "Région prête dans le catalogue"}</strong><br><small>${stats.total ? `${stats.total} quêtes sont connues pour cette région. Les fiches individuelles apparaîtront à mesure que leurs questID seront enrichis.` : "Cette région est maintenant connue d’Azer Companion. Les quêtes apparaîtront automatiquement dès qu’elles seront importées dans le Quest Catalog Engine."}</small></div>`;
+        })
+        .join("")
+    : `<div class="quest-empty quest-catalog-empty"><strong>${stats.total ? "Catalogue détaillé en cours d’enrichissement" : "Région prête dans le catalogue"}</strong><br><small>${stats.total ? `${stats.total} quêtes sont connues pour cette région. Les fiches individuelles apparaîtront à mesure que leurs questID seront enrichis.` : "Cette région est maintenant connue d’Azer Companion. Les quêtes apparaîtront automatiquement dès qu’elles seront importées dans le Quest Catalog Engine."}</small></div>`;
 
   bindQuestDetailsTriggers(grid);
-  if (firstDetailKey) requestAnimationFrame(() => openQuestDetails(firstDetailKey));
+  if (firstDetailKey)
+    requestAnimationFrame(() => openQuestDetails(firstDetailKey));
 }
 
 function renderQuestsView() {
@@ -4862,7 +6191,9 @@ function renderQuestsView() {
   // V9: le Journal du Collector est retire de la vue Quetes.
   // On garde completedList optionnel pour compatibilite avec un ancien carnet.ejs.
   if (completedList) {
-    const legacyJournal = completedList.closest(".quest-recent-completions") || completedList.parentElement;
+    const legacyJournal =
+      completedList.closest(".quest-recent-completions") ||
+      completedList.parentElement;
     if (legacyJournal) legacyJournal.hidden = true;
   }
 
@@ -4872,7 +6203,8 @@ function renderQuestsView() {
   questsState.detailIndex = new Map();
 
   if (!character) {
-    grid.innerHTML = '<div class="quest-empty"><strong>Aucune donnée de quête</strong><br><small>Lance /azer scan dans WoW, puis /reload.</small></div>';
+    grid.innerHTML =
+      '<div class="quest-empty"><strong>Aucune donnée de quête</strong><br><small>Lance /azer scan dans WoW, puis /reload.</small></div>';
     if (completedList) completedList.innerHTML = "";
     return;
   }
@@ -4880,20 +6212,40 @@ function renderQuestsView() {
   const model = buildQuestWorldModel(character);
   const groupedHistory = groupQuestHistoryByTitle(model.history);
   const remainingObjectives = model.active.reduce(
-    (total, quest) => total + (quest.objectives || []).filter((objective) => !objective.finished).length,
+    (total, quest) =>
+      total +
+      (quest.objectives || []).filter((objective) => !objective.finished)
+        .length,
     0,
   );
-  const catalogIds = new Set(getQuestCatalogEntries().map((quest) => Number(quest.id || 0)).filter(Boolean));
-  const todoKnown = [...catalogIds].filter((id) => !model.activeIds.has(id) && !model.completedIds.has(id)).length;
+  const catalogIds = new Set(
+    getQuestCatalogEntries()
+      .map((quest) => Number(quest.id || 0))
+      .filter(Boolean),
+  );
+  const todoKnown = [...catalogIds].filter(
+    (id) => !model.activeIds.has(id) && !model.completedIds.has(id),
+  ).length;
 
-  document.getElementById("questsActiveCount").textContent = String(model.active.length);
-  document.getElementById("questsObjectivesCount").textContent = String(remainingObjectives);
-  document.getElementById("questsCompletedCount").textContent = String(groupedHistory.length);
-  document.getElementById("questsAccountSharedCount").textContent = String(todoKnown);
-  document.getElementById("questsActiveLabel").textContent = isAccountView ? "Quêtes actives du compte" : "Quêtes en cours";
-  document.getElementById("questsObjectivesLabel").textContent = "Objectifs à terminer";
-  document.getElementById("questsCompletedLabel").textContent = "Quêtes terminées connues";
-  document.getElementById("questsAccountSharedLabel").textContent = "Quêtes à faire cataloguées";
+  document.getElementById("questsActiveCount").textContent = String(
+    model.active.length,
+  );
+  document.getElementById("questsObjectivesCount").textContent =
+    String(remainingObjectives);
+  document.getElementById("questsCompletedCount").textContent = String(
+    groupedHistory.length,
+  );
+  document.getElementById("questsAccountSharedCount").textContent =
+    String(todoKnown);
+  document.getElementById("questsActiveLabel").textContent = isAccountView
+    ? "Quêtes actives du compte"
+    : "Quêtes en cours";
+  document.getElementById("questsObjectivesLabel").textContent =
+    "Objectifs à terminer";
+  document.getElementById("questsCompletedLabel").textContent =
+    "Quêtes terminées connues";
+  document.getElementById("questsAccountSharedLabel").textContent =
+    "Quêtes à faire cataloguées";
 
   renderClassQuests(character, model);
   renderQuestWorldNavigation(model);
@@ -4917,18 +6269,31 @@ async function loadQuests(force = false) {
 
   questsState.loading = true;
   const grid = document.getElementById("questsGrid");
-  if (grid) grid.innerHTML = '<div class="quest-empty">Chargement des quêtes...</div>';
+  if (grid)
+    grid.innerHTML = '<div class="quest-empty">Chargement des quêtes...</div>';
 
   try {
-    const response = await fetch(`/api/quests?ts=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(`/api/quests?ts=${Date.now()}`, {
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Quêtes indisponibles.");
     questsState.payload = await response.json();
-    await Promise.all([loadQuestDatabase(), loadQuestWorldCatalog(), loadQuestCatalog(), loadClassQuests(), loadHunterSpecialPets(), loadHunterHybridRoadmap(), loadHunterTamingRoadmaps()]);
+    await Promise.all([
+      loadQuestDatabase(),
+      loadQuestWorldCatalog(),
+      loadQuestCatalog(),
+      loadClassQuests(),
+      loadHunterSpecialPets(),
+      loadHunterHybridRoadmap(),
+      loadHunterTamingRoadmaps(),
+    ]);
     questsState.loaded = true;
     renderQuestsView();
   } catch (error) {
     console.warn(error.message || error);
-    if (grid) grid.innerHTML = '<div class="quest-empty"><strong>Impossible de lire les quêtes</strong><br><small>Vérifie le SavedVariables et relance la synchronisation.</small></div>';
+    if (grid)
+      grid.innerHTML =
+        '<div class="quest-empty"><strong>Impossible de lire les quêtes</strong><br><small>Vérifie le SavedVariables et relance la synchronisation.</small></div>';
   } finally {
     questsState.loading = false;
   }
@@ -4948,7 +6313,9 @@ document.getElementById("questsNav")?.addEventListener("click", (event) => {
   openQuestsView();
 });
 
-document.getElementById("questsRefreshButton")?.addEventListener("click", () => loadQuests(true));
+document
+  .getElementById("questsRefreshButton")
+  ?.addEventListener("click", () => loadQuests(true));
 
 const classQuestsToggle = document.getElementById("classQuestsToggle");
 const classQuestsCategories = document.getElementById("classQuestsCategories");
@@ -4958,13 +6325,18 @@ classQuestsToggle?.addEventListener("click", (event) => {
   const willOpen = classQuestsCategories.hidden;
   classQuestsCategories.hidden = !willOpen;
   classQuestsToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
-  classQuestsToggle.querySelector("span").textContent = willOpen ? "Masquer les déblocages" : "Voir les déblocages";
-  document.getElementById("classQuestsSection")?.classList.toggle("is-open", willOpen);
+  classQuestsToggle.querySelector("span").textContent = willOpen
+    ? "Masquer les déblocages"
+    : "Voir les déblocages";
+  document
+    .getElementById("classQuestsSection")
+    ?.classList.toggle("is-open", willOpen);
 });
 
 document.addEventListener("click", (event) => {
   const section = document.getElementById("classQuestsSection");
-  if (!section?.classList.contains("is-open") || section.contains(event.target)) return;
+  if (!section?.classList.contains("is-open") || section.contains(event.target))
+    return;
   if (classQuestsCategories) classQuestsCategories.hidden = true;
   section.classList.remove("is-open");
   classQuestsToggle?.setAttribute("aria-expanded", "false");
@@ -4978,26 +6350,39 @@ questsCharacterButton?.addEventListener("click", (event) => {
   event.stopPropagation();
   if (!questsCharacterMenu) return;
   questsCharacterMenu.hidden = !questsCharacterMenu.hidden;
-  questsCharacterButton.setAttribute("aria-expanded", questsCharacterMenu.hidden ? "false" : "true");
+  questsCharacterButton.setAttribute(
+    "aria-expanded",
+    questsCharacterMenu.hidden ? "false" : "true",
+  );
 });
 document.addEventListener("click", (event) => {
   const picker = document.getElementById("questsCharacterPicker");
-  if (!picker?.contains(event.target) && questsCharacterMenu && !questsCharacterMenu.hidden) {
+  if (
+    !picker?.contains(event.target) &&
+    questsCharacterMenu &&
+    !questsCharacterMenu.hidden
+  ) {
     questsCharacterMenu.hidden = true;
     questsCharacterButton?.setAttribute("aria-expanded", "false");
   }
 });
 
-document.getElementById("questsCharacterSelect")?.addEventListener("change", (event) => {
-  questsState.selectedKey = event.target.value;
-  questsState.historyPage = 1;
-  questsState.selectedContinent = "";
-  questsState.selectedRegion = "";
-  renderQuestsView();
-});
+document
+  .getElementById("questsCharacterSelect")
+  ?.addEventListener("change", (event) => {
+    questsState.selectedKey = event.target.value;
+    questsState.historyPage = 1;
+    questsState.selectedContinent = "";
+    questsState.selectedRegion = "";
+    renderQuestsView();
+  });
 
-document.getElementById("questDetailsClose")?.addEventListener("click", closeQuestDetails);
-document.getElementById("questDetailsBackdrop")?.addEventListener("click", closeQuestDetails);
+document
+  .getElementById("questDetailsClose")
+  ?.addEventListener("click", closeQuestDetails);
+document
+  .getElementById("questDetailsBackdrop")
+  ?.addEventListener("click", closeQuestDetails);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeQuestDetails();
 });
