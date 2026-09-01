@@ -32,6 +32,7 @@ const charactersBattleNetRouter = require("./routes/charactersBattleNet");
 const activeCharacterRouter = require("./routes/activeCharacter");
 
 const carnetContextRouter = require("./routes/carnetContext");
+const collectorCloudRouter = require("./routes/collectorCloud");
 const { loadActiveCharacter } = require("./middleware/loadActiveCharacter");
 
 const carnetRouter = require("./routes/carnet");
@@ -52,7 +53,10 @@ app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()",
+  );
   next();
 });
 
@@ -108,9 +112,11 @@ app.set("views", path.join(__dirname, "views"));
 // STATIC
 // ============================================================
 
-app.use(express.static(path.join(__dirname, "public"), {
-  maxAge: isProduction() ? "1d" : 0,
-}));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    maxAge: isProduction() ? "1d" : 0,
+  }),
+);
 
 // ============================================================
 // BODY PARSING
@@ -191,35 +197,36 @@ app.use("/api/carnet/context", carnetContextRouter);
 // AZER COMPAGNION
 // ============================================================
 
+app.use("/api/collector-cloud", collectorCloudRouter);
 app.use("/", loadActiveCharacter, carnetRouter);
 
 // ============================================================
 // TEST POSTGRESQL
 // ============================================================
 
-assertDatabaseReady().then(() => {
+assertDatabaseReady()
+  .then(() => {
+    // ============================================================
+    // DEMARRAGE SERVEUR
+    // ============================================================
 
-// ============================================================
-// DEMARRAGE SERVEUR
-// ============================================================
+    const server = app.listen(PORT, (error) => {
+      if (error) {
+        if (error.code === "EADDRINUSE") {
+          console.error(
+            `Le port ${PORT} est déjà utilisé. ` +
+              `Arrête l'ancien serveur ou définis un autre port.`,
+          );
+        } else {
+          console.error("Impossible de démarrer le serveur :", error);
+        }
 
-const server = app.listen(PORT, (error) => {
-  if (error) {
-    if (error.code === "EADDRINUSE") {
-      console.error(
-        `Le port ${PORT} est déjà utilisé. ` +
-          `Arrête l'ancien serveur ou définis un autre port.`,
-      );
-    } else {
-      console.error("Impossible de démarrer le serveur :", error);
-    }
+        process.exitCode = 1;
 
-    process.exitCode = 1;
+        return;
+      }
 
-    return;
-  }
-
-  console.log(`
+      console.log(`
 =========================================
              AZER COMPANION
               par DH Studio
@@ -245,34 +252,37 @@ http://localhost:${PORT}/api/db/health
 
 Que l'aventure continue.
     `);
-});
+    });
 
-// ============================================================
-// ARRET SERVEUR
-// ============================================================
+    // ============================================================
+    // ARRET SERVEUR
+    // ============================================================
 
-server.on("close", () => {
-  console.log("Serveur Azer Companion arrêté.");
-});
+    server.on("close", () => {
+      console.log("Serveur Azer Companion arrêté.");
+    });
 
-let shuttingDown = false;
-async function shutdown(signal) {
-  if (shuttingDown) return;
-  shuttingDown = true;
-  console.log(`${signal}: arrêt propre du serveur...`);
+    let shuttingDown = false;
+    async function shutdown(signal) {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      console.log(`${signal}: arrêt propre du serveur...`);
 
-  const forceExit = setTimeout(() => process.exit(1), 10000);
-  forceExit.unref();
+      const forceExit = setTimeout(() => process.exit(1), 10000);
+      forceExit.unref();
 
-  await new Promise((resolve) => server.close(resolve));
-  await pool.end();
-  clearTimeout(forceExit);
-}
+      await new Promise((resolve) => server.close(resolve));
+      await pool.end();
+      clearTimeout(forceExit);
+    }
 
-process.once("SIGTERM", () => shutdown("SIGTERM").catch(console.error));
-process.once("SIGINT", () => shutdown("SIGINT").catch(console.error));
-}).catch(async (error) => {
-  console.error("Démarrage impossible :", error.message);
-  try { await pool.end(); } catch {}
-  process.exit(1);
-});
+    process.once("SIGTERM", () => shutdown("SIGTERM").catch(console.error));
+    process.once("SIGINT", () => shutdown("SIGINT").catch(console.error));
+  })
+  .catch(async (error) => {
+    console.error("Démarrage impossible :", error.message);
+    try {
+      await pool.end();
+    } catch {}
+    process.exit(1);
+  });

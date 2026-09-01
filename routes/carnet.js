@@ -3,10 +3,15 @@ const path = require("path");
 
 const express = require("express");
 const { readCollectorSummary } = require("../services/azerCollector");
+const {
+  readLatestCollectorSummaryForUser,
+} = require("../repositories/collectorCloud");
 const { buildSyncResult } = require("../core/sync/syncManager");
 const mediaRetry = require("../services/blizzardMediaRetry");
 const { getStatus: getAseStatus } = require("../core/ase");
-const { getActiveAccessTokenForUser } = require("../repositories/oauthCredentials");
+const {
+  getActiveAccessTokenForUser,
+} = require("../repositories/oauthCredentials");
 const { listCharactersForUser } = require("../repositories/characters");
 const { userMayReadLocalCollector } = require("../repositories/users");
 const { requireAuth } = require("../middleware/requireAuth");
@@ -60,38 +65,89 @@ async function requireOwnedCharacter(req, res, next) {
 }
 
 async function readCollectorSummaryForUser(req) {
-  if (process.env.NODE_ENV === "production" && process.env.ENABLE_LOCAL_COLLECTOR !== "true") {
-    return { available: false, characters: [] };
+  const userId = req.session?.userId || req.user?.id;
+
+  if (!userId) {
+    return {
+      available: false,
+      characters: [],
+    };
   }
 
-  if (!(await userMayReadLocalCollector(req.session?.userId))) {
-    return { available: false, characters: [] };
+  const ownedCharacters = await getOwnedCharacters(req);
+  const allowedKeys = new Set(ownedCharacters.map(characterIdentityKey));
+
+  // ============================================================
+  // 1. COLLECTOR CLOUD / POSTGRESQL
+  // ============================================================
+
+  const cloudCollector = await readLatestCollectorSummaryForUser(userId);
+
+  if (cloudCollector?.available) {
+    const characters = (cloudCollector.characters || []).filter((character) =>
+      allowedKeys.has(characterIdentityKey(character)),
+    );
+
+    if (characters.length > 0) {
+      return {
+        ...cloudCollector,
+        available: true,
+        characters,
+      };
+    }
   }
 
-  const collector = await readCollectorSummary();
-  if (!collector.available) return collector;
+  // ============================================================
+  // 2. COLLECTOR LOCAL / WINDOWS
+  //    Fallback développement seulement.
+  // ============================================================
 
-  const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
-  const characters = (collector.characters || []).filter((character) =>
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ENABLE_LOCAL_COLLECTOR !== "true"
+  ) {
+    return {
+      available: false,
+      characters: [],
+    };
+  }
+
+  if (!(await userMayReadLocalCollector(userId))) {
+    return {
+      available: false,
+      characters: [],
+    };
+  }
+
+  const localCollector = await readCollectorSummary();
+
+  if (!localCollector.available) {
+    return localCollector;
+  }
+
+  const characters = (localCollector.characters || []).filter((character) =>
     allowedKeys.has(characterIdentityKey(character)),
   );
 
   if (characters.length === 0) {
-    return { available: false, characters: [] };
+    return {
+      available: false,
+      characters: [],
+    };
   }
 
   return {
-    ...collector,
+    ...localCollector,
     available: true,
     characters,
   };
 }
 
-
 const BLIZZARD_REGION = String(
   process.env.BATTLENET_REGION || process.env.BLIZZARD_REGION || "us",
 ).toLowerCase();
-const REQUESTED_BLIZZARD_LOCALE = process.env.BATTLENET_LOCALE || process.env.BLIZZARD_LOCALE || "fr_FR";
+const REQUESTED_BLIZZARD_LOCALE =
+  process.env.BATTLENET_LOCALE || process.env.BLIZZARD_LOCALE || "fr_FR";
 const BLIZZARD_LOCALE =
   REQUESTED_BLIZZARD_LOCALE.toLowerCase() === "fr_ca"
     ? "fr_FR"
@@ -878,10 +934,14 @@ router.get("/auth/blizzard", (_req, res) => {
 router.get("/auth/blizzard/callback", async (req, res) => {
   const canonicalQuery = new URLSearchParams();
   for (const [key, value] of Object.entries(req.query || {})) {
-    if (Array.isArray(value)) value.forEach((item) => canonicalQuery.append(key, item));
+    if (Array.isArray(value))
+      value.forEach((item) => canonicalQuery.append(key, item));
     else if (value != null) canonicalQuery.set(key, value);
   }
-  res.redirect(307, `/api/auth/battlenet/callback?${canonicalQuery.toString()}`);
+  res.redirect(
+    307,
+    `/api/auth/battlenet/callback?${canonicalQuery.toString()}`,
+  );
 });
 
 /* Ancien callback OAuth desactive. Le flux canonique est /api/auth/battlenet. */
@@ -1048,71 +1108,87 @@ async function handleAccountSync(req, res) {
 router.get("/api/characters", requireAuth, handleAccountSync);
 router.post("/api/sync", requireAuth, handleAccountSync);
 
-router.get("/api/characters/:realm/:name/professions", requireAuth, requireOwnedCharacter, async (req, res) => {
-  const accessToken = await getRequestBattleNetAccessToken(req);
-  if (!accessToken) {
-    return res.status(401).json({
-      connected: false,
-    });
-  }
-
-  try {
-    const professions = await fetchCharacterProfessions(
-      req.params.realm,
-      req.params.name,
-      accessToken,
-    );
-
-    res.json({
-      connected: true,
-      professions,
-    });
-  } catch (error) {
-    if (error.status !== 404) {
-      console.warn(error.message);
+router.get(
+  "/api/characters/:realm/:name/professions",
+  requireAuth,
+  requireOwnedCharacter,
+  async (req, res) => {
+    const accessToken = await getRequestBattleNetAccessToken(req);
+    if (!accessToken) {
+      return res.status(401).json({
+        connected: false,
+      });
     }
 
-    res.status(error.status || 502).json({
-      connected: true,
-      professions: [],
-      error: "Impossible de récupérer les métiers de ce personnage.",
-    });
-  }
-});
-
-router.get("/api/characters/:realm/:name/progression", requireAuth, requireOwnedCharacter, async (req, res) => {
-  const accessToken = await getRequestBattleNetAccessToken(req);
-  if (!accessToken) {
-    return res.status(401).json({ connected: false });
-  }
-  const [professionsResult, achievementsResult, collectionsResult] =
-    await Promise.allSettled([
-      fetchCharacterProfessions(req.params.realm, req.params.name, accessToken),
-      fetchCharacterAchievements(
+    try {
+      const professions = await fetchCharacterProfessions(
         req.params.realm,
         req.params.name,
         accessToken,
-      ),
-      fetchAccountCollections(accessToken),
-    ]);
+      );
 
-  return res.json({
-    connected: true,
-    professions:
-      professionsResult.status === "fulfilled" ? professionsResult.value : [],
-    achievements:
-      achievementsResult.status === "fulfilled"
-        ? achievementsResult.value
-        : null,
-    collections:
-      collectionsResult.status === "fulfilled" ? collectionsResult.value : null,
-    available: {
-      professions: professionsResult.status === "fulfilled",
-      achievements: achievementsResult.status === "fulfilled",
-      collections: collectionsResult.status === "fulfilled",
-    },
-  });
-});
+      res.json({
+        connected: true,
+        professions,
+      });
+    } catch (error) {
+      if (error.status !== 404) {
+        console.warn(error.message);
+      }
+
+      res.status(error.status || 502).json({
+        connected: true,
+        professions: [],
+        error: "Impossible de récupérer les métiers de ce personnage.",
+      });
+    }
+  },
+);
+
+router.get(
+  "/api/characters/:realm/:name/progression",
+  requireAuth,
+  requireOwnedCharacter,
+  async (req, res) => {
+    const accessToken = await getRequestBattleNetAccessToken(req);
+    if (!accessToken) {
+      return res.status(401).json({ connected: false });
+    }
+    const [professionsResult, achievementsResult, collectionsResult] =
+      await Promise.allSettled([
+        fetchCharacterProfessions(
+          req.params.realm,
+          req.params.name,
+          accessToken,
+        ),
+        fetchCharacterAchievements(
+          req.params.realm,
+          req.params.name,
+          accessToken,
+        ),
+        fetchAccountCollections(accessToken),
+      ]);
+
+    return res.json({
+      connected: true,
+      professions:
+        professionsResult.status === "fulfilled" ? professionsResult.value : [],
+      achievements:
+        achievementsResult.status === "fulfilled"
+          ? achievementsResult.value
+          : null,
+      collections:
+        collectionsResult.status === "fulfilled"
+          ? collectionsResult.value
+          : null,
+      available: {
+        professions: professionsResult.status === "fulfilled",
+        achievements: achievementsResult.status === "fulfilled",
+        collections: collectionsResult.status === "fulfilled",
+      },
+    });
+  },
+);
 
 router.get("/api/portraits/diagnostics", requireAuth, async (req, res) => {
   if (!(await getRequestBattleNetAccessToken(req))) {
@@ -1147,8 +1223,12 @@ router.get("/api/portraits/diagnostics", requireAuth, async (req, res) => {
 router.get("/api/blizzard-sync/queue", requireAuth, async (req, res, next) => {
   let entries;
   try {
-    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
-    entries = mediaRetry.list().filter((entry) => allowedKeys.has(characterIdentityKey(entry)));
+    const allowedKeys = new Set(
+      (await getOwnedCharacters(req)).map(characterIdentityKey),
+    );
+    entries = mediaRetry
+      .list()
+      .filter((entry) => allowedKeys.has(characterIdentityKey(entry)));
   } catch (error) {
     return next(error);
   }
@@ -1159,15 +1239,20 @@ router.get("/api/blizzard-sync/queue", requireAuth, async (req, res, next) => {
   });
 });
 
-router.post("/api/blizzard-sync/retry/:realm/:name", requireAuth, requireOwnedCharacter, (req, res) => {
-  const character = { realm: req.params.realm, name: req.params.name };
-  mediaRetry.reset(character);
-  res.json({
-    accepted: true,
-    character: `${req.params.name}-${req.params.realm}`,
-    message: "La prochaine synchronisation vérifiera immédiatement Blizzard.",
-  });
-});
+router.post(
+  "/api/blizzard-sync/retry/:realm/:name",
+  requireAuth,
+  requireOwnedCharacter,
+  (req, res) => {
+    const character = { realm: req.params.realm, name: req.params.name };
+    mediaRetry.reset(character);
+    res.json({
+      accepted: true,
+      character: `${req.params.name}-${req.params.realm}`,
+      message: "La prochaine synchronisation vérifiera immédiatement Blizzard.",
+    });
+  },
+);
 
 router.get("/api/ase/status", (req, res) => {
   res.json({
@@ -1184,17 +1269,27 @@ router.get("/api/ase/events", requireAuth, async (req, res, next) => {
     .filter(Boolean);
   let events;
   try {
-    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
-    events = eventEngine.listEvents({
-      limit: 500,
-      types,
-    }).filter((event) => {
-      if (event.realm || event.characterName) {
-        return allowedKeys.has(characterIdentityKey({ realm: event.realm, name: event.characterName }));
-      }
-      const [realm, name] = String(event.characterKey || "").split("::");
-      return allowedKeys.has(characterIdentityKey({ realm, name }));
-    }).slice(0, Math.max(1, Math.min(500, Number(req.query.limit) || 50)));
+    const allowedKeys = new Set(
+      (await getOwnedCharacters(req)).map(characterIdentityKey),
+    );
+    events = eventEngine
+      .listEvents({
+        limit: 500,
+        types,
+      })
+      .filter((event) => {
+        if (event.realm || event.characterName) {
+          return allowedKeys.has(
+            characterIdentityKey({
+              realm: event.realm,
+              name: event.characterName,
+            }),
+          );
+        }
+        const [realm, name] = String(event.characterKey || "").split("::");
+        return allowedKeys.has(characterIdentityKey({ realm, name }));
+      })
+      .slice(0, Math.max(1, Math.min(500, Number(req.query.limit) || 50)));
   } catch (error) {
     return next(error);
   }
@@ -1305,15 +1400,19 @@ router.get("/api/ase/heroes", requireAuth, async (req, res) => {
 router.get("/api/ase/debug", requireAuth, async (req, res, next) => {
   const eventEngine = require("../core/engine/event/register");
   try {
-    const allowedKeys = new Set((await getOwnedCharacters(req)).map(characterIdentityKey));
+    const allowedKeys = new Set(
+      (await getOwnedCharacters(req)).map(characterIdentityKey),
+    );
     const debug = eventEngine.getDebug({});
     const comparisons = Object.fromEntries(
       Object.entries(debug.comparisons || {}).filter(([key, value]) => {
         const [realm, name] = String(key).split("::");
-        return allowedKeys.has(characterIdentityKey({
-          realm: value?.current?.realm || realm,
-          name: value?.current?.name || name,
-        }));
+        return allowedKeys.has(
+          characterIdentityKey({
+            realm: value?.current?.realm || realm,
+            name: value?.current?.name || name,
+          }),
+        );
       }),
     );
     return res.json({
@@ -1619,14 +1718,12 @@ router.get("/api/quests", requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Impossible de lire les quêtes du Collector :", error);
-    return res
-      .status(500)
-      .json({
-        available: false,
-        account: null,
-        characters: [],
-        error: "collector_quests_unavailable",
-      });
+    return res.status(500).json({
+      available: false,
+      account: null,
+      characters: [],
+      error: "collector_quests_unavailable",
+    });
   }
 });
 const hunterPetIconCache = new Map();

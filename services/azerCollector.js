@@ -6,8 +6,7 @@ const MAX_COLLECTOR_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_LUA_NESTING_DEPTH = 120;
 const MIN_LUA_NODE_LIMIT = 500000;
 const MAX_LUA_NODE_LIMIT = 5000000;
-const DEFAULT_WOW_INSTALL_PATH =
-  "C:\\Program Files (x86)\\World of Warcraft";
+const DEFAULT_WOW_INSTALL_PATH = "C:\\Program Files (x86)\\World of Warcraft";
 
 class LuaSavedVariablesParser {
   constructor(source) {
@@ -62,8 +61,7 @@ class LuaSavedVariablesParser {
 
       if (this.source.startsWith("--[[", this.position)) {
         const commentEnd = this.source.indexOf("]]", this.position + 4);
-        this.position =
-          commentEnd === -1 ? this.source.length : commentEnd + 2;
+        this.position = commentEnd === -1 ? this.source.length : commentEnd + 2;
         continue;
       }
 
@@ -81,7 +79,9 @@ class LuaSavedVariablesParser {
     const start = this.position;
 
     if (!/[A-Za-z_]/.test(this.current() || "")) {
-      throw new Error(`Identifiant Lua invalide à la position ${this.position}.`);
+      throw new Error(
+        `Identifiant Lua invalide à la position ${this.position}.`,
+      );
     }
 
     this.position += 1;
@@ -147,10 +147,7 @@ class LuaSavedVariablesParser {
       if (/\d/.test(escaped || "")) {
         let decimalEscape = escaped;
 
-        while (
-          decimalEscape.length < 3 &&
-          /\d/.test(this.current() || "")
-        ) {
+        while (decimalEscape.length < 3 && /\d/.test(this.current() || "")) {
           decimalEscape += this.current();
           this.position += 1;
         }
@@ -282,10 +279,12 @@ function latestSession(sessions) {
     return null;
   }
 
-  return Object.entries(sessions)
-    .filter(([key]) => /^\d+$/.test(key))
-    .sort(([firstKey], [secondKey]) => Number(firstKey) - Number(secondKey))
-    .at(-1)?.[1] || null;
+  return (
+    Object.entries(sessions)
+      .filter(([key]) => /^\d+$/.test(key))
+      .sort(([firstKey], [secondKey]) => Number(firstKey) - Number(secondKey))
+      .at(-1)?.[1] || null
+  );
 }
 
 function normalizeLocation(...locations) {
@@ -335,7 +334,6 @@ function normalizeSessions(sessions) {
       endLocation: normalizeLocation(session.endLocation),
     }));
 }
-
 
 function normalizeAchievements(achievements) {
   const values = Array.isArray(achievements)
@@ -387,33 +385,48 @@ function normalizeCharacter(character, storageKey = "") {
     faction: String(character.profile?.faction || ""),
     appearance: {
       raceID: toFiniteNumber(character.appearance?.raceID),
-      raceName: String(character.appearance?.raceName || character.profile?.raceName || ""),
+      raceName: String(
+        character.appearance?.raceName || character.profile?.raceName || "",
+      ),
       raceFile: String(character.appearance?.raceFile || ""),
       raceSlug: String(character.appearance?.raceSlug || ""),
       classID: toFiniteNumber(character.appearance?.classID),
-      className: String(character.appearance?.className || character.profile?.className || ""),
+      className: String(
+        character.appearance?.className || character.profile?.className || "",
+      ),
       classFile: String(character.appearance?.classFile || ""),
       classSlug: String(character.appearance?.classSlug || ""),
       sexID: toFiniteNumber(character.appearance?.sexID),
       sex: String(character.appearance?.sex || ""),
-      faction: String(character.appearance?.faction || character.profile?.faction || ""),
+      faction: String(
+        character.appearance?.faction || character.profile?.faction || "",
+      ),
       displayID: toFiniteNumber(character.appearance?.displayID),
       portraitKey: String(character.appearance?.portraitKey || ""),
       portraitSlug: String(character.appearance?.portraitSlug || ""),
       capturedAt: toFiniteNumber(character.appearance?.capturedAt),
     },
-    equipment: character.equipment && typeof character.equipment === "object"
-      ? character.equipment
-      : { schemaVersion: 1, slots: {}, equippedCount: 0 },
-    hero: character.hero && typeof character.hero === "object"
-      ? character.hero
-      : null,
+    equipment:
+      character.equipment && typeof character.equipment === "object"
+        ? character.equipment
+        : { schemaVersion: 1, slots: {}, equippedCount: 0 },
+    hero:
+      character.hero && typeof character.hero === "object"
+        ? character.hero
+        : null,
     media: {
       unitGUID: String(character.media?.unitGUID || ""),
       displayID: toFiniteNumber(character.media?.displayID),
-      portraitKey: String(character.media?.portraitKey || character.appearance?.portraitKey || ""),
-      portraitSlug: String(character.media?.portraitSlug || character.appearance?.portraitSlug || ""),
-      portraitAvailableInClient: character.media?.portraitAvailableInClient === true,
+      portraitKey: String(
+        character.media?.portraitKey || character.appearance?.portraitKey || "",
+      ),
+      portraitSlug: String(
+        character.media?.portraitSlug ||
+          character.appearance?.portraitSlug ||
+          "",
+      ),
+      portraitAvailableInClient:
+        character.media?.portraitAvailableInClient === true,
       modelAvailableInClient: character.media?.modelAvailableInClient === true,
       captureMethod: String(character.media?.captureMethod || ""),
       capturedAt: toFiniteNumber(character.media?.capturedAt),
@@ -423,22 +436,32 @@ function normalizeCharacter(character, storageKey = "") {
       ? character.professions
       : Object.values(character.professions || {}),
     achievements: normalizeAchievements(character.achievements),
-    classProgress: character.classProgress && typeof character.classProgress === "object"
-      ? character.classProgress
-      : {},
-    hunterPets: character.hunterPets && typeof character.hunterPets === "object"
-      ? character.hunterPets
-      : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
+    classProgress:
+      character.classProgress && typeof character.classProgress === "object"
+        ? character.classProgress
+        : {},
+    hunterPets:
+      character.hunterPets && typeof character.hunterPets === "object"
+        ? character.hunterPets
+        : { schemaVersion: 1, supported: false, pets: {}, count: 0 },
     quests: {
       active: Object.values(character.quests?.active || {}),
       completedObserved: Array.isArray(character.quests?.completedObserved)
         ? character.quests.completedObserved
         : Object.values(character.quests?.completedObserved || {}),
       completedHistory: Object.values(character.quests?.completedHistory || {}),
-      completedHistoryCount: toFiniteNumber(character.quests?.completedHistoryCount),
-      completedAccountShared: Object.values(character.quests?.completedAccountShared || {}),
-      completedAccountSharedCount: toFiniteNumber(character.quests?.completedAccountSharedCount),
-      completedHistoryScannedAt: toFiniteNumber(character.quests?.completedHistoryScannedAt),
+      completedHistoryCount: toFiniteNumber(
+        character.quests?.completedHistoryCount,
+      ),
+      completedAccountShared: Object.values(
+        character.quests?.completedAccountShared || {},
+      ),
+      completedAccountSharedCount: toFiniteNumber(
+        character.quests?.completedAccountSharedCount,
+      ),
+      completedHistoryScannedAt: toFiniteNumber(
+        character.quests?.completedHistoryScannedAt,
+      ),
     },
     lastLoginAt: toFiniteNumber(character.lastLoginAt),
     lastLogoutAt: toFiniteNumber(character.lastLogoutAt),
@@ -447,13 +470,16 @@ function normalizeCharacter(character, storageKey = "") {
     location,
     sessions,
     latestSession: session,
-    currentSession: character.currentSession && typeof character.currentSession === "object"
-      ? {
-          id: String(character.currentSession.id || ""),
-          startedAt: toFiniteNumber(character.currentSession.startedAt),
-          startLocation: normalizeLocation(character.currentSession.startLocation),
-        }
-      : null,
+    currentSession:
+      character.currentSession && typeof character.currentSession === "object"
+        ? {
+            id: String(character.currentSession.id || ""),
+            startedAt: toFiniteNumber(character.currentSession.startedAt),
+            startLocation: normalizeLocation(
+              character.currentSession.startLocation,
+            ),
+          }
+        : null,
   };
 }
 
@@ -464,12 +490,7 @@ async function findCollectorFile() {
 
   const wowInstallPath =
     process.env.WOW_INSTALL_PATH || DEFAULT_WOW_INSTALL_PATH;
-  const accountsPath = path.join(
-    wowInstallPath,
-    "_retail_",
-    "WTF",
-    "Account",
-  );
+  const accountsPath = path.join(wowInstallPath, "_retail_", "WTF", "Account");
   let accounts;
 
   try {
@@ -508,6 +529,195 @@ async function findCollectorFile() {
   return candidates[0]?.path || null;
 }
 
+function buildCollectorSummary(database, sourceUpdatedAt = 0) {
+  const characters = Object.entries(database.characters || {})
+    .filter(([, character]) => character && typeof character === "object")
+    .map(([storageKey, character]) =>
+      normalizeCharacter(character, storageKey),
+    );
+
+  return {
+    available: true,
+    sourceUpdatedAt: Number(sourceUpdatedAt || 0),
+    dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
+    achievements: normalizeAchievements(database.account?.achievements),
+    achievementSummary: database.account?.achievementSummary || {},
+
+    account: {
+      quests: {
+        activeShared: Object.values(
+          database.account?.quests?.activeShared || {},
+        ),
+        activeSharedCount: toFiniteNumber(
+          database.account?.quests?.activeSharedCount,
+        ),
+        completedShared: Object.values(
+          database.account?.quests?.completedShared || {},
+        ),
+        completedSharedCount: toFiniteNumber(
+          database.account?.quests?.completedSharedCount,
+        ),
+        completedObserved: Object.values(
+          database.account?.quests?.completedObserved || {},
+        ),
+      },
+    },
+
+    questSummary: {
+      completedObserved: Object.values(
+        database.account?.quests?.completedObserved || {},
+      ),
+      completedShared: Object.values(
+        database.account?.quests?.completedShared || {},
+      ),
+    },
+
+    sync: database.sync || {},
+    characters,
+  };
+}
+
+function parseCollectorSource(source, options = {}) {
+  if (typeof source !== "string" || !source.trim()) {
+    throw new Error("Le contenu du Collector est vide.");
+  }
+
+  if (Buffer.byteLength(source, "utf8") > MAX_COLLECTOR_FILE_SIZE) {
+    throw new Error("Le fichier du collecteur dépasse la taille permise.");
+  }
+
+  const database = new LuaSavedVariablesParser(source).parse();
+
+  return buildCollectorSummary(database, options.sourceUpdatedAt || 0);
+}
+
+function buildCollectorSummary(database, sourceUpdatedAt = 0) {
+  const characters = Object.entries(database.characters || {})
+    .filter(([, character]) => character && typeof character === "object")
+    .map(([storageKey, character]) =>
+      normalizeCharacter(character, storageKey),
+    );
+
+  return {
+    available: true,
+    sourceUpdatedAt: Number(sourceUpdatedAt || 0),
+    dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
+    achievements: normalizeAchievements(database.account?.achievements),
+    achievementSummary: database.account?.achievementSummary || {},
+
+    account: {
+      quests: {
+        activeShared: Object.values(
+          database.account?.quests?.activeShared || {},
+        ),
+        activeSharedCount: toFiniteNumber(
+          database.account?.quests?.activeSharedCount,
+        ),
+        completedShared: Object.values(
+          database.account?.quests?.completedShared || {},
+        ),
+        completedSharedCount: toFiniteNumber(
+          database.account?.quests?.completedSharedCount,
+        ),
+        completedObserved: Object.values(
+          database.account?.quests?.completedObserved || {},
+        ),
+      },
+    },
+
+    questSummary: {
+      completedObserved: Object.values(
+        database.account?.quests?.completedObserved || {},
+      ),
+      completedShared: Object.values(
+        database.account?.quests?.completedShared || {},
+      ),
+    },
+
+    sync: database.sync || {},
+    characters,
+  };
+}
+
+function parseCollectorSource(source, options = {}) {
+  if (typeof source !== "string" || !source.trim()) {
+    throw new Error("Le contenu du Collector est vide.");
+  }
+
+  if (Buffer.byteLength(source, "utf8") > MAX_COLLECTOR_FILE_SIZE) {
+    throw new Error("Le fichier du collecteur dépasse la taille permise.");
+  }
+
+  const database = new LuaSavedVariablesParser(source).parse();
+
+  return buildCollectorSummary(database, options.sourceUpdatedAt || 0);
+}
+
+function buildCollectorSummary(database, sourceUpdatedAt = 0) {
+  const characters = Object.entries(database.characters || {})
+    .filter(([, character]) => character && typeof character === "object")
+    .map(([storageKey, character]) =>
+      normalizeCharacter(character, storageKey),
+    );
+
+  return {
+    available: true,
+    sourceUpdatedAt: Number(sourceUpdatedAt || 0),
+    dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
+    achievements: normalizeAchievements(database.account?.achievements),
+    achievementSummary: database.account?.achievementSummary || {},
+
+    account: {
+      quests: {
+        activeShared: Object.values(
+          database.account?.quests?.activeShared || {},
+        ),
+        activeSharedCount: toFiniteNumber(
+          database.account?.quests?.activeSharedCount,
+        ),
+        completedShared: Object.values(
+          database.account?.quests?.completedShared || {},
+        ),
+        completedSharedCount: toFiniteNumber(
+          database.account?.quests?.completedSharedCount,
+        ),
+        completedObserved: Object.values(
+          database.account?.quests?.completedObserved || {},
+        ),
+      },
+    },
+
+    questSummary: {
+      completedObserved: Object.values(
+        database.account?.quests?.completedObserved || {},
+      ),
+      completedShared: Object.values(
+        database.account?.quests?.completedShared || {},
+      ),
+    },
+
+    sync: database.sync || {},
+    characters,
+  };
+}
+
+function parseCollectorSource(source, options = {}) {
+  if (typeof source !== "string" || !source.trim()) {
+    throw new Error("Le contenu du Collector est vide.");
+  }
+
+  if (Buffer.byteLength(source, "utf8") > MAX_COLLECTOR_FILE_SIZE) {
+    throw new Error("Le fichier du collecteur dépasse la taille permise.");
+  }
+
+  const database = new LuaSavedVariablesParser(source).parse();
+
+  return buildCollectorSummary(database, options.sourceUpdatedAt || 0);
+}
+
 async function readCollectorSummary() {
   const collectorFile = await findCollectorFile();
 
@@ -519,45 +729,19 @@ async function readCollectorSummary() {
   }
 
   const stats = await fs.stat(collectorFile);
+
   if (stats.size > MAX_COLLECTOR_FILE_SIZE) {
     throw new Error("Le fichier du collecteur dépasse la taille permise.");
   }
 
   const source = await fs.readFile(collectorFile, "utf8");
-  const database = new LuaSavedVariablesParser(source).parse();
-  const characters = Object.entries(database.characters || {})
-    .filter(([, character]) => character && typeof character === "object")
-    .map(([storageKey, character]) => normalizeCharacter(character, storageKey));
 
-  return {
-    available: true,
+  return parseCollectorSource(source, {
     sourceUpdatedAt: Math.floor(stats.mtimeMs / 1000),
-    dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
-    lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
-    achievements: normalizeAchievements(database.account?.achievements),
-    achievementSummary: database.account?.achievementSummary || {},
-    account: {
-      quests: {
-        activeShared: Object.values(database.account?.quests?.activeShared || {}),
-        activeSharedCount: toFiniteNumber(database.account?.quests?.activeSharedCount),
-        completedShared: Object.values(database.account?.quests?.completedShared || {}),
-        completedSharedCount: toFiniteNumber(database.account?.quests?.completedSharedCount),
-        completedObserved: Object.values(database.account?.quests?.completedObserved || {}),
-      },
-    },
-    questSummary: {
-      completedObserved: Object.values(
-        database.account?.quests?.completedObserved || {},
-      ),
-      completedShared: Object.values(
-        database.account?.quests?.completedShared || {},
-      ),
-    },
-    sync: database.sync || {},
-    characters,
-  };
+  });
 }
 
 module.exports = {
+  parseCollectorSource,
   readCollectorSummary,
 };
