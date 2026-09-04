@@ -540,6 +540,15 @@ function buildCollectorSummary(database, sourceUpdatedAt = 0) {
     available: true,
     sourceUpdatedAt: Number(sourceUpdatedAt || 0),
     dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    addonVersion: String(
+      database.addonVersion || database.sync?.addonVersion || "",
+    ),
+    collectorVersion: String(
+      database.sync?.collectorVersion || database.addonVersion || "",
+    ),
+    payloadVersion: String(
+      database.sync?.payloadVersion || database.schemaVersion || "",
+    ),
     lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
     achievements: normalizeAchievements(database.account?.achievements),
     achievementSummary: database.account?.achievementSummary || {},
@@ -603,6 +612,15 @@ function buildCollectorSummary(database, sourceUpdatedAt = 0) {
     available: true,
     sourceUpdatedAt: Number(sourceUpdatedAt || 0),
     dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    addonVersion: String(
+      database.addonVersion || database.sync?.addonVersion || "",
+    ),
+    collectorVersion: String(
+      database.sync?.collectorVersion || database.addonVersion || "",
+    ),
+    payloadVersion: String(
+      database.sync?.payloadVersion || database.schemaVersion || "",
+    ),
     lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
     achievements: normalizeAchievements(database.account?.achievements),
     achievementSummary: database.account?.achievementSummary || {},
@@ -666,6 +684,15 @@ function buildCollectorSummary(database, sourceUpdatedAt = 0) {
     available: true,
     sourceUpdatedAt: Number(sourceUpdatedAt || 0),
     dataUpdatedAt: toFiniteNumber(database.account?.updatedAt),
+    addonVersion: String(
+      database.addonVersion || database.sync?.addonVersion || "",
+    ),
+    collectorVersion: String(
+      database.sync?.collectorVersion || database.addonVersion || "",
+    ),
+    payloadVersion: String(
+      database.sync?.payloadVersion || database.schemaVersion || "",
+    ),
     lastCharacterGuid: String(database.account?.lastCharacterGuid || ""),
     achievements: normalizeAchievements(database.account?.achievements),
     achievementSummary: database.account?.achievementSummary || {},

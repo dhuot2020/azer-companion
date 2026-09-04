@@ -815,3 +815,77 @@
 .addon-back:hover {
   color: #fff0c7;
 }
+/* =========================================================
+   ADDON - VERSION / DISTRIBUTION
+========================================================= */
+
+.addon-release-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  background: rgba(3, 18, 30, 0.72);
+  border: 1px solid rgba(49, 198, 255, 0.16);
+  border-radius: 3px;
+}
+
+.addon-release-status > div {
+  display: grid;
+  gap: 4px;
+}
+
+.addon-release-status small {
+  color: #7794a6;
+  font-family: var(--font-primary);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.addon-release-status strong {
+  color: #f5ede0;
+  font-family: var(--font-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.addon-version-help {
+  margin-top: 22px;
+  padding: 14px 16px;
+  background: rgba(100, 160, 59, 0.06);
+  border-left: 2px solid rgba(100, 160, 59, 0.74);
+}
+
+.addon-version-help strong {
+  color: #cfe8ba;
+  font-family: var(--font-primary);
+  font-size: 12px;
+}
+
+.addon-version-help p {
+  margin: 7px 0 0;
+  color: #91a8b5;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.addon-action-disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@media (max-width: 620px) {
+  .addon-release-status {
+    grid-template-columns: 1fr 18px;
+  }
+
+  .addon-release-status > div:nth-child(2) {
+    grid-column: 1 / 2;
+  }
+
+  .addon-release-status > .sidebar-action-diamond {
+    grid-column: 2 / 3;
+    grid-row: 1 / span 2;
+  }
+}

@@ -33,6 +33,7 @@ const activeCharacterRouter = require("./routes/activeCharacter");
 
 const carnetContextRouter = require("./routes/carnetContext");
 const collectorCloudRouter = require("./routes/collectorCloud");
+const { getPublishedAddonRelease } = require("./services/addonRelease");
 const { loadActiveCharacter } = require("./middleware/loadActiveCharacter");
 
 const carnetRouter = require("./routes/carnet");
@@ -199,8 +200,11 @@ app.use("/api/carnet/context", carnetContextRouter);
 
 app.use("/api/collector-cloud", collectorCloudRouter);
 app.get("/addon", (_req, res) => {
+  const addonRelease = getPublishedAddonRelease();
+
   res.render("addon", {
     page_title: "Azer Companion Collector",
+    addonRelease,
   });
 });
 app.use("/", loadActiveCharacter, carnetRouter);

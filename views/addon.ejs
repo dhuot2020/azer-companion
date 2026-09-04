@@ -3,95 +3,143 @@
 <main class="addon-page">
   <section class="addon-panel">
     <header class="addon-header">
-      <span class="addon-kicker">AZER COMPANION</span>
+      <span class="addon-kicker">AZER COMPAGNION</span>
       <h1>Azer Companion Collector</h1>
       <p>
-        Installe l’addon pour synchroniser automatiquement tes données
-        World of Warcraft avec Azer Compagnion.
+        Installe le Collector pour compléter les données Battle.net avec les
+        informations disponibles directement en jeu.
       </p>
     </header>
 
+    <section class="addon-release-status" aria-live="polite">
+      <div>
+        <small>VERSION PUBLIÉE</small>
+        <strong><%= addonRelease?.version || "Indisponible" %></strong>
+      </div>
+      <div>
+        <small>VERSION DÉTECTÉE</small>
+        <strong id="addonInstalledVersion">Vérification...</strong>
+      </div>
+      <span
+        id="addonPageDiamond"
+        class="sidebar-action-diamond is-loading"
+        aria-hidden="true"
+      ></span>
+    </section>
+
     <div class="addon-actions">
-      <a
-        href="#"
-        class="addon-action addon-action-primary"
-        id="curseForgeButton"
-      >
-        <span class="addon-action-icon">↓</span>
-
-        <span>
-          <strong>Installer avec CurseForge</strong>
-          <small>Méthode recommandée</small>
-        </span>
-
-        <i></i>
-      </a>
-
-      <a
-        href="/downloads/AzerCompanionCollector.zip"
-        class="addon-action"
-        download
-      >
-        <span class="addon-action-icon">⇩</span>
-
-        <span>
-          <strong>Installation manuelle</strong>
-          <small>Télécharger le ZIP de l’addon</small>
-        </span>
-
-        <i></i>
-      </a>
+      <% if (addonRelease?.available) { %>
+        <a
+          href="<%= addonRelease.downloadUrl %>"
+          class="addon-action addon-action-primary"
+          id="addonDownloadButton"
+          download
+        >
+          <span class="addon-action-icon">⇩</span>
+          <span>
+            <strong>Télécharger Azer Companion Collector</strong>
+            <small>ZIP officiel · version <%= addonRelease.version %></small>
+          </span>
+          <i></i>
+        </a>
+      <% } else { %>
+        <div class="addon-action addon-action-disabled" aria-disabled="true">
+          <span class="addon-action-icon">!</span>
+          <span>
+            <strong>Téléchargement temporairement indisponible</strong>
+            <small>Le paquet de distribution n'est pas présent sur le serveur.</small>
+          </span>
+          <i></i>
+        </div>
+      <% } %>
     </div>
 
     <section class="addon-instructions">
       <h2>Installation manuelle</h2>
-
       <ol>
         <li>
-          Télécharge
-          <strong>AzerCompanionCollector.zip</strong>.
+          Ferme <strong>World of Warcraft</strong> avant de remplacer une version
+          existante de l'addon.
         </li>
-
         <li>
-          Décompresse le dossier
-          <strong>AzerCompanionCollector</strong>
-          dans :
+          Télécharge <strong>AzerCompanionCollector.zip</strong> puis extrais le
+          dossier <strong>AzerCompanionCollector</strong> dans :
           <code>World of Warcraft/_retail_/Interface/AddOns/</code>
         </li>
-
         <li>
-          Lance World of Warcraft.
+          Vérifie que le fichier
+          <code>AzerCompanionCollector/AzerCompanionCollector.toc</code>
+          existe directement dans ce dossier. Il ne doit pas y avoir un dossier
+          supplémentaire imbriqué.
         </li>
-
         <li>
-          Vérifie que
-          <strong>Azer Companion Collector</strong>
-          est activé dans la liste des addons.
+          Relance World of Warcraft et active
+          <strong>Azer Companion Collector</strong> dans la liste des addons.
         </li>
-
         <li>
-          En jeu, utilise :
-          <code>/azer scan</code>
+          En jeu, lance <code>/azer scan</code>, puis <code>/reload</code> lorsque
+          l'analyse est terminée.
         </li>
-
         <li>
-          Puis :
-          <code>/reload</code>
-        </li>
-
-        <li>
-          Retourne sur Azer Compagnion et clique sur
-          <strong>Synchroniser WoW</strong>.
+          Reviens sur Azer Compagnion et clique sur
+          <strong>Synchroniser WoW</strong>. La version installée sera alors
+          enregistrée et le losange <strong>Installer l'addon</strong> passera au vert.
         </li>
       </ol>
     </section>
 
+    <section class="addon-version-help">
+      <strong>Gestion automatique des mises à jour</strong>
+      <p>
+        Lorsqu'une nouvelle version du Collector est publiée, Azer Compagnion
+        compare automatiquement la version détectée lors de ta dernière
+        synchronisation avec la version disponible sur le site. Le losange
+        redevient rouge lorsqu'une mise à jour est requise.
+      </p>
+    </section>
+
     <footer class="addon-footer">
-      <a href="/" class="addon-back">
-        ← Retour à Azer Compagnion
-      </a>
+      <a href="/" class="addon-back">← Retour à Azer Compagnion</a>
     </footer>
   </section>
 </main>
+
+<script>
+  (() => {
+    const versionNode = document.getElementById("addonInstalledVersion");
+    const diamond = document.getElementById("addonPageDiamond");
+
+    async function refreshStatus() {
+      if (!versionNode || !diamond) return;
+
+      try {
+        const response = await fetch("/api/collector-cloud/status", {
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        });
+
+        if (response.status === 401) {
+          versionNode.textContent = "Connexion requise";
+          diamond.className = "sidebar-action-diamond is-alert";
+          return;
+        }
+
+        const status = await response.json();
+        if (!response.ok || !status?.ok) throw new Error("Statut indisponible");
+
+        versionNode.textContent = status.installedVersion || "Non détectée";
+        diamond.className = `sidebar-action-diamond ${
+          status.state === "current" ? "is-ok" : "is-alert"
+        }`;
+      } catch (_error) {
+        versionNode.textContent = "Impossible à vérifier";
+        diamond.className = "sidebar-action-diamond is-alert";
+      }
+    }
+
+    refreshStatus();
+  })();
+</script>
 
 <%- include('partials/footer') %>

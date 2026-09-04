@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
-const { readCollectorSummary } = require("../services/azerCollector");
+const { parseCollectorSource, readCollectorSummary } = require("../services/azerCollector");
 
 test("readCollectorSummary signale un Collector indisponible si WoW est absent", async () => {
   const previousWowInstallPath = process.env.WOW_INSTALL_PATH;
@@ -32,4 +32,14 @@ test("readCollectorSummary signale un Collector indisponible si WoW est absent",
       process.env.AZER_COLLECTOR_FILE = previousCollectorFile;
     }
   }
+});
+
+
+test("parseCollectorSource expose la version de l'addon pour le suivi de mise à jour", () => {
+  const source = 'AzerCompanionDB = { ["schemaVersion"] = 9, ["addonVersion"] = "3.0.0-alpha4", ["characters"] = {}, ["account"] = {}, ["sync"] = {} }';
+  const summary = parseCollectorSource(source);
+
+  assert.equal(summary.addonVersion, "3.0.0-alpha4");
+  assert.equal(summary.collectorVersion, "3.0.0-alpha4");
+  assert.equal(summary.payloadVersion, "9");
 });

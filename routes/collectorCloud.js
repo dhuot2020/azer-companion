@@ -4,10 +4,51 @@ const crypto = require("crypto");
 const { pool } = require("../config/db");
 const { requireAuth } = require("../middleware/requireAuth");
 const { parseCollectorSource } = require("../services/azerCollector");
+const { getLatestCollectorImportForUser } = require("../repositories/collectorCloud");
+const {
+  getAddonVersionState,
+  getPublishedAddonRelease,
+} = require("../services/addonRelease");
 
 const router = express.Router();
 
 const MAX_COLLECTOR_SIZE = 25 * 1024 * 1024;
+
+
+router.get("/status", requireAuth, async (req, res, next) => {
+  const userId = req.user?.id || req.session?.userId;
+
+  try {
+    const [latestImport, release] = await Promise.all([
+      getLatestCollectorImportForUser(userId),
+      Promise.resolve(getPublishedAddonRelease()),
+    ]);
+
+    const rawPayload = latestImport?.raw_payload || {};
+    const installedVersion =
+      latestImport?.addon_version ||
+      rawPayload.addonVersion ||
+      rawPayload.sync?.addonVersion ||
+      latestImport?.collector_version ||
+      null;
+
+    const state = getAddonVersionState(installedVersion, release.version);
+
+    return res.json({
+      ok: true,
+      state,
+      installed: Boolean(installedVersion),
+      installedVersion,
+      latestVersion: release.version,
+      updateAvailable: state === "outdated",
+      downloadAvailable: release.available,
+      downloadUrl: release.downloadUrl,
+      lastImportedAt: latestImport?.imported_at || null,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 router.get("/import", requireAuth, (_req, res) => {
   res.type("html").send(`
@@ -170,11 +211,20 @@ router.post(
         `,
         [
           userId,
-          String(summary.sync?.collectorVersion || ""),
+          String(
+            summary.collectorVersion ||
+              summary.sync?.collectorVersion ||
+              summary.addonVersion ||
+              "",
+          ),
           characterCount,
           JSON.stringify(summary),
-          String(summary.sync?.payloadVersion || ""),
-          String(summary.sync?.addonVersion || ""),
+          String(
+            summary.payloadVersion || summary.sync?.payloadVersion || "",
+          ),
+          String(
+            summary.addonVersion || summary.sync?.addonVersion || "",
+          ),
           payloadHash,
         ],
       );

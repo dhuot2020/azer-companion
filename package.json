@@ -13,7 +13,8 @@
     "db:seed": "node scripts/db-seed.js",
     "db:multiuser-check": "node scripts/multiuser-smoke-test.js",
     "auth:check": "node scripts/battlenet-oauth-check.js",
-    "auth:encryption-check": "node scripts/oauth-encryption-check.js"
+    "auth:encryption-check": "node scripts/oauth-encryption-check.js",
+    "addon:release": "node scripts/build-addon-release.js"
   },
   "keywords": [],
   "author": "",

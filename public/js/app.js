@@ -220,6 +220,10 @@ const charactersCount = document.getElementById("characters-count");
 const battleStatus = document.getElementById("battleStatus");
 const battleStatusText = document.getElementById("battleStatusText");
 const syncCharactersButton = document.getElementById("syncCharactersButton");
+const homeSyncButton = document.getElementById("homeSyncButton");
+const homeSyncDiamond = document.getElementById("homeSyncDiamond");
+const homeAddonButton = document.getElementById("homeAddonButton");
+const homeAddonDiamond = document.getElementById("homeAddonDiamond");
 
 let blizzardCharacters = [];
 let charactersSyncInProgress = false;
@@ -1717,6 +1721,8 @@ async function synchronizeAzerCompagnion() {
     const collectorResult = await importCollectorCloudFile(collectorFile);
 
     console.info("Collector Cloud synchronisé :", collectorResult);
+
+    await refreshAddonStatus();
 
     // Le Collector est maintenant dans PostgreSQL.
     // On relance ensuite la synchronisation Battle.net existante.
@@ -3923,6 +3929,70 @@ document.querySelectorAll("[data-faction-filter]").forEach((button) => {
 
 loadCharacters();
 
+async function refreshAddonStatus() {
+  if (!homeAddonDiamond || !homeAddonButton) return;
+
+  homeAddonDiamond.classList.remove("is-ok", "is-alert", "is-loading");
+  homeAddonDiamond.classList.add("is-loading");
+
+  try {
+    const response = await fetch("/api/collector-cloud/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+
+    if (response.status === 401) {
+      homeAddonDiamond.classList.remove("is-loading", "is-ok");
+      homeAddonDiamond.classList.add("is-alert");
+      homeAddonButton.title = "Connecte Battle.net pour vérifier la version de l'addon";
+      return;
+    }
+
+    const status = await response.json().catch(() => null);
+
+    if (!response.ok || !status?.ok) {
+      throw new Error(status?.message || `Statut addon HTTP ${response.status}`);
+    }
+
+    homeAddonDiamond.classList.remove("is-loading", "is-ok", "is-alert");
+
+    if (status.state === "current") {
+      homeAddonDiamond.classList.add("is-ok");
+      homeAddonButton.title = `Azer Companion Collector ${status.installedVersion} est à jour`;
+      homeAddonButton.setAttribute(
+        "aria-label",
+        `Azer Companion Collector ${status.installedVersion} est à jour`,
+      );
+      return;
+    }
+
+    homeAddonDiamond.classList.add("is-alert");
+
+    if (status.state === "outdated") {
+      homeAddonButton.title = `Mise à jour disponible : ${status.installedVersion || "version inconnue"} → ${status.latestVersion}`;
+      homeAddonButton.setAttribute(
+        "aria-label",
+        `Mettre à jour Azer Companion Collector vers ${status.latestVersion}`,
+      );
+      return;
+    }
+
+    homeAddonButton.title = status.latestVersion
+      ? `Addon non détecté — version disponible ${status.latestVersion}`
+      : "Addon non détecté";
+    homeAddonButton.setAttribute(
+      "aria-label",
+      "Installer Azer Companion Collector",
+    );
+  } catch (error) {
+    console.error("Impossible de vérifier la version du Collector :", error);
+    homeAddonDiamond.classList.remove("is-loading", "is-ok");
+    homeAddonDiamond.classList.add("is-alert");
+    homeAddonButton.title = "Version de l'addon impossible à vérifier";
+  }
+}
+
 async function updateBattleNetAuthButton() {
   const authButton = document.getElementById("battleNetAuthButton");
   if (!authButton) return;
@@ -3969,6 +4039,7 @@ async function updateBattleNetAuthButton() {
 }
 
 updateBattleNetAuthButton();
+refreshAddonStatus();
 
 // ======================================================
 // Collector 2.0 - Vue Quêtes

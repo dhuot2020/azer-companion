@@ -48,6 +48,9 @@ function Collector:InitializeDatabase()
     AzerCompanionDB.characters = AzerCompanionDB.characters or {}
     AzerCompanionDB.characterAliases = AzerCompanionDB.characterAliases or {}
     AzerCompanionDB.sync = AzerCompanionDB.sync or {}
+    AzerCompanionDB.sync.addonVersion = AzerCompanionDB.addonVersion
+    AzerCompanionDB.sync.collectorVersion = AzerCompanionDB.addonVersion
+    AzerCompanionDB.sync.payloadVersion = tostring(self.schemaVersion)
     AzerCompanionDB.sync.history = AzerCompanionDB.sync.history or {}
     AzerCompanionDB.modules = AzerCompanionDB.modules or {}
     AzerCompanionDB.diagnostics = AzerCompanionDB.diagnostics or {}

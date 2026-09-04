@@ -2,7 +2,7 @@
 ## Title: Azer Companion Collector
 ## Notes: Collecteur modulaire de données pour Azer Companion.
 ## Author: DH Studio
-## Version: 3.0.0-alpha4
+## Version: 3.0.0-alpha5
 ## SavedVariables: AzerCompanionDB
 
 Core.lua
